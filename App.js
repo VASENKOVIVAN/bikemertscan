@@ -46,7 +46,7 @@ export default function App() {
     );
   };
 
-  const showToastWithGoAvaliable = () => {
+  const showToastWithGoAvailable = () => {
     ToastAndroid.showWithGravityAndOffset(
       "Переведено в СВОБОДЕН",
       ToastAndroid.LONG,
@@ -66,10 +66,18 @@ export default function App() {
     );
   };
 
-  const [loadingAvaliable, setLoadingAvaliable] = useState(false);
+  const showToastWithCleared = () => {
+    ToastAndroid.showWithGravityAndOffset(
+      "Отчищено",
+      ToastAndroid.LONG,
+      ToastAndroid.BOTTOM,
+      25,
+      50
+    );
+  };
+
+  const [loadingAvailable, setLoadingAvailable] = useState(false);
   const [loadingBroken, setLoadingBroken] = useState(false);
-
-
 
   const scooterGoBroken = async () => {
 
@@ -119,10 +127,10 @@ export default function App() {
 
 
   // Функция
-  const scooterGoAvaliable = async () => {
+  const scooterGoAvailable = async () => {
 
 
-    setLoadingAvaliable(!loadingAvaliable);
+    setLoadingAvailable(!loadingAvailable);
 
 
     const api_url_objects_list_count = await
@@ -163,8 +171,8 @@ export default function App() {
           }
         }
       }
-      setLoadingAvaliable(loadingAvaliable);
-      showToastWithGoAvaliable();
+      setLoadingAvailable(loadingAvailable);
+      showToastWithGoAvailable();
     }
 
   }
@@ -294,7 +302,8 @@ export default function App() {
   const [todos, setTodos] = useState([])
 
   const pressDelete = () => {
-    setTodos([])
+    setTodos([]);
+    showToastWithCleared();
   }
 
   const addTodo = (title) => {
@@ -349,7 +358,7 @@ export default function App() {
 
       <View style={styles.One} >
 
-        <Navbar title='TEST - AXIOS' />
+        <Navbar title='BikeMe - Scanner' />
 
         <View style={styles.container}>
 
@@ -455,16 +464,16 @@ export default function App() {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={scooterGoAvaliable}>
+        <TouchableOpacity onPress={scooterGoAvailable}>
           <View
             style={{
               ...styles.button,
-              backgroundColor: loadingAvaliable ? "#2F71A2" : "#2F71A2",
+              backgroundColor: loadingAvailable ? "#2F71A2" : "#2F71A2",
             }}
           >
-            {loadingAvaliable && <ActivityIndicator style={styles.buttonText333} size="large" color="white" />}
+            {loadingAvailable && <ActivityIndicator style={styles.buttonText333} size="large" color="white" />}
             <Text style={styles.buttonText}>
-              {loadingAvaliable ? "" : "В СВОБОДЕН"}
+              {loadingAvailable ? "" : "В СВОБОДЕН"}
             </Text>
           </View>
         </TouchableOpacity>
