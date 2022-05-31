@@ -1,13 +1,11 @@
 import React, { useState, useEffect, Component } from 'react'
-import { StyleSheet, Text, View, Button, TextInput, ScrollView } from 'react-native'
+import { StyleSheet, Text, View, Button, TextInput, ScrollView, TouchableOpacity, ToastAndroid, ActivityIndicator } from 'react-native'
 import { Navbar } from './src/Navbar'
 import { AddTodo } from './src/AddTodo'
 import { Todo } from './src/Todo'
 import * as Clipboard from 'expo-clipboard';
-import axios from 'axios'
-// import { ScrollView } from 'react-native-web'
-
-
+import ActivityIndicatorViewNativeComponent from 'react-native/Libraries/Components/ActivityIndicator/ActivityIndicatorViewNativeComponent'
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function App() {
 
@@ -17,56 +15,167 @@ export default function App() {
     "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2MjkwZDFmNjQ0NDRjOTAwMTAyNGM2ZWYiLCJzdWIiOiI2MGMxY2FhOWFiZmM4NzAwMTBmM2IyYTUiLCJncnAiOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJvcmciOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJsaWMiOmZhbHNlLCJ1c2ciOiJhcGkiLCJmdWxsIjpmYWxzZSwicmlnaHRzIjoxLjUsImlhdCI6MTY1MzY1ODEwMiwiZXhwIjoxNjU2MTkwODAwfQ.ky2HUNdE86MigVhCT_VjtXvszEMiGeOgXxV5sgCkJVM"
   );
 
-  var requestOptions = {
+  var requestOptionsPOST = {
     method: "POST",
     headers: myHeaders,
-    // redirect: "follow",
   };
 
-  var requestOptions2 = {
+  var requestOptionsGET = {
     method: "GET",
     headers: myHeaders,
-    // redirect: "follow",
   };
 
-  // console.log("Первое: ", todos[3].title)
 
-  const scooterlockall = async () => {
-    for (var i = 0; i < todos.length; i++) {
-      console.log('ЦИКЛ: ' + i);
-      const api_url = await
-        fetch(`https://app.rightech.io/api/v1/objects/${todos[i].title}/commands/scooterlock?withChildGroups=true`, requestOptions);
-      const data = await api_url.json();
-      console.log(data)
+  const showToastWithError401 = () => {
+    ToastAndroid.showWithGravityAndOffset(
+      "ERROR 401\nОБРАТИТЕСЬ К РАЗРАБОТЧИКУ",
+      ToastAndroid.LONG,
+      ToastAndroid.BOTTOM,
+      25,
+      50
+    );
+  };
+
+  const showToastWithCopy = () => {
+    ToastAndroid.showWithGravityAndOffset(
+      "Скопировано",
+      ToastAndroid.LONG,
+      ToastAndroid.BOTTOM,
+      25,
+      50
+    );
+  };
+
+  const showToastWithGoAvaliable = () => {
+    ToastAndroid.showWithGravityAndOffset(
+      "Переведено в СВОБОДЕН",
+      ToastAndroid.LONG,
+      ToastAndroid.BOTTOM,
+      25,
+      50
+    );
+  };
+
+  const showToastWithGoBroken = () => {
+    ToastAndroid.showWithGravityAndOffset(
+      "Переведено в ПОЛОМКУ",
+      ToastAndroid.LONG,
+      ToastAndroid.BOTTOM,
+      25,
+      50
+    );
+  };
+
+  const [loadingAvaliable, setLoadingAvaliable] = useState(false);
+  const [loadingBroken, setLoadingBroken] = useState(false);
+
+
+
+  const scooterGoBroken = async () => {
+
+    setLoadingBroken(!loadingBroken);
+
+    const api_url_objects_list_count = await
+      fetch(`https://app.rightech.io/api/v1/objects?withChildGroups=true`, requestOptionsGET);
+    const dataObjectsListCount = await api_url_objects_list_count.json();
+
+    if (api_url_objects_list_count.status == 401) {
+      console.log('Error-401');
+      showToastWithError401();
+    } else {
+
+      console.log('Кол-во объектов: ' + dataObjectsListCount.length)
+
+      for (var i = 0; i < todos.length; i++) {
+        console.log('ЦИКЛ: ' + i);
+        for (let j = 0; j < dataObjectsListCount.length; j++) {
+
+          if (dataObjectsListCount[j].config.data.qr == todos[i].title) {
+            console.log('Н А Й Д Е Н О ! ! ! ! !')
+            console.log('Номер по RIC: ' + j)
+            console.log('Вывод QR из RIC: ' + dataObjectsListCount[j].config.data.qr)
+            console.log('Вывод QR из скана: ' + todos[i].title)
+            console.log('Вывод ID из RIC: ' + dataObjectsListCount[j]._id)
+            console.log('ЗАПУСКАЮ КОМАНДУ НА ПЕРЕВОД В ПОЛОМКУ!!!!!')
+            try {
+              const api_url_scooterlockall = await
+                fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/change-status-broken?withChildGroups=true`, requestOptionsPOST);
+              console.log('response.status: ', api_url_scooterlockall.status);
+            }
+            catch (err) {
+              console.log(err);
+
+            }
+          }
+        }
+      }
+      setLoadingBroken(loadingBroken);
+      showToastWithGoBroken();
+    }
+  }
+
+
+
+
+
+  // Функция
+  const scooterGoAvaliable = async () => {
+
+
+    setLoadingAvaliable(!loadingAvaliable);
+
+
+    const api_url_objects_list_count = await
+      fetch(`https://app.rightech.io/api/v1/objects?withChildGroups=true`, requestOptionsGET);
+    const dataObjectsListCount = await api_url_objects_list_count.json();
+
+    if (api_url_objects_list_count.status == 401) {
+      console.log('Error-401');
+      showToastWithError401();
+    } else {
+
+      console.log('Кол-во объектов: ' + dataObjectsListCount.length)
+
+      for (var i = 0; i < todos.length; i++) {
+        console.log('ЦИКЛ: ' + i);
+        for (let j = 0; j < dataObjectsListCount.length; j++) {
+          if (dataObjectsListCount[j].config.data.qr == todos[i].title) {
+            console.log('Н А Й Д Е Н О ! ! ! ! !')
+            console.log('Номер по RIC: ' + j)
+            console.log('Вывод QR из RIC: ' + dataObjectsListCount[j].config.data.qr)
+            console.log('Вывод QR из скана: ' + todos[i].title)
+
+            // console.log('Вывод ТЕСТА 1: ' + todos[i].teston)
+            // todos[i].teston = dataObjectsListCount[j].state.online
+            // console.log('Вывод ТЕСТА 2: ' + todos[i].teston)
+
+            console.log('Вывод ID из RIC: ' + dataObjectsListCount[j]._id)
+            console.log('ЗАПУСКАЮ КОМАНДУ НА ПЕРЕВОД В СВОБОДЕН!!!!!')
+            const api_url_scooterunlockall = await
+              fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/change-status-available?withChildGroups=true`, requestOptionsPOST);
+            // .then(function (response) {
+            //   console.log(response.status);
+            // });
+            console.log('response.status: ', api_url_scooterunlockall.status);
+
+            const api_url_scooterunlockall_data = await api_url_scooterunlockall.json();
+            console.log(api_url_scooterunlockall_data)
+          }
+        }
+      }
+      setLoadingAvaliable(loadingAvaliable);
+      showToastWithGoAvaliable();
     }
 
   }
-  const scooterunlockall = async () => {
-    for (var i = 0; i < todos.length; i++) {
-      console.log('ЦИКЛ: ' + i);
-      const api_url = await
-        fetch(`https://app.rightech.io/api/v1/objects/${todos[i].title}/commands/scooterunlock?withChildGroups=true`, requestOptions);
-      const data = await api_url.json();
-      console.log(data)
-    }
 
-  }
 
   const scooterlock = async () => {
     const api_url = await
-      fetch(`https://app.rightech.io/api/v1/objects/6284878a3335070010a5766b/commands/scooterlock?withChildGroups=true`, requestOptions);
+      fetch(`https://app.rightech.io/api/v1/objects/6284878a3335070010a5766b/commands/scooterlock?withChildGroups=true`, requestOptionsPOST);
     const data = await api_url.json();
     console.log(data)
   }
-
-  const scooterunlock = async () => {
-    const api_url = await
-      fetch(`https://app.rightech.io/api/v1/objects`, requestOptions2);
-    const data = await api_url.json();
-    console.log(data[1].config.data.qr)
-    console.log(data[1]._id)
-  }
-
 
   // axios
   // .get('https://app.rightech.io/api/v1/objects/6284878a3335070010a5766b', {
@@ -188,7 +297,7 @@ export default function App() {
     setTodos([])
   }
 
-  const addTodo = title => {
+  const addTodo = (title) => {
     // const newTodo = {
     //   id: Date.now().toString(),
     //   title: title
@@ -224,10 +333,15 @@ export default function App() {
   // console.log("Второе: ", scootlistnum2)
   const copyToClipboard = () => {
     Clipboard.setStringAsync(scootlistnum);
+    showToastWithCopy();
   };
 
 
   const [textscoot, onChangeText] = useState("");
+
+  const [show, setShow] = useState(false)
+
+
 
   return (
 
@@ -244,37 +358,32 @@ export default function App() {
 
 
         </View>
-        <View >
+
+        <View style={styles.counterandbutton} >
 
           <View >
             <Text style={styles.titlelistscooters} >Выбранные самокаты:
-
+              <Text style={{ color: '#DFDFDF', }}>
+                -
+              </Text>
+              <Text style={{ fontWeight: "bold" }}>
+                {abc} шт.
+              </Text>
             </Text>
-            <TextInput
-              style={styles.input}
-              onChangeText={onChangeText}
-              name='textscootarea'
-              value={textscoot}
-              placeholder='Введите номер...'
-            />
           </View>
 
-          <Text style={styles.titlelistscooters} >Выбранные самокаты:
-            <Text style={{ color: '#DFDFDF', }}>
-              -
-            </Text>
-            <Text style={{ fontWeight: "bold" }}>
-              {abc} шт.
-            </Text>
-          </Text>
-
-          {/* <Text selectable={true} style={styles.listscopy}> */}
-          {/* Вывод списка самокатов через запятую */}
-          {/* {scootlistnum} */}
-
-          {/* </Text> */}
+          <View >
+            <TouchableOpacity onPress={copyToClipboard}>
+              <View style={styles.button3}>
+                <Text style={styles.buttonText3}>
+                  КОПИРОВАТЬ
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
 
         </View>
+
         <ScrollView
           style={[{
             // backgroundColor: "red",
@@ -297,6 +406,7 @@ export default function App() {
               <Todo todo={todo} key={todo.id} />
             ))}
           </View>
+
         </ScrollView>
 
       </View>
@@ -308,25 +418,57 @@ export default function App() {
 
       <View style={styles.Three}>
         {/* Кнопка копирования списка */}
-        <View style={styles.copybutton}>
-          <Button title='Копировать' onPress={copyToClipboard} color='#158B12' />
-        </View>
+
         {/* Кнопка удаления списка */}
-        <View style={styles.deletebutton}>
+        {/* <View style={styles.deletebutton}>
           <Button title='Отчистить' onPress={pressDelete} color='#B0605F' />
         </View>
         <View style={styles.deletebutton}>
           <Button title='Блок ВСЕ' onPress={scooterlockall} color='#B0605F' />
-        </View>
-        <View style={styles.deletebutton}>
-          <Button title='Разблок ВСЕ' onPress={scooterunlockall} color='#B0605F' />
-        </View>
-        <View style={styles.deletebutton}>
-          <Button title='Заблокировать' onPress={scooterlock} color='#B0605F' />
-        </View>
-        <View style={styles.deletebutton}>
-          <Button title='Разблокировать' onPress={scooterunlock} color='#B0605F' />
-        </View>
+        </View> */}
+        {/* <View style={styles.deletebutton}>
+          {
+            loading ?
+              <View style={styles.deletebutton}><ActivityIndicator size="large" color="#00ffff" /></View>
+              :
+              <Button title='Разблок ВСЕ' onPress={scooterunlockall} color='#B0605F' />
+          }
+
+        </View> */}
+        <TouchableOpacity onPress={scooterGoBroken}>
+          <View
+            style={{
+              ...styles.button,
+              backgroundColor: loadingBroken ? "#444647" : "#444647",
+            }}
+          >
+            {loadingBroken && <ActivityIndicator style={styles.buttonText333} size="large" color="white" />}
+            <Text style={styles.buttonText}>
+              {loadingBroken ? "" : "В ПОЛОМКУ"}
+            </Text>
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={pressDelete}>
+          <View style={styles.button2}>
+            <MaterialIcons name="delete-sweep" size={26} color="white" />
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={scooterGoAvaliable}>
+          <View
+            style={{
+              ...styles.button,
+              backgroundColor: loadingAvaliable ? "#2F71A2" : "#2F71A2",
+            }}
+          >
+            {loadingAvaliable && <ActivityIndicator style={styles.buttonText333} size="large" color="white" />}
+            <Text style={styles.buttonText}>
+              {loadingAvaliable ? "" : "В СВОБОДЕН"}
+            </Text>
+          </View>
+        </TouchableOpacity>
+
         {/* <View style={styles.addbutton}>
           <Button title='РАЗБЛОКИРОВАТЬ' onPress={getContent} color='#2A71A3' />
         </View> */}
@@ -362,7 +504,7 @@ const styles = StyleSheet.create({
     // marginBottom: 15
   },
   titlelistscooters: {
-    paddingHorizontal: 30,
+    // paddingHorizontal: 30,
     paddingVertical: 5,
     backgroundColor: '#DFDFDF',
   },
@@ -383,9 +525,9 @@ const styles = StyleSheet.create({
     // backgroundColor: '#DFDFDF',
   },
   copybutton: {
-    paddingHorizontal: 10,
+    // paddingHorizontal: 10,
     // paddingVertical: 10,
-    flex: 1,
+    // flex: 1,
     // backgroundColor: '#DFDFDF',
   },
   bottomflex: {
@@ -408,12 +550,14 @@ const styles = StyleSheet.create({
   Three: {
     // flex: 1,
     // backgroundColor: 'lightblue',
-    // justifyContent: 'center',
+    justifyContent: 'space-between',
     // width: '100%',
     flexDirection: "row",
     // justifyContent: 'space-around',
     // justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    // alignItems: "center",
+
+    paddingHorizontal: 30,
     paddingVertical: 10,
     backgroundColor: 'white',
     // borderStartWidth: 5,
@@ -423,5 +567,81 @@ const styles = StyleSheet.create({
     borderTopEndRadius: 20,
     borderTopStartRadius: 20,
     borderColor: '#DFDFDF',
+  },
+  button: {
+    flex: 1,
+    display: "flex",
+    // flexDirection: "row",
+    justifyContent: "space-evenly",
+    alignItems: "center",
+    width: 110,
+    // height: 70,
+    paddingVertical: 15,
+    // borderWidth: 1,
+    borderColor: "#666",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+  },
+  button2: {
+    // flex: 1,
+    // display: "flex",
+    // flexDirection: "row",
+    justifyContent: "space-evenly",
+    alignItems: "center",
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#DB645C',
+    // paddingHorizontal: 30,
+    // paddingVertical: 15,
+    // borderWidth: 1,
+    borderColor: "#666",
+    // borderWidth: 1,
+    // borderRadius: 10,
+    // paddingHorizontal: 10,
+  },
+  button3: {
+    // flex: 1,
+    // display: "flex",
+    // flexDirection: "row",
+    // justifyContent: "space-evenly",
+    backgroundColor: '#33853B',
+
+    // alignItems: "center",
+    // width: 240,
+    // height: 70,
+    // paddingVertical: 15,
+    // borderWidth: 1,
+    // borderColor: "#666",
+    borderRadius: 4,
+    // paddingHorizontal: 10,
+    fontSize: 19,
+    paddingHorizontal: 10,
+    paddingVertical: 3
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 14
+  },
+  counterandbutton: {
+    flexDirection: "row",
+    backgroundColor: '#DFDFDF',
+    alignItems: "center",
+    justifyContent: 'space-between',
+    paddingHorizontal: 30,
+
+  },
+  buttonText3: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 12
+
+  },
+  buttonText333: {
+    alignItems: "center",
+    // justifyContent: '',
+    marginBottom: -10,
+
   }
 })
