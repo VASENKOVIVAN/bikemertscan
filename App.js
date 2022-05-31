@@ -1,29 +1,89 @@
 import React, { useState, useEffect, Component } from 'react'
-import { StyleSheet, Text, View, Button, TouchableOpacity, ScrollView } from 'react-native'
+import { StyleSheet, Text, View, Button, TextInput, ScrollView } from 'react-native'
 import { Navbar } from './src/Navbar'
 import { AddTodo } from './src/AddTodo'
 import { Todo } from './src/Todo'
 import * as Clipboard from 'expo-clipboard';
+import axios from 'axios'
 // import { ScrollView } from 'react-native-web'
 
 
+
 export default function App() {
+
+  var myHeaders = new Headers();
+  myHeaders.append(
+    "Authorization",
+    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2MjkwZDFmNjQ0NDRjOTAwMTAyNGM2ZWYiLCJzdWIiOiI2MGMxY2FhOWFiZmM4NzAwMTBmM2IyYTUiLCJncnAiOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJvcmciOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJsaWMiOmZhbHNlLCJ1c2ciOiJhcGkiLCJmdWxsIjpmYWxzZSwicmlnaHRzIjoxLjUsImlhdCI6MTY1MzY1ODEwMiwiZXhwIjoxNjU2MTkwODAwfQ.ky2HUNdE86MigVhCT_VjtXvszEMiGeOgXxV5sgCkJVM"
+  );
+
+  var requestOptions = {
+    method: "POST",
+    headers: myHeaders,
+    // redirect: "follow",
+  };
+
+  var requestOptions2 = {
+    method: "GET",
+    headers: myHeaders,
+    // redirect: "follow",
+  };
+
+  // console.log("Первое: ", todos[3].title)
+
+  const scooterlockall = async () => {
+    for (var i = 0; i < todos.length; i++) {
+      console.log('ЦИКЛ: ' + i);
+      const api_url = await
+        fetch(`https://app.rightech.io/api/v1/objects/${todos[i].title}/commands/scooterlock?withChildGroups=true`, requestOptions);
+      const data = await api_url.json();
+      console.log(data)
+    }
+
+  }
+  const scooterunlockall = async () => {
+    for (var i = 0; i < todos.length; i++) {
+      console.log('ЦИКЛ: ' + i);
+      const api_url = await
+        fetch(`https://app.rightech.io/api/v1/objects/${todos[i].title}/commands/scooterunlock?withChildGroups=true`, requestOptions);
+      const data = await api_url.json();
+      console.log(data)
+    }
+
+  }
+
+  const scooterlock = async () => {
+    const api_url = await
+      fetch(`https://app.rightech.io/api/v1/objects/6284878a3335070010a5766b/commands/scooterlock?withChildGroups=true`, requestOptions);
+    const data = await api_url.json();
+    console.log(data)
+  }
+
+  const scooterunlock = async () => {
+    const api_url = await
+      fetch(`https://app.rightech.io/api/v1/objects`, requestOptions2);
+    const data = await api_url.json();
+    console.log(data[1].config.data.qr)
+    console.log(data[1]._id)
+  }
+
+
+  // axios
+  // .get('https://app.rightech.io/api/v1/objects/6284878a3335070010a5766b', {
+  //   headers: {
+  //     'Authorization': "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2MjkwZDFmNjQ0NDRjOTAwMTAyNGM2ZWYiLCJzdWIiOiI2MGMxY2FhOWFiZmM4NzAwMTBmM2IyYTUiLCJncnAiOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJvcmciOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJsaWMiOmZhbHNlLCJ1c2ciOiJhcGkiLCJmdWxsIjpmYWxzZSwicmlnaHRzIjoxLjUsImlhdCI6MTY1MzY1ODEwMiwiZXhwIjoxNjU2MTkwODAwfQ.ky2HUNdE86MigVhCT_VjtXvszEMiGeOgXxV5sgCkJVM"
+  //   }
+  // })
+  // .then((response) => {
+  //   console.log(response)
+  // })
+
 
   // let [isLoading, setIsLoading] = useState(true);
   // let [error, setError] = useState();
   // let [response, setResponse] = useState();
 
-  // var myHeaders = new Headers();
-  // myHeaders.append(
-  //   "Authorization",
-  //   "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2MjkwZDFmNjQ0NDRjOTAwMTAyNGM2ZWYiLCJzdWIiOiI2MGMxY2FhOWFiZmM4NzAwMTBmM2IyYTUiLCJncnAiOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJvcmciOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJsaWMiOmZhbHNlLCJ1c2ciOiJhcGkiLCJmdWxsIjpmYWxzZSwicmlnaHRzIjoxLjUsImlhdCI6MTY1MzY1ODEwMiwiZXhwIjoxNjU2MTkwODAwfQ.ky2HUNdE86MigVhCT_VjtXvszEMiGeOgXxV5sgCkJVM"
-  // );
 
-  // var requestOptions = {
-  //   method: "POST",
-  //   headers: myHeaders,
-  //   // redirect: "follow",
-  // };
 
   // useEffect(() => {
 
@@ -157,6 +217,8 @@ export default function App() {
 
   let scootlistnum = todos.map(todo => todo.title + '').join(",\n");
   console.log("Первое: ", scootlistnum)
+  // console.log("Первое: ", todos[3].title)
+
 
   // let scootlistnum2 = scootlistnum.replace("*,", " ,");
   // console.log("Второе: ", scootlistnum2)
@@ -164,32 +226,16 @@ export default function App() {
     Clipboard.setStringAsync(scootlistnum);
   };
 
+
+  const [textscoot, onChangeText] = useState("");
+
   return (
-    // <View>
-    //   <Navbar title='BikeMe - Сканер' />
-    //   <View style={styles.container}>
-    //     <AddTodo onSubmit={addTodo} />
-    //     <View style={styles.alllists}>
-    //       <View >
-    //         <Text style={{ backgroundColor: 'gray' }}>123</Text>
-    //         {todos.map(todo => (
-    //           <Todo todo={todo} key={todo.id} />
-    //         ))}
-    //       </View>
-    //       <View >
-    //         <Text style={{ backgroundColor: 'gray' }} >456</Text>
-    //         <Text selectable={true} style={styles.listscopy}>
-    //           {todos.map(todo => todo.title + ', ')}
-    //         </Text>
-    //       </View>
-    //     </View>
-    //   </View>
-    // </View >
+
     <View style={styles.MainScreen}>
 
       <View style={styles.One} >
 
-        <Navbar title='BikeMe - Сканер' />
+        <Navbar title='TEST - AXIOS' />
 
         <View style={styles.container}>
 
@@ -199,6 +245,19 @@ export default function App() {
 
         </View>
         <View >
+
+          <View >
+            <Text style={styles.titlelistscooters} >Выбранные самокаты:
+
+            </Text>
+            <TextInput
+              style={styles.input}
+              onChangeText={onChangeText}
+              name='textscootarea'
+              value={textscoot}
+              placeholder='Введите номер...'
+            />
+          </View>
 
           <Text style={styles.titlelistscooters} >Выбранные самокаты:
             <Text style={{ color: '#DFDFDF', }}>
@@ -239,6 +298,7 @@ export default function App() {
             ))}
           </View>
         </ScrollView>
+
       </View>
 
       {/* <View style={styles.Two}>
@@ -255,7 +315,18 @@ export default function App() {
         <View style={styles.deletebutton}>
           <Button title='Отчистить' onPress={pressDelete} color='#B0605F' />
         </View>
-
+        <View style={styles.deletebutton}>
+          <Button title='Блок ВСЕ' onPress={scooterlockall} color='#B0605F' />
+        </View>
+        <View style={styles.deletebutton}>
+          <Button title='Разблок ВСЕ' onPress={scooterunlockall} color='#B0605F' />
+        </View>
+        <View style={styles.deletebutton}>
+          <Button title='Заблокировать' onPress={scooterlock} color='#B0605F' />
+        </View>
+        <View style={styles.deletebutton}>
+          <Button title='Разблокировать' onPress={scooterunlock} color='#B0605F' />
+        </View>
         {/* <View style={styles.addbutton}>
           <Button title='РАЗБЛОКИРОВАТЬ' onPress={getContent} color='#2A71A3' />
         </View> */}
