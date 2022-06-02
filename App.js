@@ -1,4 +1,5 @@
 import React, { useState, useEffect, Component } from 'react'
+import * as Location from 'expo-location';
 import { StyleSheet, Text, View, Button, TextInput, ScrollView, TouchableOpacity, ToastAndroid, ActivityIndicator } from 'react-native'
 import { Navbar } from './src/Navbar'
 import { AddTodo } from './src/AddTodo'
@@ -6,6 +7,9 @@ import { Todo } from './src/Todo'
 import * as Clipboard from 'expo-clipboard';
 import ActivityIndicatorViewNativeComponent from 'react-native/Libraries/Components/ActivityIndicator/ActivityIndicatorViewNativeComponent'
 import { MaterialIcons } from '@expo/vector-icons';
+import { AntDesign } from '@expo/vector-icons';
+import axios from 'axios'
+import { Alert } from 'react-native-web';
 
 export default function App() {
 
@@ -48,7 +52,7 @@ export default function App() {
 
   const showToastWithGoAvailable = () => {
     ToastAndroid.showWithGravityAndOffset(
-      "Переведено в СВОБОДЕН",
+      "Переведено в СВОБОДЕН и\nОтправлено в Телеграм",
       ToastAndroid.LONG,
       ToastAndroid.BOTTOM,
       25,
@@ -58,7 +62,7 @@ export default function App() {
 
   const showToastWithGoBroken = () => {
     ToastAndroid.showWithGravityAndOffset(
-      "Переведено в ПОЛОМКУ",
+      "Переведено в ПОЛОМКУ и\nОтправлено в Телеграм",
       ToastAndroid.LONG,
       ToastAndroid.BOTTOM,
       25,
@@ -68,7 +72,7 @@ export default function App() {
 
   const showToastWithCleared = () => {
     ToastAndroid.showWithGravityAndOffset(
-      "Отчищено",
+      "Очищено",
       ToastAndroid.LONG,
       ToastAndroid.BOTTOM,
       25,
@@ -117,6 +121,41 @@ export default function App() {
           }
         }
       }
+
+      const TOKEN_TELEGRAM = "5486245743:AAG-NZzrNigBA3uquPHqt07f9aeNe8dpgvQ";
+      const CHAT_ID = "-639005167";
+      const URI_API_MESSAGE = `https://api.telegram.org/bot${TOKEN_TELEGRAM}/sendMessage`;
+      const URI_API_LOCATION = `https://api.telegram.org/bot${TOKEN_TELEGRAM}/sendLocation`;
+
+      const scooterListSendToTelegramBroken = async () => {
+        let message = `Забрал и перевел в поломку:\n${scootlistnum}`;
+        console.log(message);
+
+        const api_urlTG = await
+          axios.post(URI_API_MESSAGE, {
+            chat_id: CHAT_ID,
+            text: message
+          });
+
+        try {
+          const response = await Location.requestForegroundPermissionsAsync();
+          console.log(response);
+          const { coords } = await Location.getCurrentPositionAsync();
+          let x = coords.latitude.toString();
+          let y = coords.longitude.toString();
+          // console.log('Широта2: ', x, ' Долгота2: ', y,);
+          const api_urlTG2 = await
+            axios.post(URI_API_LOCATION, {
+              chat_id: CHAT_ID,
+              latitude: x,
+              longitude: y,
+            })
+        } catch (error) {
+          Alert.alert('Не могу гео найти');
+        }
+      }
+      scooterListSendToTelegramBroken();
+
       setLoadingBroken(loadingBroken);
       showToastWithGoBroken();
     }
@@ -171,6 +210,41 @@ export default function App() {
           }
         }
       }
+
+      const TOKEN_TELEGRAM = "5486245743:AAG-NZzrNigBA3uquPHqt07f9aeNe8dpgvQ";
+      const CHAT_ID = "-639005167";
+      const URI_API_MESSAGE = `https://api.telegram.org/bot${TOKEN_TELEGRAM}/sendMessage`;
+      const URI_API_LOCATION = `https://api.telegram.org/bot${TOKEN_TELEGRAM}/sendLocation`;
+
+      const scooterListSendToTelegramAvailable = async () => {
+        let message = `Выставил и перевел в свободен:\n${scootlistnum}`;
+        console.log(message);
+
+        const api_urlTG = await
+          axios.post(URI_API_MESSAGE, {
+            chat_id: CHAT_ID,
+            text: message
+          });
+
+        try {
+          const response = await Location.requestForegroundPermissionsAsync();
+          console.log(response);
+          const { coords } = await Location.getCurrentPositionAsync();
+          let x = coords.latitude.toString();
+          let y = coords.longitude.toString();
+          // console.log('Широта2: ', x, ' Долгота2: ', y,);
+          const api_urlTG2 = await
+            axios.post(URI_API_LOCATION, {
+              chat_id: CHAT_ID,
+              latitude: x,
+              longitude: y,
+            })
+        } catch (error) {
+          Alert.alert('Не могу гео найти');
+        }
+      }
+      scooterListSendToTelegramAvailable();
+
       setLoadingAvailable(loadingAvailable);
       showToastWithGoAvailable();
     }
@@ -178,12 +252,69 @@ export default function App() {
   }
 
 
-  const scooterlock = async () => {
-    const api_url = await
-      fetch(`https://app.rightech.io/api/v1/objects/6284878a3335070010a5766b/commands/scooterlock?withChildGroups=true`, requestOptionsPOST);
-    const data = await api_url.json();
-    console.log(data)
+  const getLocation = async () => {
+    try {
+      const response = await Location.requestForegroundPermissionsAsync();
+      console.log(response);
+      const { coords } = await Location.getCurrentPositionAsync();
+      console.log('Широта: ', coords.latitude, ' Долгота: ', coords.longitude,);
+    } catch (error) {
+      Alert.alert('Не могу гео найти');
+    }
   }
+
+
+
+
+
+
+
+  const TOKEN_TELEGRAM = "5486245743:AAG-NZzrNigBA3uquPHqt07f9aeNe8dpgvQ";
+  const CHAT_ID = "-639005167";
+  const URI_API_MESSAGE = `https://api.telegram.org/bot${TOKEN_TELEGRAM}/sendMessage`;
+  const URI_API_LOCATION = `https://api.telegram.org/bot${TOKEN_TELEGRAM}/sendLocation`;
+
+  const scooterListSendToTelegram = async () => {
+    let message = `Выставил:\n${scootlistnum}`;
+    console.log(message);
+
+    const api_urlTG = await
+      axios.post(URI_API_MESSAGE, {
+        chat_id: CHAT_ID,
+        text: message
+      });
+
+    try {
+      const response = await Location.requestForegroundPermissionsAsync();
+      console.log(response);
+      const { coords } = await Location.getCurrentPositionAsync();
+      let x = coords.latitude.toString();
+      let y = coords.longitude.toString();
+      // console.log('Широта2: ', x, ' Долгота2: ', y,);
+      const api_urlTG2 = await
+        axios.post(URI_API_LOCATION, {
+          chat_id: CHAT_ID,
+          latitude: x,
+          longitude: y,
+        })
+    } catch (error) {
+      Alert.alert('Не могу гео найти');
+    }
+  }
+
+  // const scooterListSendToTelegram = async () => {
+  //   let message = '123';
+  //   console.log(message);
+  //   const api_urlTG = await
+  //     fetch(`https://api.telegram.org/bot5486245743:AAG-NZzrNigBA3uquPHqt07f9aeNe8dpgvQ/sendMessage`, {
+  //       method: 'POST',
+  //       chat_id: "-586513671",
+  //       // parse_mode: 'html',
+  //       text: message
+  //     });
+  //   const dataTG = await api_urlTG.json();
+  //   console.log(dataTG);
+  // }
 
   // axios
   // .get('https://app.rightech.io/api/v1/objects/6284878a3335070010a5766b', {
@@ -370,8 +501,9 @@ export default function App() {
 
         <View style={styles.counterandbutton} >
 
+
           <View >
-            <Text style={styles.titlelistscooters} >Выбранные самокаты:
+            <Text style={styles.titlelistscooters} >Выбрано:
               <Text style={{ color: '#DFDFDF', }}>
                 -
               </Text>
@@ -380,19 +512,59 @@ export default function App() {
               </Text>
             </Text>
           </View>
+          <View style={{
 
-          <View >
-            <TouchableOpacity onPress={copyToClipboard}>
-              <View style={styles.button3}>
-                <Text style={styles.buttonText3}>
-                  КОПИРОВАТЬ
-                </Text>
-              </View>
-            </TouchableOpacity>
+            flexDirection: "row",
+            // justifyContent: 'space-between',
+            // flexWrap: "wrap",
+            // marginHorizontal: 26,
+            alignItems: 'center'
+
+          }}>
+
+            {/* <View >
+              <TouchableOpacity onPress={scooterListSendToTelegram}>
+                <View style={[styles.button4, {
+                  marginRight: 10,
+
+                }]} >
+
+                  <Text style={[styles.buttonText4, { marginVertical: 1 }]}>
+                    ОТПРАВИТЬ В ТГ
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </View> */}
+
+            <View>
+              <TouchableOpacity onPress={copyToClipboard}>
+                <View style={styles.button3}>
+                  <AntDesign name="copy1" size={18} color="white" />
+                </View>
+              </TouchableOpacity>
+            </View>
+
           </View>
 
         </View>
-
+        {/* <View >
+          <TouchableOpacity onPress={scooterListSendToTelegram}>
+            <View style={styles.button3}>
+              <Text style={styles.buttonText3}>
+                ОТПРАВИТЬ В ТЕЛЕГРАМ
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+        <View >
+          <TouchableOpacity onPress={getLocation}>
+            <View style={styles.button3}>
+              <Text style={styles.buttonText3}>
+                ГЕО
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View> */}
         <ScrollView
           style={[{
             // backgroundColor: "red",
@@ -418,14 +590,14 @@ export default function App() {
 
         </ScrollView>
 
-      </View>
+      </View >
 
       {/* <View style={styles.Two}>
 
 
       </View> */}
 
-      <View style={styles.Three}>
+      < View style={styles.Three} >
         {/* Кнопка копирования списка */}
 
         {/* Кнопка удаления списка */}
@@ -490,7 +662,7 @@ export default function App() {
         {/* <View style={styles.addbutton}>
           <Button title='ЗАБЛОКИРОВАТЬ' color='#0000A3' />
         </View> */}
-      </View>
+      </View >
 
     </View >
 
@@ -628,6 +800,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 3
   },
+  button4: {
+    // flex: 1,
+    // display: "flex",
+    // flexDirection: "row",
+    // justifyContent: "space-evenly",
+    backgroundColor: '#2BA2DE',
+
+    // alignItems: "center",
+    // width: 240,
+    // height: 70,
+    // paddingVertical: 15,
+    // borderWidth: 1,
+    // borderColor: "#666",
+    borderRadius: 4,
+    // paddingHorizontal: 10,
+    fontSize: 19,
+    paddingHorizontal: 10,
+    paddingVertical: 3
+  },
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
@@ -642,6 +833,12 @@ const styles = StyleSheet.create({
 
   },
   buttonText3: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 12
+
+  },
+  buttonText4: {
     color: "#fff",
     fontWeight: "bold",
     fontSize: 12
