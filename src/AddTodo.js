@@ -45,9 +45,15 @@ export const AddTodo = ({ onSubmit }) => {
     setValue(data)
     console.log('Type: ' + type + '\nData: ' + data)
 
+    if (data.includes('https')) {
+      console.log("это ХТТПССССС'");
+      var result = data.replace("https://murmansk.bikeme.ru/?id=", "");
+    } else {
+      console.log("это НЕ ХТТПССССС'");
+      var result = data.replace("http://murmansk.bikeme.ru/?id=", "");
+    }
 
-    var result = data.replace("http://murmansk.bikeme.ru/?id=", "");
-    console.log("тут ", result, "тут ");
+    console.log("тут234 ", result, "тут ");
 
     if (result.trim()) {
       onSubmit(result)

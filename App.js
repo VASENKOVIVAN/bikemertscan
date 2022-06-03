@@ -5,31 +5,33 @@ import { Navbar } from './src/Navbar'
 import { AddTodo } from './src/AddTodo'
 import { Todo } from './src/Todo'
 import * as Clipboard from 'expo-clipboard';
-import ActivityIndicatorViewNativeComponent from 'react-native/Libraries/Components/ActivityIndicator/ActivityIndicatorViewNativeComponent'
 import { MaterialIcons } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
 import axios from 'axios'
 import { Alert } from 'react-native-web';
 
+import { KEYS_TELEGRAM } from './src/keys/keys-telegram'
+import { KEYS_RIC } from './src/keys/keys-ric'
+
+
 export default function App() {
 
+  // Заголовки запроса (Токен RIC)
   var myHeaders = new Headers();
   myHeaders.append(
-    "Authorization",
-    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2MjkwZDFmNjQ0NDRjOTAwMTAyNGM2ZWYiLCJzdWIiOiI2MGMxY2FhOWFiZmM4NzAwMTBmM2IyYTUiLCJncnAiOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJvcmciOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJsaWMiOmZhbHNlLCJ1c2ciOiJhcGkiLCJmdWxsIjpmYWxzZSwicmlnaHRzIjoxLjUsImlhdCI6MTY1MzY1ODEwMiwiZXhwIjoxNjU2MTkwODAwfQ.ky2HUNdE86MigVhCT_VjtXvszEMiGeOgXxV5sgCkJVM"
+    "Authorization", KEYS_RIC.AUTHORIZATION_KEY
   );
-
+  // Опции запроса POST
   var requestOptionsPOST = {
     method: "POST",
     headers: myHeaders,
   };
-
+  // Опции запроса GET
   var requestOptionsGET = {
     method: "GET",
     headers: myHeaders,
   };
-
-
+  // Тост уведомления о 401 ошибке
   const showToastWithError401 = () => {
     ToastAndroid.showWithGravityAndOffset(
       "ERROR 401\nОБРАТИТЕСЬ К РАЗРАБОТЧИКУ",
@@ -39,7 +41,6 @@ export default function App() {
       50
     );
   };
-
   const showToastWithCopy = () => {
     ToastAndroid.showWithGravityAndOffset(
       "Скопировано",
@@ -49,7 +50,6 @@ export default function App() {
       50
     );
   };
-
   const showToastWithGoAvailable = () => {
     ToastAndroid.showWithGravityAndOffset(
       "Переведено в СВОБОДЕН и\nОтправлено в Телеграм",
@@ -59,7 +59,6 @@ export default function App() {
       50
     );
   };
-
   const showToastWithGoBroken = () => {
     ToastAndroid.showWithGravityAndOffset(
       "Переведено в ПОЛОМКУ и\nОтправлено в Телеграм",
@@ -69,7 +68,6 @@ export default function App() {
       50
     );
   };
-
   const showToastWithCleared = () => {
     ToastAndroid.showWithGravityAndOffset(
       "Очищено",
@@ -79,228 +77,236 @@ export default function App() {
       50
     );
   };
+  const showToastErrorEmptyList = () => {
+    ToastAndroid.showWithGravityAndOffset(
+      "Вы не выбрали ни одного объекта",
+      ToastAndroid.LONG,
+      ToastAndroid.BOTTOM,
+      25,
+      50
+    );
+  };
 
+  // Стейты для loading-индикаторов
   const [loadingAvailable, setLoadingAvailable] = useState(false);
   const [loadingBroken, setLoadingBroken] = useState(false);
 
+  // Функция кнопки "В ПОЛОМКУ" 
+  // Перевод объектов в статус "Поломка" 
   const scooterGoBroken = async () => {
-
-    setLoadingBroken(!loadingBroken);
-
-    const api_url_objects_list_count = await
-      fetch(`https://app.rightech.io/api/v1/objects?withChildGroups=true`, requestOptionsGET);
-    const dataObjectsListCount = await api_url_objects_list_count.json();
-
-    if (api_url_objects_list_count.status == 401) {
-      console.log('Error-401');
-      showToastWithError401();
+    // Проверяем, что список объектов не пустой
+    if (todos.length == 0) {
+      showToastErrorEmptyList();
     } else {
-
-      console.log('Кол-во объектов: ' + dataObjectsListCount.length)
-
-      for (var i = 0; i < todos.length; i++) {
-        console.log('ЦИКЛ: ' + i);
-        for (let j = 0; j < dataObjectsListCount.length; j++) {
-
-          if (dataObjectsListCount[j].config.data.qr == todos[i].title) {
-            console.log('Н А Й Д Е Н О ! ! ! ! !')
-            console.log('Номер по RIC: ' + j)
-            console.log('Вывод QR из RIC: ' + dataObjectsListCount[j].config.data.qr)
-            console.log('Вывод QR из скана: ' + todos[i].title)
-            console.log('Вывод ID из RIC: ' + dataObjectsListCount[j]._id)
-            console.log('ЗАПУСКАЮ КОМАНДУ НА ПЕРЕВОД В ПОЛОМКУ!!!!!')
-            try {
-              const api_url_scooterlockall = await
-                fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/change-status-broken?withChildGroups=true`, requestOptionsPOST);
-              console.log('response.status: ', api_url_scooterlockall.status);
-            }
-            catch (err) {
-              console.log(err);
-
+      // Устанавливаем loading-индикатор кнопки "В ПОЛОМКУ" в значение true, что бы активировать его
+      setLoadingBroken(!loadingBroken);
+      // Получаем список объектов от RIC
+      const api_url_objects_list_count = await
+        fetch(`https://app.rightech.io/api/v1/objects?withChildGroups=true`, requestOptionsGET);
+      // Приводим к формату JSON
+      const dataObjectsListCount = await api_url_objects_list_count.json();
+      // Проверяем ответ от RIC по запросу списка объектов
+      if (api_url_objects_list_count.status == 401) {
+        // Если 401 ошибка, то выводим тост и в консоль
+        console.log('Error-401');
+        showToastWithError401();
+      }
+      // Если ошибки нет, запускаем:
+      else {
+        // Выводим в консоль количество объектов в RIC
+        console.log('Кол-во объектов: ' + dataObjectsListCount.length)
+        // Массив, в котором мы пробегаем по значениям из списка отсканированных объектов
+        for (var i = 0; i < todos.length; i++) {
+          console.log('ЦИКЛ: ' + i); // Выводим в консоль номер цикла
+          // Массив, в котором мы пробегаем по объектам из RIC
+          for (let j = 0; j < dataObjectsListCount.length; j++) {
+            // Ищем отсканированный объект в списке объектов RIC
+            if (dataObjectsListCount[j].config.data.qr == todos[i].title) {
+              // Выводим кучу бреда в консоль
+              console.log('Н А Й Д Е Н О ! ! ! ! !')
+              console.log('Номер по RIC: ' + j)
+              console.log('Вывод QR из RIC: ' + dataObjectsListCount[j].config.data.qr)
+              console.log('Вывод QR из скана: ' + todos[i].title)
+              console.log('Вывод ID из RIC: ' + dataObjectsListCount[j]._id)
+              console.log('ЗАПУСКАЮ КОМАНДУ НА ПЕРЕВОД В ПОЛОМКУ!!!!!')
+              // Запускаем команду на перевод объекта в статус "Поломка"
+              try {
+                const api_url_scooterlockall = await
+                  fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/change-status-broken?withChildGroups=true`, requestOptionsPOST);
+                // Выводим в консоль статус HTTP ответа
+                console.log('response.status: ', api_url_scooterlockall.status);
+              }
+              catch (err) {
+                console.log(err);
+              }
             }
           }
         }
-      }
-
-      const TOKEN_TELEGRAM = "5486245743:AAG-NZzrNigBA3uquPHqt07f9aeNe8dpgvQ";
-      const CHAT_ID = "-639005167";
-      const URI_API_MESSAGE = `https://api.telegram.org/bot${TOKEN_TELEGRAM}/sendMessage`;
-      const URI_API_LOCATION = `https://api.telegram.org/bot${TOKEN_TELEGRAM}/sendLocation`;
-
-      const scooterListSendToTelegramBroken = async () => {
-        let message = `Забрал и перевел в поломку:\n${scootlistnum}`;
-        console.log(message);
-
-        const api_urlTG = await
-          axios.post(URI_API_MESSAGE, {
-            chat_id: CHAT_ID,
-            text: message
-          });
-
-        try {
-          const response = await Location.requestForegroundPermissionsAsync();
-          console.log(response);
-          const { coords } = await Location.getCurrentPositionAsync();
-          let x = coords.latitude.toString();
-          let y = coords.longitude.toString();
-          // console.log('Широта2: ', x, ' Долгота2: ', y,);
-          const api_urlTG2 = await
-            axios.post(URI_API_LOCATION, {
-              chat_id: CHAT_ID,
-              latitude: x,
-              longitude: y,
-            })
-        } catch (error) {
-          Alert.alert('Не могу гео найти');
+        // На данном этапе мы пробежали по всем объектам и перевели их в статус "Поломка"
+        // Определяем функцию, которая отправит сообщение и гео-позицию в Телеграм
+        const scooterListSendToTelegramBroken = async () => {
+          // Определяем сообщение, которое отправим в Телеграм
+          let message = `Забрал и перевел в поломку:\n${scootlistnum}`;
+          // Асинхронная функция на axios для отправки POST запроса, для отправки сообщения в Телеграм
+          const api_urlTG = await
+            axios.post(KEYS_TELEGRAM.URI_API_MESSAGE, {
+              chat_id: KEYS_TELEGRAM.CHAT_ID,
+              text: message
+            });
+          try {
+            // Проверяем и получаем разрешение на использование камеры
+            const response = await Location.requestForegroundPermissionsAsync();
+            console.log(response);
+            // Получаем координаты устройства
+            const { coords } = await Location.getCurrentPositionAsync();
+            let x = coords.latitude.toString();
+            let y = coords.longitude.toString();
+            // Асинхронная функция на axios для отправки POST запроса, для отправки гео-позиции устройства в Телеграм
+            const api_urlTG2 = await
+              axios.post(KEYS_TELEGRAM.URI_API_LOCATION, {
+                chat_id: KEYS_TELEGRAM.CHAT_ID,
+                latitude: x,
+                longitude: y,
+              })
+          } catch (error) {
+            Alert.alert('Вы не предоставили разрешение на использование гео-позиции (перейдите в настройки)');
+          }
         }
+        scooterListSendToTelegramBroken();  // Запускаем функцию описанную выше
+        setLoadingBroken(loadingBroken);    // Выключаем loading-индикатор
+        showToastWithGoBroken();            // Показываем тост успеха
       }
-      scooterListSendToTelegramBroken();
-
-      setLoadingBroken(loadingBroken);
-      showToastWithGoBroken();
     }
   }
 
 
-
-
-
-  // Функция
+  // Функция кнопки "В ПОЛОМКУ" 
+  // Перевод объектов в статус "Свободен" 
   const scooterGoAvailable = async () => {
-
-
-    setLoadingAvailable(!loadingAvailable);
-
-
-    const api_url_objects_list_count = await
-      fetch(`https://app.rightech.io/api/v1/objects?withChildGroups=true`, requestOptionsGET);
-    const dataObjectsListCount = await api_url_objects_list_count.json();
-
-    if (api_url_objects_list_count.status == 401) {
-      console.log('Error-401');
-      showToastWithError401();
+    // Проверяем, что список объектов не пустой
+    if (todos.length == 0) {
+      showToastErrorEmptyList();
     } else {
-
-      console.log('Кол-во объектов: ' + dataObjectsListCount.length)
-
-      for (var i = 0; i < todos.length; i++) {
-        console.log('ЦИКЛ: ' + i);
-        for (let j = 0; j < dataObjectsListCount.length; j++) {
-          if (dataObjectsListCount[j].config.data.qr == todos[i].title) {
-            console.log('Н А Й Д Е Н О ! ! ! ! !')
-            console.log('Номер по RIC: ' + j)
-            console.log('Вывод QR из RIC: ' + dataObjectsListCount[j].config.data.qr)
-            console.log('Вывод QR из скана: ' + todos[i].title)
-
-            // console.log('Вывод ТЕСТА 1: ' + todos[i].teston)
-            // todos[i].teston = dataObjectsListCount[j].state.online
-            // console.log('Вывод ТЕСТА 2: ' + todos[i].teston)
-
-            console.log('Вывод ID из RIC: ' + dataObjectsListCount[j]._id)
-            console.log('ЗАПУСКАЮ КОМАНДУ НА ПЕРЕВОД В СВОБОДЕН!!!!!')
-            const api_url_scooterunlockall = await
-              fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/change-status-available?withChildGroups=true`, requestOptionsPOST);
-            // .then(function (response) {
-            //   console.log(response.status);
-            // });
-            console.log('response.status: ', api_url_scooterunlockall.status);
-
-            const api_url_scooterunlockall_data = await api_url_scooterunlockall.json();
-            console.log(api_url_scooterunlockall_data)
+      // Устанавливаем loading-индикатор кнопки "В СВОБОДЕН" в значение true, что бы активировать его
+      setLoadingAvailable(!loadingAvailable);
+      // Получаем список объектов от RIC
+      const api_url_objects_list_count = await
+        fetch(`https://app.rightech.io/api/v1/objects?withChildGroups=true`, requestOptionsGET);
+      // Приводим к формату JSON
+      const dataObjectsListCount = await api_url_objects_list_count.json();
+      // Проверяем ответ от RIC по запросу списка объектов
+      if (api_url_objects_list_count.status == 401) {
+        // Если 401 ошибка, то выводим тост и в консоль
+        console.log('Error-401');
+        showToastWithError401();
+      }
+      // Если ошибки нет, запускаем:
+      else {
+        // Выводим в консоль количество объектов в RIC
+        console.log('Кол-во объектов: ' + dataObjectsListCount.length)
+        // Массив, в котором мы пробегаем по значениям из списка отсканированных объектов
+        for (var i = 0; i < todos.length; i++) {
+          console.log('ЦИКЛ: ' + i); // Выводим в консоль номер цикла
+          for (let j = 0; j < dataObjectsListCount.length; j++) {
+            // Ищем отсканированный объект в списке объектов RIC
+            if (dataObjectsListCount[j].config.data.qr == todos[i].title) {
+              // Выводим кучу бреда в консоль
+              console.log('Н А Й Д Е Н О ! ! ! ! !')
+              console.log('Номер по RIC: ' + j)
+              console.log('Вывод QR из RIC: ' + dataObjectsListCount[j].config.data.qr)
+              console.log('Вывод QR из скана: ' + todos[i].title)
+              console.log('Вывод ID из RIC: ' + dataObjectsListCount[j]._id)
+              console.log('ЗАПУСКАЮ КОМАНДУ НА ПЕРЕВОД В СВОБОДЕН!!!!!')
+              const api_url_scooterunlockall = await
+                fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/change-status-available?withChildGroups=true`, requestOptionsPOST);
+              // Выводим в консоль статус HTTP ответа
+              console.log('response.status: ', api_url_scooterunlockall.status);
+              const api_url_scooterunlockall_data = await api_url_scooterunlockall.json();
+              console.log(api_url_scooterunlockall_data)
+            }
           }
         }
-      }
-
-      const TOKEN_TELEGRAM = "5486245743:AAG-NZzrNigBA3uquPHqt07f9aeNe8dpgvQ";
-      const CHAT_ID = "-639005167";
-      const URI_API_MESSAGE = `https://api.telegram.org/bot${TOKEN_TELEGRAM}/sendMessage`;
-      const URI_API_LOCATION = `https://api.telegram.org/bot${TOKEN_TELEGRAM}/sendLocation`;
-
-      const scooterListSendToTelegramAvailable = async () => {
-        let message = `Выставил и перевел в свободен:\n${scootlistnum}`;
-        console.log(message);
-
-        const api_urlTG = await
-          axios.post(URI_API_MESSAGE, {
-            chat_id: CHAT_ID,
-            text: message
-          });
-
-        try {
-          const response = await Location.requestForegroundPermissionsAsync();
-          console.log(response);
-          const { coords } = await Location.getCurrentPositionAsync();
-          let x = coords.latitude.toString();
-          let y = coords.longitude.toString();
-          // console.log('Широта2: ', x, ' Долгота2: ', y,);
-          const api_urlTG2 = await
-            axios.post(URI_API_LOCATION, {
-              chat_id: CHAT_ID,
-              latitude: x,
-              longitude: y,
-            })
-        } catch (error) {
-          Alert.alert('Не могу гео найти');
+        // На данном этапе мы пробежали по всем объектам и перевели их в статус "Поломка"
+        // Определяем функцию, которая отправит сообщение и гео-позицию в Телеграм
+        const scooterListSendToTelegramAvailable = async () => {
+          // Определяем сообщение, которое отправим в Телеграм
+          let message = `Выставил и перевел в свободен:\n${scootlistnum}`;
+          console.log(message);
+          // Асинхронная функция на axios для отправки POST запроса, для отправки сообщения в Телеграм
+          const api_urlTG = await
+            axios.post(KEYS_TELEGRAM.URI_API_MESSAGE, {
+              chat_id: KEYS_TELEGRAM.CHAT_ID,
+              text: message
+            });
+          // Проверяем и получаем разрешение на использование камеры
+          try {
+            const response = await Location.requestForegroundPermissionsAsync();
+            console.log(response);
+            const { coords } = await Location.getCurrentPositionAsync();
+            let x = coords.latitude.toString();
+            let y = coords.longitude.toString();
+            // Асинхронная функция на axios для отправки POST запроса, для отправки гео-позиции устройства в Телеграм
+            const api_urlTG2 = await
+              axios.post(KEYS_TELEGRAM.URI_API_LOCATION, {
+                chat_id: KEYS_TELEGRAM.CHAT_ID,
+                latitude: x,
+                longitude: y,
+              })
+          } catch (error) {
+            Alert.alert('Вы не предоставили разрешение на использование гео-позиции (перейдите в настройки)');
+          }
         }
+        scooterListSendToTelegramAvailable();   // Запускаем функцию описанную выше
+        setLoadingAvailable(loadingAvailable);  // Выключаем loading-индикатор
+        showToastWithGoAvailable();             // Показываем тост успеха
       }
-      scooterListSendToTelegramAvailable();
-
-      setLoadingAvailable(loadingAvailable);
-      showToastWithGoAvailable();
-    }
-
-  }
-
-
-  const getLocation = async () => {
-    try {
-      const response = await Location.requestForegroundPermissionsAsync();
-      console.log(response);
-      const { coords } = await Location.getCurrentPositionAsync();
-      console.log('Широта: ', coords.latitude, ' Долгота: ', coords.longitude,);
-    } catch (error) {
-      Alert.alert('Не могу гео найти');
     }
   }
 
 
+  // const getLocation = async () => {
+  //   try {
+  //     const response = await Location.requestForegroundPermissionsAsync();
+  //     console.log(response);
+  //     const { coords } = await Location.getCurrentPositionAsync();
+  //     console.log('Широта: ', coords.latitude, ' Долгота: ', coords.longitude,);
+  //   } catch (error) {
+  //     Alert.alert('Не могу гео найти');
+  //   }
+  // }
 
+  // const TOKEN_TELEGRAM = "5486245743:AAG-NZzrNigBA3uquPHqt07f9aeNe8dpgvQ";
+  // const CHAT_ID = "-586513671";
+  // const URI_API_MESSAGE = `https://api.telegram.org/bot${TOKEN_TELEGRAM}/sendMessage`;
+  // const URI_API_LOCATION = `https://api.telegram.org/bot${TOKEN_TELEGRAM}/sendLocation`;
 
+  // const scooterListSendToTelegram = async () => {
+  //   let message = `Выставил:\n${scootlistnum}`;
+  //   console.log(message);
 
+  //   const api_urlTG = await
+  //     axios.post(URI_API_MESSAGE, {
+  //       chat_id: CHAT_ID,
+  //       text: message
+  //     });
 
-
-  const TOKEN_TELEGRAM = "5486245743:AAG-NZzrNigBA3uquPHqt07f9aeNe8dpgvQ";
-  const CHAT_ID = "-639005167";
-  const URI_API_MESSAGE = `https://api.telegram.org/bot${TOKEN_TELEGRAM}/sendMessage`;
-  const URI_API_LOCATION = `https://api.telegram.org/bot${TOKEN_TELEGRAM}/sendLocation`;
-
-  const scooterListSendToTelegram = async () => {
-    let message = `Выставил:\n${scootlistnum}`;
-    console.log(message);
-
-    const api_urlTG = await
-      axios.post(URI_API_MESSAGE, {
-        chat_id: CHAT_ID,
-        text: message
-      });
-
-    try {
-      const response = await Location.requestForegroundPermissionsAsync();
-      console.log(response);
-      const { coords } = await Location.getCurrentPositionAsync();
-      let x = coords.latitude.toString();
-      let y = coords.longitude.toString();
-      // console.log('Широта2: ', x, ' Долгота2: ', y,);
-      const api_urlTG2 = await
-        axios.post(URI_API_LOCATION, {
-          chat_id: CHAT_ID,
-          latitude: x,
-          longitude: y,
-        })
-    } catch (error) {
-      Alert.alert('Не могу гео найти');
-    }
-  }
+  //   try {
+  //     const response = await Location.requestForegroundPermissionsAsync();
+  //     console.log(response);
+  //     const { coords } = await Location.getCurrentPositionAsync();
+  //     let x = coords.latitude.toString();
+  //     let y = coords.longitude.toString();
+  //     // console.log('Широта2: ', x, ' Долгота2: ', y,);
+  //     const api_urlTG2 = await
+  //       axios.post(URI_API_LOCATION, {
+  //         chat_id: CHAT_ID,
+  //         latitude: x,
+  //         longitude: y,
+  //       })
+  //   } catch (error) {
+  //     Alert.alert('Не могу гео найти');
+  //   }
+  // }
 
   // const scooterListSendToTelegram = async () => {
   //   let message = '123';
