@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { Text, View, StyleSheet, TextInput, Button } from 'react-native'
+import { Text, View, StyleSheet, TextInput, Button, ToastAndroid } from 'react-native'
 import { BarCodeScanner } from 'expo-barcode-scanner';
+
 
 export const AddTodo = ({ onSubmit }) => {
 
@@ -39,8 +40,19 @@ export const AddTodo = ({ onSubmit }) => {
       </View>)
   }
 
+  const showToastEroorElseExist = () => {
+    ToastAndroid.showWithGravityAndOffset(
+      "ERROR 401\nОБРАТИТЕСЬ К РАЗРАБОТЧИКУ",
+      ToastAndroid.LONG,
+      ToastAndroid.BOTTOM,
+      25,
+      50
+    );
+  };
+
+
   // What happens when we scan the bar code
-  const handleBarCodeScanned = ({ type, data }) => {
+  const handleBarCodeScanned = ({ type, data, todos }) => {
     setScanned(true);
     setValue(data)
     console.log('Type: ' + type + '\nData: ' + data)
@@ -55,12 +67,41 @@ export const AddTodo = ({ onSubmit }) => {
 
     console.log("тут234 ", result, "тут ");
 
+    // console.log(todos.length);
+
+    // if (todos.length = 0) {
+    //   if (result.trim()) {
+    //     onSubmit(result)
+    //     setValue('')
+    //   } else {
+    //     // error
+    //   }
+    // } else {
+    //   for (var i = 0; i < todos.length; i++) {
+    //     if (todos[i].title == result) {
+    //       showToastEroorElseExist();
+    //     } else {
+    //       if (result.trim()) {
+    //         onSubmit(result)
+    //         setValue('')
+    //       } else {
+    //         // error
+    //       }
+    //     }
+
+    //   }
+    // }
+
+
     if (result.trim()) {
       onSubmit(result)
       setValue('')
     } else {
       // error
     }
+
+
+
 
 
   };
