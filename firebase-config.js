@@ -25,10 +25,18 @@ const firebaseConfig = {
 let app;
 
 if (getApps().length === 0) {
+    console.log("4");
     app = initializeApp(firebaseConfig);
 } else {
+    console.log("5");
     app = getApp();
 }
+
+console.log("6");
+export const auth = getAuth();
+
+
+
 // try {
 //     app = getApp();
 //   } catch (e) {
@@ -36,5 +44,5 @@ if (getApps().length === 0) {
 //   }
 // // const auth = getAuth(app);
 
-export const auth = getAuth();
+
 

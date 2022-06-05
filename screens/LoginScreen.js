@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from 'react-native'
 import { auth } from '../firebase-config'
 import { app } from '../firebase-config'
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -16,10 +16,7 @@ import { onAuthStateChanged } from "firebase/auth";
 
 const LoginScreen = ({ navigation }) => {
 
-    const [isSignedIn, setisSignedIn] = useState(false)
-    const [email, setEmail] = useState('test4@test.com')
-    const [password, setPassword] = useState('12345678')
-
+    const [loadingAvailable, setLoadingAvailable] = useState(true);
 
     onAuthStateChanged(auth, (user) => {
         if (user) {
@@ -28,12 +25,37 @@ const LoginScreen = ({ navigation }) => {
             const uid = user.uid;
             // alert(user.uid)
             // alert("Signed in user!")
+            console.log("2");
             navigation.navigate("Home")
+            console.log("3");
             // ...
         } else {
-            // alert("No user!")
+            setLoadingAvailable(false)
+
+            alert("No user!")
         }
     });
+    const [isSignedIn, setisSignedIn] = useState(false)
+    const [email, setEmail] = useState('test4@test.com')
+    const [password, setPassword] = useState('12345678')
+
+    console.log("1");
+
+    // onAuthStateChanged(auth, (user) => {
+    //     if (user) {
+    //         // User is signed in, see docs for a list of available properties
+    //         // https://firebase.google.com/docs/reference/js/firebase.User
+    //         const uid = user.uid;
+    //         // alert(user.uid)
+    //         // alert("Signed in user!")
+    //         console.log("2");
+    //         navigation.navigate("Home")
+    //         console.log("3");
+    //         // ...
+    //     } else {
+    //         // alert("No user!")
+    //     }
+    // });
 
     // const auth = getAuth(app);
 
@@ -107,45 +129,81 @@ const LoginScreen = ({ navigation }) => {
             style={styles.container}
             behavior="padding"
         >
-            <View style={styles.inputContainer}>
-                <TextInput
-                    placeholder="Email"
-                    value={email}
-                    onChangeText={text => setEmail(text)}
-                    style={styles.input}
-                />
-                <TextInput
-                    placeholder="Password"
-                    value={password}
-                    onChangeText={text => setPassword(text)}
-                    style={styles.input}
-                    secureTextEntry
-                />
-            </View>
+            {!loadingAvailable ?
+                <View>
 
 
-            <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                    onPress={LoginUser}
-                    style={styles.button}
-                >
-                    <Text style={styles.buttonText}>Login</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={RegisterUser}
-                    style={[styles.button, styles.buttonOutline]}
-                >
-                    <Text style={styles.buttonOutlineText}>Register</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={signOutUser}
-                    style={styles.button}
-                >
-                    <Text style={styles.buttonText}>Выйти</Text>
-                </TouchableOpacity>
+                    <View style={styles.inputContainer}>
+                        <TextInput
+                            placeholder="Email"
+                            value={email}
+                            onChangeText={text => setEmail(text)}
+                            style={styles.input}
+                        />
+                        <TextInput
+                            placeholder="Password"
+                            value={password}
+                            onChangeText={text => setPassword(text)}
+                            style={styles.input}
+                            secureTextEntry
+                        />
+                    </View>
 
-            </View>
+
+                    <View style={styles.buttonContainer}>
+                        <TouchableOpacity
+                            onPress={LoginUser}
+                            style={styles.button}
+                        >
+                            <Text style={styles.buttonText}>Login</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={RegisterUser}
+                            style={[styles.button, styles.buttonOutline]}
+                        >
+                            <Text style={styles.buttonOutlineText}>Register</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={signOutUser}
+                            style={styles.button}
+                        >
+                            <Text style={styles.buttonText2}>Выйти</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity>
+                            <View
+                                style={{
+                                    ...styles.button,
+                                    backgroundColor: loadingAvailable ? "#2F71A2" : "#2F71A2",
+                                    backgroundColor: "#2F71A2",
+                                }}
+                            >
+                                {loadingAvailable && <ActivityIndicator style={styles.buttonText333} size="large" color="white" />}
+                                <Text style={styles.buttonText2}>
+                                    {loadingAvailable ? "" : "Блестяще"}
+                                </Text>
+                            </View>
+                        </TouchableOpacity>
+
+                        {/* {loadingAvailable ?
+                    <Text style={styles.buttonText2}>
+                        "Блестяще"
+                    </Text>
+                    : <Text style={styles.buttonText2}>
+                        "Блестяще2"
+                    </Text>} */}
+
+
+
+
+                    </View>
+                </View>
+                :
+                <ActivityIndicator style={styles.buttonText333} size="large" color="red" />
+            }
         </KeyboardAvoidingView>
+
+
+
     )
 }
 
@@ -196,4 +254,9 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         fontSize: 16,
     },
+    buttonText: {
+        color: "#fff",
+        fontWeight: "bold",
+        fontSize: 10
+    }
 })
