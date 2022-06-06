@@ -14,7 +14,7 @@ import { KEYS_TELEGRAM } from '../src/keys/keys-telegram'
 import { KEYS_RIC } from '../src/keys/keys-ric'
 
 
-const HomeScreen = ({ navigation }, isSignedIn) => {
+const MainScreen = ({ navigation }, isSignedIn) => {
 
     // Заголовки запроса (Токен RIC)
     var myHeaders = new Headers();
@@ -24,7 +24,9 @@ const HomeScreen = ({ navigation }, isSignedIn) => {
     // Опции запроса POST
     var requestOptionsPOST = {
         method: "POST",
-        headers: myHeaders,
+        headers: {
+            "Authorization": KEYS_RIC.AUTHORIZATION_KEY
+        },
     };
     // Опции запроса GET
     var requestOptionsGET = {
@@ -127,9 +129,39 @@ const HomeScreen = ({ navigation }, isSignedIn) => {
             // Устанавливаем loading-индикатор кнопки "В ПОЛОМКУ" в значение true, что бы активировать его
             setLoadingBroken(!loadingBroken);
             setscooterGoBrokenDisabledButton(!scooterGoBrokenDisabledButton);
+
+
+            // Получаем ключ
+            // Получаем ключ
+            const response = await fetch(
+                'https://bikeme-rt-scanner-default-rtdb.europe-west1.firebasedatabase.app/todos.json',
+                {
+                    method: 'GET',
+                    // headers: { 'Content-Type': 'application/json' },
+                    // body: JSON.stringify({ title })
+                }
+            )
+            const data = await response.json()
+            console.log('DATATA: ', data)
+            const dataView = Object.keys(data).map(key => ({ ...data[key], id: key }))
+            let API_RIC_KEY = dataView[0].title;
+            console.log('КЛЮЧ: ' + API_RIC_KEY)
+            // Получаем ключ
+            // Получаем ключ
+
             // Получаем список объектов от RIC
             const api_url_objects_list_count = await
-                fetch(`https://app.rightech.io/api/v1/objects?withChildGroups=true`, requestOptionsGET);
+
+
+                fetch(`https://app.rightech.io/api/v1/objects?withChildGroups=true`, {
+                    method: "GET",
+                    headers: {
+                        "Authorization": API_RIC_KEY
+                    },
+                });
+
+            // console.log(TESTETE);
+
             // Приводим к формату JSON
             const dataObjectsListCount = await api_url_objects_list_count.json();
             // Проверяем ответ от RIC по запросу списка объектов
@@ -174,10 +206,30 @@ const HomeScreen = ({ navigation }, isSignedIn) => {
                 const scooterListSendToTelegramBroken = async () => {
                     // Определяем сообщение, которое отправим в Телеграм
                     let message = `Забрал и перевел в поломку:\n${scootlistnum}`;
+
+                    // Получаем ключ
+                    // Получаем ключ
+                    const response = await fetch(
+                        'https://bikeme-rt-scanner-default-rtdb.europe-west1.firebasedatabase.app/todos.json',
+                        {
+                            method: 'GET',
+                            // headers: { 'Content-Type': 'application/json' },
+                            // body: JSON.stringify({ title })
+                        }
+                    )
+                    const data = await response.json()
+                    console.log('DATATA: ', data)
+                    const dataView = Object.keys(data).map(key => ({ ...data[key], id: key }))
+                    let API_TELEGRAM_KEY = dataView[1].title;
+                    let TELEGRAM_KEY_CHAT_ID = dataView[2].title;
+                    console.log('КЛЮЧ: ' + API_TELEGRAM_KEY)
+                    // Получаем ключ
+                    // Получаем ключ
+
                     // Асинхронная функция на axios для отправки POST запроса, для отправки сообщения в Телеграм
                     const api_urlTG = await
-                        axios.post(KEYS_TELEGRAM.URI_API_MESSAGE, {
-                            chat_id: KEYS_TELEGRAM.CHAT_ID,
+                        axios.post(`https://api.telegram.org/bot${API_TELEGRAM_KEY}/sendMessage`, {
+                            chat_id: TELEGRAM_KEY_CHAT_ID,
                             text: message
                         });
                     // console.log(api_urlTG.status)
@@ -656,7 +708,7 @@ const HomeScreen = ({ navigation }, isSignedIn) => {
 
             <View style={styles.One} >
 
-                <Navbar title='BikeMe - Scanner' />
+                {/* <Navbar title='BikeMe - Scanner' /> */}
 
                 <View style={styles.container}>
 
@@ -755,7 +807,7 @@ const HomeScreen = ({ navigation }, isSignedIn) => {
                         <View style={styles.imgwrap}>
                             <Image
                                 style={styles.image}
-                                source={require('./src/img/empty.png')}
+                                source={require('../src/img/empty.png')}
                             />
                         </View>}
 
@@ -1056,6 +1108,6 @@ const styles = StyleSheet.create({
     }
 })
 
-export default HomeScreen
+export default MainScreen
 
 // const styles = StyleSheet.create({})

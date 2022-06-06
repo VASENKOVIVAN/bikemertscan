@@ -159,7 +159,7 @@ export const AddTodo = ({ onSubmit }) => {
         </View>
 
         <View style={styles.scanelsebutton}>
-          {scanned && <Button title={'Сканировать еще'} onPress={() => setScanned(false)} color='#15A5C5' />}
+          {scanned && <Button title={'Сканировать еще'} onPress={() => setScanned(false)} color='#2E72D8' />}
         </View>
       </View>
 

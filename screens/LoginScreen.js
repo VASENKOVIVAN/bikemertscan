@@ -26,18 +26,22 @@ const LoginScreen = ({ navigation }) => {
             // alert(user.uid)
             // alert("Signed in user!")
             console.log("2");
-            navigation.navigate("Home")
+            navigation.navigate("MainScreen")
             console.log("3");
             // ...
         } else {
             setLoadingAvailable(false)
 
-            alert("No user!")
+            // alert("No user!")
+
+
         }
     });
     const [isSignedIn, setisSignedIn] = useState(false)
-    const [email, setEmail] = useState('test4@test.com')
-    const [password, setPassword] = useState('12345678')
+    // const [email, setEmail] = useState('admin@admin.com')
+    // const [password, setPassword] = useState('admin777')
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
 
     console.log("1");
 
@@ -126,79 +130,68 @@ const LoginScreen = ({ navigation }) => {
 
     return (
         <KeyboardAvoidingView
+            ehavior={Platform.OS === "ios" ? "padding" : "height"}
             style={styles.container}
-            behavior="padding"
         >
             {!loadingAvailable ?
-                <View>
+                <View style={styles.mainContainer}>
+
+                    <Text style={styles.titleText}>
+                        Добро{"\n"}пожаловать!
+                    </Text>
+                    <View style={styles.inputContainerMain}>
 
 
-                    <View style={styles.inputContainer}>
-                        <TextInput
-                            placeholder="Email"
-                            value={email}
-                            onChangeText={text => setEmail(text)}
-                            style={styles.input}
-                        />
-                        <TextInput
-                            placeholder="Password"
-                            value={password}
-                            onChangeText={text => setPassword(text)}
-                            style={styles.input}
-                            secureTextEntry
-                        />
-                    </View>
+                        <View style={styles.inputContainer}>
+                            <TextInput
+                                placeholder="Email"
+                                value={email}
+                                onChangeText={text => setEmail(text)}
+                                style={styles.input}
+                            />
+                            <TextInput
+                                placeholder="Пароль"
+                                value={password}
+                                onChangeText={text => setPassword(text)}
+                                style={styles.input}
+                                secureTextEntry
+                            />
+                        </View>
 
 
-                    <View style={styles.buttonContainer}>
-                        <TouchableOpacity
-                            onPress={LoginUser}
-                            style={styles.button}
-                        >
-                            <Text style={styles.buttonText}>Login</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
+                        <View style={styles.buttonContainer}>
+                            <TouchableOpacity
+                                onPress={LoginUser}
+                                style={styles.button}
+                            >
+                                <Text style={styles.buttonText}>
+                                    Войти
+                                </Text>
+                            </TouchableOpacity>
+                            {/* <TouchableOpacity
                             onPress={RegisterUser}
                             style={[styles.button, styles.buttonOutline]}
                         >
                             <Text style={styles.buttonOutlineText}>Register</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={signOutUser}
-                            style={styles.button}
-                        >
-                            <Text style={styles.buttonText2}>Выйти</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                            <View
-                                style={{
-                                    ...styles.button,
-                                    backgroundColor: loadingAvailable ? "#2F71A2" : "#2F71A2",
-                                    backgroundColor: "#2F71A2",
-                                }}
-                            >
-                                {loadingAvailable && <ActivityIndicator style={styles.buttonText333} size="large" color="white" />}
-                                <Text style={styles.buttonText2}>
-                                    {loadingAvailable ? "" : "Блестяще"}
-                                </Text>
-                            </View>
-                        </TouchableOpacity>
-
-                        {/* {loadingAvailable ?
+                        </TouchableOpacity> */}
+                            {/* {loadingAvailable ?
                     <Text style={styles.buttonText2}>
                         "Блестяще"
                     </Text>
                     : <Text style={styles.buttonText2}>
                         "Блестяще2"
                     </Text>} */}
-
-
-
-
+                        </View>
                     </View>
+                    <View style={styles.bottomVersionTextContainer}>
+                        <Text style={styles.bottomVersionText}>
+                            version 3.0.0
+                        </Text>
+                    </View>
+
                 </View>
                 :
-                <ActivityIndicator style={styles.buttonText333} size="large" color="red" />
+                <ActivityIndicator style={styles.buttonText333} size="large" color="#2E72D8" />
             }
         </KeyboardAvoidingView>
 
@@ -212,11 +205,17 @@ export default LoginScreen
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
+        marginTop: 50
+        // justifyContent: 'center',
+        // alignItems: 'center',
+    }, inputContainer: {
+        marginHorizontal: 30
     },
-    inputContainer: {
-        width: '80%'
+    mainContainer: {
+        // width: '80%'
+        // backgroundColor: "red",
+        justifyContent: 'space-between',
+        flex: 1
     },
     input: {
         backgroundColor: 'white',
@@ -226,13 +225,15 @@ const styles = StyleSheet.create({
         marginTop: 5,
     },
     buttonContainer: {
-        width: '60%',
+        // width: '60%',
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 40,
+        marginTop: 20,
+        marginHorizontal: 30
+
     },
     button: {
-        backgroundColor: '#0782F9',
+        backgroundColor: '#2E72D8',
         width: '100%',
         padding: 15,
         borderRadius: 10,
@@ -246,7 +247,7 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         color: 'white',
-        fontWeight: '700',
+        fontWeight: '500',
         fontSize: 16,
     },
     buttonOutlineText: {
@@ -254,9 +255,24 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         fontSize: 16,
     },
-    buttonText: {
-        color: "#fff",
+    titleText: {
+        fontSize: 50,
         fontWeight: "bold",
-        fontSize: 10
+        color: '#2E72D8',
+        marginTop: 20,
+        marginHorizontal: 30
+
+    }, bottomVersionText: {
+        fontSize: 12,
+        // fontWeight: "bold",
+        color: 'lightgray',
+        marginVertical: 10,
+        marginHorizontal: 30
+    }, bottomVersionTextContainer: {
+        alignItems: 'center',
+
+    },
+    inputContainerMain: {
+        marginTop: -80
     }
 })
