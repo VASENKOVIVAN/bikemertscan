@@ -242,40 +242,40 @@ const ProfileScreen = ({ navigation, onSubmit }) => {
     //         });
     // };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        const objt = `?p1=${name}&p2=${age}&p3=${salary}`
-        // const objt = `?p1=123&p2=234&p3=345`
+    // const handleSubmit = (e) => {
+    //     e.preventDefault();
+    //     const objt = `?p1=${name}&p2=${age}&p3=${salary}`
+    //     // const objt = `?p1=123&p2=234&p3=345`
 
-        // const objt = { "?p1=", name, "&p2=" , age, "&p3=" , salary };
-        console.log(objt);
-        // console.log("?p1=",name,"&p2=", age, "&p3=", salary);
-        console.log('https://script.google.com/macros/s/AKfycbxDPyJp-NOvZvSmBb4wDyb-wG1RS7XQIy0xcI7tV1-416lm1hOQtNqW07F51sP-v_qr/exec', objt);
+    //     // const objt = { "?p1=", name, "&p2=" , age, "&p3=" , salary };
+    //     console.log(objt);
+    //     // console.log("?p1=",name,"&p2=", age, "&p3=", salary);
+    //     console.log('https://script.google.com/macros/s/AKfycbxDPyJp-NOvZvSmBb4wDyb-wG1RS7XQIy0xcI7tV1-416lm1hOQtNqW07F51sP-v_qr/exec', objt);
 
-        axios
-            .get(
-                `https://script.google.com/macros/s/AKfycbyfIvLltSi15k77-jALNQwXiAVpIHWvNGYx7Uv9-fbAvd8pb8h7F63hPDa29f4PSKGN/exec${objt}`
-            )
+    //     axios
+    //         .get(
+    //             `https://script.google.com/macros/s/AKfycbyfIvLltSi15k77-jALNQwXiAVpIHWvNGYx7Uv9-fbAvd8pb8h7F63hPDa29f4PSKGN/exec${objt}`
+    //         )
 
-        // .catch(function (error) {
-        //     if (error.response) {
-        //         // The request was made and the server responded with a status code
-        //         // that falls out of the range of 2xx
-        //         console.log(error.response.data);
-        //         console.log(error.response.status);
-        //         console.log(error.response.headers);
-        //     } else if (error.request) {
-        //         // The request was made but no response was received
-        //         // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-        //         // http.ClientRequest in node.js
-        //         console.log(error.request);
-        //     } else {
-        //         // Something happened in setting up the request that triggered an Error
-        //         console.log('Error', error.message);
-        //     }
-        //     console.log(error.config);
-        // });
-    };
+    // .catch(function (error) {
+    //     if (error.response) {
+    //         // The request was made and the server responded with a status code
+    //         // that falls out of the range of 2xx
+    //         console.log(error.response.data);
+    //         console.log(error.response.status);
+    //         console.log(error.response.headers);
+    //     } else if (error.request) {
+    //         // The request was made but no response was received
+    //         // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+    //         // http.ClientRequest in node.js
+    //         console.log(error.request);
+    //     } else {
+    //         // Something happened in setting up the request that triggered an Error
+    //         console.log('Error', error.message);
+    //     }
+    //     console.log(error.config);
+    // });
+    // };
 
 
     return (
@@ -385,7 +385,7 @@ const ProfileScreen = ({ navigation, onSubmit }) => {
                         </Text>
                     </View>
 
-                    <Text style={styles.titleText}>
+                    {/* <Text style={styles.titleText}>
                         Name
                     </Text>
                     <TextInput
@@ -427,7 +427,7 @@ const ProfileScreen = ({ navigation, onSubmit }) => {
                                 Отправить
                             </Text>
                         </View>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                 </View>
             }
             <View style={styles.bottomBar}>
