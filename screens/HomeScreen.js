@@ -198,6 +198,25 @@ const MainScreen = ({ navigation }, isSignedIn) => {
                             catch (err) {
                                 console.log(err);
                             }
+                            // Тут дальше я отправляю в гугл таблицу
+                            try {
+                                // Проверяем и получаем разрешение на использование камеры
+                                const response = await Location.requestForegroundPermissionsAsync();
+                                console.log(response);
+                                // Получаем координаты устройства
+                                const { coords } = await Location.getCurrentPositionAsync();
+                                let x = coords.latitude.toString();
+                                let y = coords.longitude.toString();
+
+                                var now = new Date().toLocaleTimeString();
+                                const objt = `?p1=${todos[i].title}&p2=${now}&p3=Забрал&p4=${x},${y}`
+                                axios
+                                    .get(
+                                        `https://script.google.com/macros/s/AKfycbzpfVBOETyWNDXES7goQIq3KQ8c3OQupri_y2581JnPblpAgL6TB6r7K7MebVlieai3/exec${objt}`
+                                    )
+                            } catch (error) {
+                                Alert.alert('Вы не предоставили разрешение на использование гео-позиции (перейдите в настройки)');
+                            }
                         }
                     }
                 }
@@ -308,6 +327,26 @@ const MainScreen = ({ navigation }, isSignedIn) => {
                             console.log('response.status: ', api_url_scooterunlockall.status);
                             const api_url_scooterunlockall_data = await api_url_scooterunlockall.json();
                             console.log(api_url_scooterunlockall_data)
+
+                            // Тут дальше я отправляю в гугл таблицу
+                            try {
+                                // Проверяем и получаем разрешение на использование камеры
+                                const response = await Location.requestForegroundPermissionsAsync();
+                                console.log(response);
+                                // Получаем координаты устройства
+                                const { coords } = await Location.getCurrentPositionAsync();
+                                let x = coords.latitude.toString();
+                                let y = coords.longitude.toString();
+
+                                var now = new Date().toLocaleTimeString();
+                                const objt = `?p1=${todos[i].title}&p2=${now}&p3=Выставил&p4=${x},${y}`
+                                axios
+                                    .get(
+                                        `https://script.google.com/macros/s/AKfycbzpfVBOETyWNDXES7goQIq3KQ8c3OQupri_y2581JnPblpAgL6TB6r7K7MebVlieai3/exec${objt}`
+                                    )
+                            } catch (error) {
+                                Alert.alert('Вы не предоставили разрешение на использование гео-позиции (перейдите в настройки)');
+                            }
                         }
                     }
                 }
@@ -398,6 +437,26 @@ const MainScreen = ({ navigation }, isSignedIn) => {
                             console.log('response.status: ', api_url_scooterunlockall.status);
                             const api_url_scooterunlockall_data = await api_url_scooterunlockall.json();
                             console.log(api_url_scooterunlockall_data)
+
+                            // Тут дальше я отправляю в гугл таблицу
+                            try {
+                                // Проверяем и получаем разрешение на использование камеры
+                                const response = await Location.requestForegroundPermissionsAsync();
+                                console.log(response);
+                                // Получаем координаты устройства
+                                const { coords } = await Location.getCurrentPositionAsync();
+                                let x = coords.latitude.toString();
+                                let y = coords.longitude.toString();
+
+                                var now = new Date().toLocaleTimeString();
+                                const objt = `?p1=${todos[i].title}&p2=${now}&p3=Замена АКБ&p4=${x},${y}`
+                                axios
+                                    .get(
+                                        `https://script.google.com/macros/s/AKfycbzpfVBOETyWNDXES7goQIq3KQ8c3OQupri_y2581JnPblpAgL6TB6r7K7MebVlieai3/exec${objt}`
+                                    )
+                            } catch (error) {
+                                Alert.alert('Вы не предоставили разрешение на использование гео-позиции (перейдите в настройки)');
+                            }
                         }
                     }
                 }

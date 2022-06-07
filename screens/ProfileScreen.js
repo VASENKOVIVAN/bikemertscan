@@ -1,8 +1,8 @@
 import React, { useState, useEffect, Component } from 'react'
-import { StyleSheet, Text, View, Button, Image, ScrollView, TouchableOpacity, ToastAndroid, ActivityIndicator, Alert, TextInput } from 'react-native'
+import { StyleSheet, Text, View, Button, Image, ScrollView, Form, TouchableOpacity, ToastAndroid, ActivityIndicator, Alert, TextInput } from 'react-native'
 import { signOut } from "firebase/auth";
 import { auth } from '../firebase-config'
-
+import axios from 'axios'
 import { app } from '../firebase-config'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import firebase from 'firebase/compat/app';
@@ -221,6 +221,63 @@ const ProfileScreen = ({ navigation, onSubmit }) => {
 
     // console.log('fjkhfdlaskhkdjhakls', user.uid)
 
+    const [name, setName] = useState('');
+    const [age, setAge] = useState('');
+    const [salary, setSalary] = useState('');
+    const [hobby, setHobby] = useState('');
+
+    // const handleSubmit = (e) => {
+    //     e.preventDefault();
+
+    //     const objt = { name, age, salary, hobby };
+    //     console.log(objt);
+
+    //     axios
+    //         .post(
+    //             'https://sheet.best/api/sheets/edbb911e-afc9-4c9e-bebb-48882648bec9',
+    //             objt
+    //         )
+    //         .then((response) => {
+    //             console.log(response);
+    //         });
+    // };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const objt = `?p1=${name}&p2=${age}&p3=${salary}`
+        // const objt = `?p1=123&p2=234&p3=345`
+
+        // const objt = { "?p1=", name, "&p2=" , age, "&p3=" , salary };
+        console.log(objt);
+        // console.log("?p1=",name,"&p2=", age, "&p3=", salary);
+        console.log('https://script.google.com/macros/s/AKfycbxDPyJp-NOvZvSmBb4wDyb-wG1RS7XQIy0xcI7tV1-416lm1hOQtNqW07F51sP-v_qr/exec', objt);
+
+        axios
+            .get(
+                `https://script.google.com/macros/s/AKfycbyfIvLltSi15k77-jALNQwXiAVpIHWvNGYx7Uv9-fbAvd8pb8h7F63hPDa29f4PSKGN/exec${objt}`
+            )
+
+        // .catch(function (error) {
+        //     if (error.response) {
+        //         // The request was made and the server responded with a status code
+        //         // that falls out of the range of 2xx
+        //         console.log(error.response.data);
+        //         console.log(error.response.status);
+        //         console.log(error.response.headers);
+        //     } else if (error.request) {
+        //         // The request was made but no response was received
+        //         // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+        //         // http.ClientRequest in node.js
+        //         console.log(error.request);
+        //     } else {
+        //         // Something happened in setting up the request that triggered an Error
+        //         console.log('Error', error.message);
+        //     }
+        //     console.log(error.config);
+        // });
+    };
+
+
     return (
         <View style={styles.MainScreen}>
             {GOD ?
@@ -327,6 +384,50 @@ const ProfileScreen = ({ navigation, onSubmit }) => {
                             Механик
                         </Text>
                     </View>
+
+                    <Text style={styles.titleText}>
+                        Name
+                    </Text>
+                    <TextInput
+                        style={styles.input}
+                        onChangeText={setName}
+                        value={name}
+                        placeholder='Name...'
+                    />
+                    <Text style={styles.titleText}>
+                        Age
+                    </Text>
+                    <TextInput
+                        style={styles.input}
+                        onChangeText={setAge}
+                        value={age}
+                        placeholder='Age...'
+                    />
+                    <Text style={styles.titleText}>
+                        Salary
+                    </Text>
+                    <TextInput
+                        style={styles.input}
+                        onChangeText={setSalary}
+                        value={salary}
+                        placeholder='Salary...'
+                    />
+                    <Text style={styles.titleText}>
+                        Hobby
+                    </Text>
+                    <TextInput
+                        style={styles.input}
+                        onChangeText={setHobby}
+                        value={hobby}
+                        placeholder='Hobby...'
+                    />
+                    <TouchableOpacity onPress={handleSubmit}>
+                        <View style={styles.buttonChange}>
+                            <Text style={styles.buttonText}>
+                                Отправить
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
                 </View>
             }
             <View style={styles.bottomBar}>
