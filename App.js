@@ -10,6 +10,9 @@ import ProfileScreen from './screens/ProfileScreen';
 import { Ionicons } from '@expo/vector-icons';
 import { AppHeaderIcon } from './src/components/AppHeaderIcon'
 
+import { THEME } from './src/theme'
+
+
 const Stack = createNativeStackNavigator();
 
 function LogoTitle() {
@@ -34,7 +37,7 @@ export default function App() {
             title: 'Профиль',
             headerTintColor: '#fff',
             headerStyle: {
-              backgroundColor: '#2E72D8',
+              backgroundColor: THEME.MAIN_COLOR,
 
               // elevation: 0, // remove shadow on Android
               // shadowOpacity: 0, // remove shadow on iOS
@@ -47,7 +50,7 @@ export default function App() {
             title: 'BikeMe - Scanner',
             headerTintColor: '#fff',
             headerStyle: {
-              backgroundColor: '#2E72D8',
+              backgroundColor: THEME.MAIN_COLOR,
 
               // elevation: 0, // remove shadow on Android
               // shadowOpacity: 0, // remove shadow on iOS

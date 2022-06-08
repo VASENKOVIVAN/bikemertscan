@@ -13,6 +13,8 @@ import axios from 'axios'
 import { KEYS_TELEGRAM } from '../src/keys/keys-telegram'
 import { KEYS_RIC } from '../src/keys/keys-ric'
 
+import { THEME } from '../src/theme'
+
 
 const MainScreen = ({ navigation }, isSignedIn) => {
 
@@ -1026,7 +1028,7 @@ const styles = StyleSheet.create({
     },
     One: {
         flex: 3,
-        backgroundColor: 'white',
+        // backgroundColor: 'white',
         // backgroundColor: 'blue',
         // justifyContent: 'center',
         // alignItems: 'center'

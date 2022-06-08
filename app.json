@@ -28,6 +28,10 @@
       "package": "com.vasenkov.bikemertscan",
       "versionCode": 1
     },
+    "androidStatusBar": {
+      "barStyle": "light-content",
+      "backgroundColor": "#2E72D8"
+    },
     "web": {
       "favicon": "./assets/favicon.png"
     }

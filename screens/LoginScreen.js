@@ -14,6 +14,9 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 // import { useNavigation } from '@react-navigation/native';
 import { onAuthStateChanged } from "firebase/auth";
 
+import { THEME } from '../src/theme'
+
+
 const LoginScreen = ({ navigation }) => {
 
     const [loadingAvailable, setLoadingAvailable] = useState(true);
@@ -233,7 +236,7 @@ const styles = StyleSheet.create({
 
     },
     button: {
-        backgroundColor: '#2E72D8',
+        backgroundColor: THEME.MAIN_COLOR,
         width: '100%',
         padding: 15,
         borderRadius: 10,
@@ -258,7 +261,7 @@ const styles = StyleSheet.create({
     titleText: {
         fontSize: 50,
         fontWeight: "bold",
-        color: '#2E72D8',
+        color: THEME.MAIN_COLOR,
         marginTop: 20,
         marginHorizontal: 30
 

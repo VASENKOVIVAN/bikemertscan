@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Text, View, StyleSheet, TextInput, Button, ToastAndroid } from 'react-native'
 import { BarCodeScanner } from 'expo-barcode-scanner';
 
+import { THEME } from './theme'
 
 export const AddTodo = ({ onSubmit }) => {
 
@@ -159,7 +160,7 @@ export const AddTodo = ({ onSubmit }) => {
         </View>
 
         <View style={styles.scanelsebutton}>
-          {scanned && <Button title={'Сканировать еще'} onPress={() => setScanned(false)} color='#2E72D8' />}
+          {scanned && <Button style={styles.scanelsebutton2} title={'Сканировать еще'} onPress={() => setScanned(false)} />}
         </View>
       </View>
 
@@ -238,6 +239,9 @@ const styles = StyleSheet.create({
     opacity: 0,
     height: 0
   },
+  scanelsebutton2: {
+    color: THEME.MAIN_COLOR
+  }
 
 
 })
