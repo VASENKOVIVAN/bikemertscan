@@ -2,7 +2,7 @@
   "expo": {
     "name": "BikeMe Scanner",
     "slug": "bikemertscan",
-    "version": "3.0.1",
+    "version": "3.0.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -18,7 +18,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.vasenkov.bikemertscan",
-      "buildNumber": "3.0.1"
+      "buildNumber": "3.0.2"
     },
     "android": {
       "adaptiveIcon": {
