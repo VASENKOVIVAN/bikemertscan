@@ -30,6 +30,17 @@ const MainScreen = ({ navigation }, isSignedIn) => {
             "Authorization": KEYS_RIC.AUTHORIZATION_KEY
         },
     };
+    // Опции запроса POST на изменение статуса город/склад
+    var raw = JSON.stringify({
+        "testind": 0
+    });
+    var requestOptionsPOST2 = {
+        method: "POST",
+        headers: {
+            "Authorization": KEYS_RIC.AUTHORIZATION_KEY
+        },
+        body: raw,
+    };
     // Опции запроса GET
     var requestOptionsGET = {
         method: "GET",
@@ -147,6 +158,7 @@ const MainScreen = ({ navigation }, isSignedIn) => {
     // Функция кнопки "В ПОЛОМКУ" 
     // Перевод объектов в статус "Поломка" 
     const scooterGoBroken = async () => {
+
         // Проверяем, что список объектов не пустой
         if (todos.length == 0) {
             showToastErrorEmptyList();
@@ -217,10 +229,33 @@ const MainScreen = ({ navigation }, isSignedIn) => {
                                     fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/change-status-broken?withChildGroups=true`, requestOptionsPOST);
                                 // Выводим в консоль статус HTTP ответа
                                 console.log('response.status: ', api_url_scooterlockall.status);
+
                             }
                             catch (err) {
                                 console.log(err);
                             }
+
+
+                            var myHeaders = new Headers();
+                            myHeaders.append("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2MmEyMTJiZTE4ZTA1ZjAwMTAyZDJkZGIiLCJzdWIiOiI2MGMxY2FhOWFiZmM4NzAwMTBmM2IyYTUiLCJncnAiOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJvcmciOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJsaWMiOmZhbHNlLCJ1c2ciOiJhcGkiLCJmdWxsIjpmYWxzZSwicmlnaHRzIjoxLjUsImlhdCI6MTY1NDc4ODc5OCwiZXhwIjoxNjU3MzE0MDAwfQ.isQauAjhXpNgb-HPeLr1xpxbCUAUbfY58yWqtVx6tSs");
+                            myHeaders.append("Content-Type", "application/json");
+
+                            var raw = JSON.stringify({
+                                "testind": 0
+                            });
+
+                            var requestOptions = {
+                                method: 'POST',
+                                headers: myHeaders,
+                                body: raw,
+                                redirect: 'follow'
+                            };
+
+                            fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/packets?withChildGroups=true`, requestOptions)
+                                .then(response => response.text())
+                                .then(result => console.log(result))
+                                .catch(error => console.log('error', error));
+
                             // Тут дальше я отправляю в гугл таблицу
                             var now = new Date().toLocaleTimeString();
                             const objt = `?p1=${todos[i].title}&p2=${now}&p3=Забрал&p4=${x},${y}`
@@ -373,6 +408,27 @@ const MainScreen = ({ navigation }, isSignedIn) => {
                         catch (err) {
                             console.log(err);
                         }
+
+                        var myHeaders = new Headers();
+                        myHeaders.append("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2MmEyMTJiZTE4ZTA1ZjAwMTAyZDJkZGIiLCJzdWIiOiI2MGMxY2FhOWFiZmM4NzAwMTBmM2IyYTUiLCJncnAiOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJvcmciOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJsaWMiOmZhbHNlLCJ1c2ciOiJhcGkiLCJmdWxsIjpmYWxzZSwicmlnaHRzIjoxLjUsImlhdCI6MTY1NDc4ODc5OCwiZXhwIjoxNjU3MzE0MDAwfQ.isQauAjhXpNgb-HPeLr1xpxbCUAUbfY58yWqtVx6tSs");
+                        myHeaders.append("Content-Type", "application/json");
+
+                        var raw = JSON.stringify({
+                            "testind": 1
+                        });
+
+                        var requestOptions = {
+                            method: 'POST',
+                            headers: myHeaders,
+                            body: raw,
+                            redirect: 'follow'
+                        };
+
+                        fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/packets?withChildGroups=true`, requestOptions)
+                            .then(response => response.text())
+                            .then(result => console.log(result))
+                            .catch(error => console.log('error', error));
+
                         // Тут дальше я отправляю в гугл таблицу
                         // Тут дальше я отправляю в гугл таблицу
                         var now = new Date().toLocaleTimeString();
