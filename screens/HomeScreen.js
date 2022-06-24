@@ -228,7 +228,9 @@ const MainScreen = ({ navigation }, isSignedIn) => {
                                 const api_url_scooterlockall = await
                                     fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/change-status-broken?withChildGroups=true`, requestOptionsPOST);
                                 // Выводим в консоль статус HTTP ответа
-                                console.log('response.status: ', api_url_scooterlockall.status);
+                                const data234 = await api_url_scooterlockall.json()
+                                console.log('Response: ', data234);
+                                console.log('Response.status: ', api_url_scooterlockall.status);
 
                             }
                             catch (err) {
@@ -403,6 +405,8 @@ const MainScreen = ({ navigation }, isSignedIn) => {
                             const api_url_scooterlockall = await
                                 fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/change-status-available?withChildGroups=true`, requestOptionsPOST);
                             // Выводим в консоль статус HTTP ответа
+                            const data2345 = await api_url_scooterlockall.json()
+                            console.log('Response: ', data2345);
                             console.log('response.status: ', api_url_scooterlockall.status);
                         }
                         catch (err) {
