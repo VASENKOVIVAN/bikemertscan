@@ -226,7 +226,12 @@ const MainScreen = ({ navigation }, isSignedIn) => {
                             // Запускаем команду на перевод объекта в статус "Поломка"
                             try {
                                 const api_url_scooterlockall = await
-                                    fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/change-status-broken?withChildGroups=true`, requestOptionsPOST);
+                                    fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/change-status-broken?withChildGroups=true`, {
+                                        method: "POST",
+                                        headers: {
+                                            "Authorization": API_RIC_KEY
+                                        },
+                                    });
                                 // Выводим в консоль статус HTTP ответа
                                 const data234 = await api_url_scooterlockall.json()
                                 console.log('Response: ', data234);
@@ -236,27 +241,26 @@ const MainScreen = ({ navigation }, isSignedIn) => {
                             catch (err) {
                                 console.log(err);
                             }
+                            // Запускаем команду на перевод объекта в статус "На складе"
+                            try {
+                                const api_url_scooterlockall123 = await
+                                    fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/00e9f?withChildGroups=true`, {
+                                        method: "POST",
+                                        headers: {
+                                            "Authorization": API_RIC_KEY
+                                        },
+                                    })
+                                        .then(response => response.text())
+                                        .then(result => console.log('result qq', result))
+                                        .catch(error => console.log('error', error));
+                                // Выводим в консоль статус HTTP ответа
+                                // console.log('Response.status В ПОЛОМКУ: ', api_url_scooterlockall123.status);
 
+                            }
+                            catch (err) {
+                                console.log(err);
+                            }
 
-                            var myHeaders = new Headers();
-                            myHeaders.append("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2MmEyMTJiZTE4ZTA1ZjAwMTAyZDJkZGIiLCJzdWIiOiI2MGMxY2FhOWFiZmM4NzAwMTBmM2IyYTUiLCJncnAiOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJvcmciOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJsaWMiOmZhbHNlLCJ1c2ciOiJhcGkiLCJmdWxsIjpmYWxzZSwicmlnaHRzIjoxLjUsImlhdCI6MTY1NDc4ODc5OCwiZXhwIjoxNjU3MzE0MDAwfQ.isQauAjhXpNgb-HPeLr1xpxbCUAUbfY58yWqtVx6tSs");
-                            myHeaders.append("Content-Type", "application/json");
-
-                            var raw = JSON.stringify({
-                                "testind": 0
-                            });
-
-                            var requestOptions = {
-                                method: 'POST',
-                                headers: myHeaders,
-                                body: raw,
-                                redirect: 'follow'
-                            };
-
-                            fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/packets?withChildGroups=true`, requestOptions)
-                                .then(response => response.text())
-                                .then(result => console.log(result))
-                                .catch(error => console.log('error', error));
 
                             // Тут дальше я отправляю в гугл таблицу
                             var now = new Date().toLocaleTimeString();
@@ -403,7 +407,12 @@ const MainScreen = ({ navigation }, isSignedIn) => {
                         // console.log('ЗАПУСКАЮ КОМАНДУ НА ПЕРЕВОД В СВОБОДЕН!!!!!')
                         try {
                             const api_url_scooterlockall = await
-                                fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/change-status-available?withChildGroups=true`, requestOptionsPOST);
+                                fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/change-status-available?withChildGroups=true`, {
+                                    method: "POST",
+                                    headers: {
+                                        "Authorization": API_RIC_KEY
+                                    },
+                                });
                             // Выводим в консоль статус HTTP ответа
                             const data2345 = await api_url_scooterlockall.json()
                             console.log('Response: ', data2345);
@@ -413,25 +422,25 @@ const MainScreen = ({ navigation }, isSignedIn) => {
                             console.log(err);
                         }
 
-                        var myHeaders = new Headers();
-                        myHeaders.append("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2MmEyMTJiZTE4ZTA1ZjAwMTAyZDJkZGIiLCJzdWIiOiI2MGMxY2FhOWFiZmM4NzAwMTBmM2IyYTUiLCJncnAiOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJvcmciOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJsaWMiOmZhbHNlLCJ1c2ciOiJhcGkiLCJmdWxsIjpmYWxzZSwicmlnaHRzIjoxLjUsImlhdCI6MTY1NDc4ODc5OCwiZXhwIjoxNjU3MzE0MDAwfQ.isQauAjhXpNgb-HPeLr1xpxbCUAUbfY58yWqtVx6tSs");
-                        myHeaders.append("Content-Type", "application/json");
+                        // Запускаем команду на перевод объекта в статус "На складе"
+                        try {
+                            const api_url_scooterlockall123 = await
+                                fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/00e9f-tga73?withChildGroups=true`, {
+                                    method: "POST",
+                                    headers: {
+                                        "Authorization": API_RIC_KEY
+                                    },
+                                })
+                                    .then(response => response.text())
+                                    .then(result => console.log('result qq', result))
+                                    .catch(error => console.log('error', error));
+                            // Выводим в консоль статус HTTP ответа
+                            // console.log('Response.status В ПОЛОМКУ: ', api_url_scooterlockall123.status);
 
-                        var raw = JSON.stringify({
-                            "testind": 1
-                        });
-
-                        var requestOptions = {
-                            method: 'POST',
-                            headers: myHeaders,
-                            body: raw,
-                            redirect: 'follow'
-                        };
-
-                        fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/packets?withChildGroups=true`, requestOptions)
-                            .then(response => response.text())
-                            .then(result => console.log(result))
-                            .catch(error => console.log('error', error));
+                        }
+                        catch (err) {
+                            console.log(err);
+                        }
 
                         // Тут дальше я отправляю в гугл таблицу
                         // Тут дальше я отправляю в гугл таблицу
