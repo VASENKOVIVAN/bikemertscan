@@ -188,7 +188,7 @@ const LoginScreen = ({ navigation }) => {
                     </View>
                     <View style={styles.bottomVersionTextContainer}>
                         <Text style={styles.bottomVersionText}>
-                            version 3.1.1
+                            version 3.1.2
                         </Text>
                     </View>
 
