@@ -12,6 +12,7 @@ export const Todo = ({ todo, onRemove }) => {
       <View style={styles.container}>
         <View style={styles.todo}>
           <Text>{todo.title}</Text>
+          {/* <Text>{todo.id}</Text> */}
         </View>
       </View>
     </TouchableOpacity>
@@ -30,11 +31,11 @@ const styles = StyleSheet.create({
     // flex: 1,
     // width: 80,
     // marginHorizontal: 30,
-    padding: 10,
+    padding: 7,
     marginHorizontal: 2,
     borderWidth: 1,
     borderColor: '#555',
     borderRadius: 10,
-    marginBottom: 10
+    marginBottom: 5
   }
 })

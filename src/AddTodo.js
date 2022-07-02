@@ -56,17 +56,19 @@ export const AddTodo = ({ onSubmit }) => {
   const handleBarCodeScanned = ({ type, data, todos }) => {
     setScanned(true);
     setValue(data)
-    console.log('Type: ' + type + '\nData: ' + data)
+    // console.log('Type: ' + type + '\nData: ' + data)
 
-    if (data.includes('https')) {
-      console.log("это ХТТПССССС'");
-      var result = data.replace("https://murmansk.bikeme.ru/?id=", "");
-    } else {
-      console.log("это НЕ ХТТПССССС'");
-      var result = data.replace("http://murmansk.bikeme.ru/?id=", "");
-    }
+    var result = data.substring(data.length - 6);
 
-    console.log("тут234 ", result, "тут ");
+    // if (data.includes('https')) {
+    //   // console.log("это ХТТПССССС'");
+    //   var result = data.replace("https://murmansk.bikeme.ru/?id=", "");
+    // } else {
+    //   // console.log("это НЕ ХТТПССССС'");
+    //   var result = data.replace("http://murmansk.bikeme.ru/?id=", "");
+    // }
+
+    // console.log("тут234 ", result, "тут ");
 
     // console.log(todos.length);
 
@@ -166,12 +168,12 @@ export const AddTodo = ({ onSubmit }) => {
 
       <View style={styles.block}>
 
-        <TextInput
+        {/* <TextInput
           style={styles.input}
           onChangeText={setValue}
           // value={result}
           placeholder='Введите номер...'
-        />
+        /> */}
         {/* <View style={styles.addbutton}>
           <Button title='Добавить' onPress={pressHandler} color='#2C9B29' />
         </View> */}

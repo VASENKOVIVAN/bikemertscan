@@ -1,22 +1,32 @@
 import React, { useState, useEffect, Component } from 'react'
 import * as Location from 'expo-location';
-import { StyleSheet, Text, View, Button, Image, ScrollView, TouchableOpacity, ToastAndroid, ActivityIndicator, Alert } from 'react-native'
+import { StyleSheet, Text, View, Button, Image, ScrollView, TouchableOpacity, ToastAndroid, ActivityIndicator, Alert, TextInput } from 'react-native'
 import { Navbar } from '../src/Navbar'
 import { AddTodo } from '../src/AddTodo'
+import { AddTodo22 } from '../src/AddTodo22'
+import { Keyboard } from 'react-native'
 import { Todo } from '../src/Todo'
+import { Todo22 } from '../src/Todo22'
+import {
+    AppRegistry,
+    TouchableHighlight
+} from 'react-native';
+import { AlertPrompt } from 'react-native-alert-prompt';
+import prompt from 'react-native-prompt-android';
 import * as Clipboard from 'expo-clipboard';
 import { MaterialIcons } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
 import axios from 'axios'
-
+import { Ionicons } from '@expo/vector-icons';
+import { FontAwesome } from '@expo/vector-icons';
 import { KEYS_TELEGRAM } from '../src/keys/keys-telegram'
 import { KEYS_RIC } from '../src/keys/keys-ric'
 
 import { THEME } from '../src/theme'
 
 
-const MainScreen = ({ navigation }, isSignedIn) => {
+const MainScreen = ({ onSubmit }, { navigation }, setValue) => {
 
     // Заголовки запроса (Токен RIC)
     var myHeaders = new Headers();
@@ -125,6 +135,8 @@ const MainScreen = ({ navigation }, isSignedIn) => {
 
     // Стейты для loading-индикаторов
     const [loadingAvailable, setLoadingAvailable] = useState(false);
+    const [inputAddNumber, setInputAddNumber] = useState(false);
+
     const [loadingBroken, setLoadingBroken] = useState(false);
     const [loadingGoOpenBattery, setLoadingGoOpenBattery] = useState(false);
 
@@ -210,8 +222,18 @@ const MainScreen = ({ navigation }, isSignedIn) => {
                 // Выводим в консоль количество объектов в RIC
                 // console.log('Кол-во объектов: ' + dataObjectsListCount.length)
                 // Массив, в котором мы пробегаем по значениям из списка отсканированных объектов
+                setTodos22([]);
+                addTodo22('Номер', 'Онлайн', 'Команда')
                 for (var i = 0; i < todos.length; i++) {
+                    var now1 = new Date().toLocaleTimeString();
+                    console.log('\n'); // Выводим в консоль номер цикла
+                    console.log(now1); // Выводим в консоль номер цикла
+
+                    setLoadingAvailable22(0)
                     console.log('ЦИКЛ: ' + i); // Выводим в консоль номер цикла
+                    setLoadingAvailable22(i + 1)
+                    console.log('var loadingAvailable22: ', loadingAvailable22);
+
                     // Массив, в котором мы пробегаем по объектам из RIC
                     for (let j = 0; j < dataObjectsListCount.length; j++) {
                         // Ищем отсканированный объект в списке объектов RIC
@@ -233,33 +255,78 @@ const MainScreen = ({ navigation }, isSignedIn) => {
                                         },
                                     });
                                 // Выводим в консоль статус HTTP ответа
-                                const data234 = await api_url_scooterlockall.json()
-                                console.log('Response: ', data234);
-                                console.log('Response.status: ', api_url_scooterlockall.status);
+                                const data2345 = await api_url_scooterlockall.json()
+
+                                let numQrScooter = dataObjectsListCount[j].config.data.qr
+                                let objectStatusOnline = 0;
+                                if (dataObjectsListCount[j].state.online) {
+                                    objectStatusOnline = 'Да'
+                                } else {
+                                    objectStatusOnline = 'Нет'
+                                }
+
+                                console.log('Номер самоката:', numQrScooter);
+                                console.log(' ПЕРЕВОД "В СВОБОДЕН"');
+
+                                let statusResponse = api_url_scooterlockall.status;
+
+                                if (statusResponse == 422) {
+                                    let titleResponse = data2345.codes[0];
+                                    if (titleResponse == 'error_api_already_broken') {
+                                        console.log('  Ответ: Уже в поломке!');
+                                        console.log(titleResponse);
+                                        addTodo22(numQrScooter, objectStatusOnline, 'Уже в поломке')
+                                    } else if (titleResponse == 'error_api_cant_change_from_taken_to_broken') {
+                                        console.log('  Ответ: Самокат в аренде');
+                                        console.log(titleResponse);
+                                        addTodo22(numQrScooter, objectStatusOnline, 'Ошибка (Самокат в аренде)')
+                                    } else if (titleResponse == 'error_api_cant_change_from_reserved_to_broken') {
+                                        console.log('  Ответ: Самокат забронирован');
+                                        console.log(titleResponse);
+                                        addTodo22(numQrScooter, objectStatusOnline, 'Ошибка (Самокат забронирован)')
+                                    } else if (titleResponse == 'error_api_cant_change_from_park_to_broken') {
+                                        console.log('  Ответ: Самокат в ожидании');
+                                        console.log(titleResponse);
+                                        addTodo22(numQrScooter, objectStatusOnline, 'Ошибка (Самокат в ожидании)')
+                                    } else {
+                                        console.log('  Ответ: НЕИЗВЕСНАЯ ОШИБКА!');
+                                        console.log(titleResponse);
+                                        addTodo22(numQrScooter, objectStatusOnline, titleResponse)
+                                    }
+                                } else if (statusResponse == 200) {
+                                    console.log('  Ответ: Статус переведен!');
+                                    addTodo22(numQrScooter, objectStatusOnline, 'Успешно')
+                                } else {
+                                    console.log('  Ошибка!\nСтатус ответа: ', statusResponse);
+                                    addTodo22(numQrScooter, statusResponse, titleResponse)
+
+                                }
+
 
                             }
                             catch (err) {
                                 console.log(err);
                             }
                             // Запускаем команду на перевод объекта в статус "На складе"
-                            try {
-                                const api_url_scooterlockall123 = await
-                                    fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/00e9f?withChildGroups=true`, {
-                                        method: "POST",
-                                        headers: {
-                                            "Authorization": API_RIC_KEY
-                                        },
-                                    })
-                                        .then(response => response.text())
-                                        .then(result => console.log('result qq', result))
-                                        .catch(error => console.log('error', error));
-                                // Выводим в консоль статус HTTP ответа
-                                // console.log('Response.status В ПОЛОМКУ: ', api_url_scooterlockall123.status);
+                            // try {
+                            //     const api_url_scooterlockall123 = await
+                            //         fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/00e9f?withChildGroups=true`, {
+                            //             method: "POST",
+                            //             headers: {
+                            //                 "Authorization": API_RIC_KEY
+                            //             },
+                            //         })
+                            //     console.log(' ПЕРЕВОД "В ГОРОД"');
+                            //     if (api_url_scooterlockall123.status == 200) {
+                            //         console.log('  Ответ: Статус переведен!');
+                            //     } else {
+                            //         console.log('  Ошибка!\nСтатус ответа: ', api_url_scooterlockall123.status);
+                            //     }
 
-                            }
-                            catch (err) {
-                                console.log(err);
-                            }
+                            // }
+                            // catch (err) {
+                            //     console.log(err);
+                            // }
 
 
                             // Тут дальше я отправляю в гугл таблицу
@@ -340,8 +407,12 @@ const MainScreen = ({ navigation }, isSignedIn) => {
         }
 
     }
-    // Функция кнопки "В ПОЛОМКУ" 
+    // Функция кнопки "В ПОЛОМКУ"
     // Перевод объектов в статус "Свободен" 
+
+
+    const [loadingAvailable22, setLoadingAvailable22] = useState();
+
     const scooterGoAvailable = async () => {
         // Проверяем, что список объектов не пустой
         // Устанавливаем loading-индикатор кнопки "В СВОБОДЕН" в значение true, что бы активировать его
@@ -393,8 +464,20 @@ const MainScreen = ({ navigation }, isSignedIn) => {
             // Выводим в консоль количество объектов в RIC
             // console.log('Кол-во объектов: ' + dataObjectsListCount.length)
             // Массив, в котором мы пробегаем по значениям из списка отсканированных объектов
+            setTodos22([]);
+            addTodo22('Номер', 'Онлайн', 'Команда')
+
             for (var i = 0; i < todos.length; i++) {
+                var now1 = new Date().toLocaleTimeString();
+                console.log('\n'); // Выводим в консоль номер цикла
+                console.log(now1); // Выводим в консоль номер цикла
+
+                setLoadingAvailable22(0)
                 console.log('ЦИКЛ: ' + i); // Выводим в консоль номер цикла
+                setLoadingAvailable22(i + 1)
+                console.log('var loadingAvailable22: ', loadingAvailable22);
+
+                console.log('ЦИКЛ2: ', loadingAvailable22);
                 for (let j = 0; j < dataObjectsListCount.length; j++) {
                     // Ищем отсканированный объект в списке объектов RIC
                     if (dataObjectsListCount[j].config.data.qr == todos[i].title) {
@@ -405,6 +488,9 @@ const MainScreen = ({ navigation }, isSignedIn) => {
                         // console.log('Вывод QR из скана: ' + todos[i].title)
                         // console.log('Вывод ID из RIC: ' + dataObjectsListCount[j]._id)
                         // console.log('ЗАПУСКАЮ КОМАНДУ НА ПЕРЕВОД В СВОБОДЕН!!!!!')
+
+
+
                         try {
                             const api_url_scooterlockall = await
                                 fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/change-status-available?withChildGroups=true`, {
@@ -415,32 +501,79 @@ const MainScreen = ({ navigation }, isSignedIn) => {
                                 });
                             // Выводим в консоль статус HTTP ответа
                             const data2345 = await api_url_scooterlockall.json()
-                            console.log('Response: ', data2345);
-                            console.log('response.status: ', api_url_scooterlockall.status);
+
+                            let numQrScooter = dataObjectsListCount[j].config.data.qr
+                            let objectStatusOnline = 0;
+                            if (dataObjectsListCount[j].state.online) {
+                                objectStatusOnline = 'Да'
+                            } else {
+                                objectStatusOnline = 'Нет'
+                            }
+
+                            console.log('Номер самоката:', numQrScooter);
+                            console.log(' ПЕРЕВОД "В СВОБОДЕН"');
+
+                            let statusResponse = api_url_scooterlockall.status;
+
+                            if (statusResponse == 422) {
+                                let titleResponse = data2345.codes[0];
+                                if (titleResponse == 'error_api_already_available') {
+                                    console.log('  Ответ: Уже свободен!');
+                                    console.log(titleResponse);
+                                    addTodo22(numQrScooter, objectStatusOnline, 'Уже свободен')
+                                } else if (titleResponse == 'error_api_cant_change_from_taken_to_available') {
+                                    console.log('  Ответ: Самокат в аренде');
+                                    console.log(titleResponse);
+                                    addTodo22(numQrScooter, objectStatusOnline, 'Ошибка (Самокат в аренде)')
+                                } else if (titleResponse == 'error_api_cant_change_from_reserved_to_available') {
+                                    console.log('  Ответ: Самокат забронирован');
+                                    console.log(titleResponse);
+                                    addTodo22(numQrScooter, objectStatusOnline, 'Ошибка (Самокат забронирован)')
+                                } else if (titleResponse == 'error_api_cant_change_from_park_to_available') {
+                                    console.log('  Ответ: Самокат в ожидании');
+                                    console.log(titleResponse);
+                                    addTodo22(numQrScooter, objectStatusOnline, 'Ошибка (Самокат в ожидании)')
+                                } else {
+                                    console.log('  Ответ: НЕИЗВЕСНАЯ ОШИБКА!');
+                                    console.log(titleResponse);
+                                    addTodo22(numQrScooter, objectStatusOnline, titleResponse)
+                                }
+                            } else if (statusResponse == 200) {
+                                console.log('  Ответ: Статус переведен!');
+                                addTodo22(numQrScooter, objectStatusOnline, 'Успешно')
+                            } else {
+                                console.log('  Ошибка!\nСтатус ответа: ', statusResponse);
+                                addTodo22(numQrScooter, statusResponse, titleResponse)
+
+                            }
+
+
                         }
                         catch (err) {
                             console.log(err);
                         }
 
                         // Запускаем команду на перевод объекта в статус "На складе"
-                        try {
-                            const api_url_scooterlockall123 = await
-                                fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/00e9f-tga73?withChildGroups=true`, {
-                                    method: "POST",
-                                    headers: {
-                                        "Authorization": API_RIC_KEY
-                                    },
-                                })
-                                    .then(response => response.text())
-                                    .then(result => console.log('result qq', result))
-                                    .catch(error => console.log('error', error));
-                            // Выводим в консоль статус HTTP ответа
-                            // console.log('Response.status В ПОЛОМКУ: ', api_url_scooterlockall123.status);
+                        // try {
+                        //     const api_url_scooterlockall1236 = await
+                        //         fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/00e9f-tga73?withChildGroups=true`, {
+                        //             method: "POST",
+                        //             headers: {
+                        //                 "Authorization": API_RIC_KEY
+                        //             },
+                        //         });
+                        //     const data23456 = await api_url_scooterlockall1236.json()
+                        //     console.log(' ПЕРЕВОД "В ГОРОД"');
+                        //     if (api_url_scooterlockall1236.status == 200) {
+                        //         console.log('  Ответ: Статус переведен!');
+                        //     } else {
+                        //         console.log('  Ошибка!\nСтатус ответа: ', api_url_scooterlockall1236.status);
+                        //     }
 
-                        }
-                        catch (err) {
-                            console.log(err);
-                        }
+                        // }
+                        // catch (err) {
+                        //     console.log(err);
+                        // }
 
                         // Тут дальше я отправляю в гугл таблицу
                         // Тут дальше я отправляю в гугл таблицу
@@ -827,6 +960,8 @@ const MainScreen = ({ navigation }, isSignedIn) => {
 
 
     const [todos, setTodos] = useState([])
+    const [todos22, setTodos22] = useState([])
+
 
     const pressDelete = () => {
 
@@ -853,6 +988,7 @@ const MainScreen = ({ navigation }, isSignedIn) => {
     }
     const GoDelete = () => {
         setTodos([]);
+        setTodos22([]);
         showToastWithCleared();
     }
 
@@ -876,6 +1012,32 @@ const MainScreen = ({ navigation }, isSignedIn) => {
             {
                 id: Date.now().toString(),
                 title
+            }
+        ])
+
+    }
+
+    const addTodo22 = (title22, code22, status22) => {
+        // const newTodo = {
+        //   id: Date.now().toString(),
+        //   title: title
+        // }
+
+        // setTodos(todos.concat([ newTodo ]))
+        // setTodos((prevTodos) => {
+        //   return [
+        //     ...prevTodos,
+        //     newTodo
+        //   ]
+        // })
+
+        setTodos22(prev => [
+            ...prev,
+            {
+                id: Date.now().toString(),
+                title22,
+                code22: code22,
+                status22: status22
             }
         ])
 
@@ -916,26 +1078,71 @@ const MainScreen = ({ navigation }, isSignedIn) => {
         );
     }
 
+
+    const [hasPermission, setHasPermission] = useState(null);
+    const [scanned, setScanned] = useState(false);
+    // const [text, setText] = useState('Not yet scanned')
+    // const [result22, setResult22] = useState('')
+
+    const [value22, setValue22] = useState('')
+
+    // What happens when we scan the bar code
+
+    // console.log("тут234 ", value22, "тут ");
+
+
+
+    const [value123123, setValue123123] = useState('')
+    const handleBarCodeScanned22 = () => {
+
+        if (value123123.trim().length < 6) {
+            console.log("gegfkegf " + value123123);
+            ToastAndroid.showWithGravityAndOffset(
+                "ОШИБКА\nВведите шестизначный номер",
+                ToastAndroid.SHORT,
+                ToastAndroid.BOTTOM,
+                25,
+                50
+            );
+        } else {
+            addTodo(value123123)
+            Keyboard.dismiss()
+            setValue123123('')
+            ToastAndroid.showWithGravityAndOffset(
+                "Номер добавлен",
+                ToastAndroid.SHORT,
+                ToastAndroid.BOTTOM,
+                25,
+                50
+            );
+
+        }
+
+
+
+    }
+
+    const InputAddNumberOpen = () => {
+        setInputAddNumber(true)
+    }
+    const InputAddNumberClose = () => {
+        setInputAddNumber(false)
+    }
+
     return (
         <View style={styles.MainScreen}>
 
             <View style={styles.One} >
 
-                {/* <Navbar title='BikeMe - Scanner' /> */}
-
                 <View style={styles.container}>
-
                     <AddTodo onSubmit={addTodo} />
                     {/* {getContent()} */}
-
-
                 </View>
 
-                <View style={styles.counterandbutton} >
-
+                <View style={styles.containerCounterAndButtons} >
 
                     <View >
-                        <Text style={styles.titlelistscooters} >Выбрано:
+                        <Text style={styles.containerCounterAndButtonsTitle} >Выбрано:
                             <Text style={{ color: '#DFDFDF', }}>
                                 -
                             </Text>
@@ -944,182 +1151,177 @@ const MainScreen = ({ navigation }, isSignedIn) => {
                             </Text>
                         </Text>
                     </View>
+
                     <View style={{
-
                         flexDirection: "row",
-                        // justifyContent: 'space-between',
-                        // flexWrap: "wrap",
-                        // marginHorizontal: 26,
                         alignItems: 'center'
-
                     }}>
-
-                        {/* <View >
-              <TouchableOpacity onPress={scooterListSendToTelegram}>
-                <View style={[styles.button4, {
-                  marginRight: 10,
-
-                }]} >
-
-                  <Text style={[styles.buttonText4, { marginVertical: 1 }]}>
-                    ОТПРАВИТЬ В ТГ
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </View> */}
-
+                        <View style={{
+                            marginRight: 15
+                        }}>
+                            <TouchableOpacity onPress={InputAddNumberOpen}>
+                                <View style={styles.containerCounterAndButtonsButtonAdd}>
+                                    <FontAwesome name="pencil-square-o" size={18} color="white" />
+                                </View>
+                            </TouchableOpacity>
+                        </View>
                         <View>
                             <TouchableOpacity onPress={copyToClipboard}>
-                                <View style={styles.button3}>
+                                <View style={styles.containerCounterAndButtonsButtonCopy}>
                                     <AntDesign name="copy1" size={18} color="white" />
                                 </View>
                             </TouchableOpacity>
                         </View>
 
                     </View>
-
                 </View>
-                {/* <View >
-          <TouchableOpacity onPress={scooterListSendToTelegram}>
-            <View style={styles.button3}>
-              <Text style={styles.buttonText3}>
-                ОТПРАВИТЬ В ТЕЛЕГРАМ
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-        <View >
-          <TouchableOpacity onPress={getLocation}>
-            <View style={styles.button3}>
-              <Text style={styles.buttonText3}>
-                ГЕО
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View> */}
 
                 <ScrollView
                     style={[{
                         paddingVertical: 10,
                     }]}
                 >
-                    {todos.length ?
-                        <View style={[styles.container, {
-
-                            flexDirection: "row",
-                            justifyContent: 'space-between',
-                            flexWrap: "wrap",
-                            marginHorizontal: 26,
-
-                        }]}>
-                            {todos.map(todo => (
-                                <Todo todo={todo} key={todo.id} onRemove={removeTodo} />
-                            ))}
+                    {todos22.length ?
+                        <View style={styles.containerResult}>
+                            <View style={styles.containerResultTitleBox}>
+                                <Text style={styles.containerResultTitleBoxText}>
+                                    Результат ( {loadingAvailable22} / {abc} )
+                                </Text>
+                                {loadingAvailable &&
+                                    <ActivityIndicator
+                                        style={{
+                                            // backgroundColor: 'red',
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            marginLeft: 5
+                                        }}
+                                        size="small"
+                                        color="black" />
+                                }
+                            </View>
+                            <View style={styles.containerResultTable}>
+                                {todos22.map(todo22 => (
+                                    <Todo22
+                                        todo22={todo22}
+                                        status22={todo22.status22}
+                                        key={todo22.id}
+                                        onRemove={removeTodo} />
+                                ))}
+                            </View>
                         </View>
                         :
-                        <View style={styles.imgwrap}>
+                        <View ></View>
+                    }
+                    {todos.length ?
+                        <View style={styles.containerAdd}>
+                            <View style={styles.containerAddTitleBox}>
+                                <Text style={styles.containerAddTitleBoxText}>Вы добавили</Text>
+                            </View>
+                            <View style={styles.containerAddTable}>
+                                {todos.map(todo => (
+                                    <Todo todo={todo} key={todo.id} onRemove={removeTodo} />
+                                ))}
+                            </View>
+                        </View>
+                        :
+                        <View style={styles.containerAddImageEmptyList}>
                             <Image
-                                style={styles.image}
+                                style={styles.imageEmptyList}
                                 source={require('../src/img/empty.png')}
                             />
                         </View>}
-
                 </ScrollView>
-
             </View >
 
             {/* <View style={styles.Two}>
 
 
       </View> */}
+            <View>
+                {inputAddNumber ?
+                    <View style={styles.containerInputAddNumber} >
+                        <View style={styles.containerInputAddNumberTitleAndButtonClose}>
+                            <Text style={styles.containerInputAddNumberTitle} >
+                                Ручной ввод номера
+                            </Text>
+                            <TouchableOpacity onPress={InputAddNumberClose}>
+                                <Ionicons name="close-sharp" size={30} color="#DF9A9A" />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.containerInputAddNumberWithButton}>
 
-            < View style={styles.Three} >
-                {/* Кнопка копирования списка */}
-
-                {/* Кнопка удаления списка */}
-                {/* <View style={styles.deletebutton}>
-          <Button title='Отчистить' onPress={pressDelete} color='#B0605F' />
-        </View>
-        <View style={styles.deletebutton}>
-          <Button title='Блок ВСЕ' onPress={scooterlockall} color='#B0605F' />
-        </View> */}
-                {/* <View style={styles.deletebutton}>
-          {
-            loading ?
-              <View style={styles.deletebutton}><ActivityIndicator size="large" color="#00ffff" /></View>
-              :
-              <Button title='Разблок ВСЕ' onPress={scooterunlockall} color='#B0605F' />
-          }
-
-        </View> */}
-                <TouchableOpacity onPress={scooterGoBrokenAlert} disabled={scooterGoBrokenDisabledButton}>
-                    <View
-                        style={{
-                            ...styles.button,
-                            backgroundColor: loadingBroken ? "#444647" : "#444647",
-                            backgroundColor: scooterGoBrokenDisabledButton ? "#E7E6E6" : "#444647",
-                        }}
-                    >
-                        {loadingBroken && <ActivityIndicator style={styles.buttonText333} size="large" color="white" />}
-                        <Text style={styles.buttonText}>
-                            {loadingBroken ? "" : scooterGoBrokenDisabledButton ? "Блестяще" : "В ПОЛОМКУ"}
-                            {/* {scooterGoBrokenDisabledButton ? "" : "В ПОЛОМКУ"} */}
-                        </Text>
+                            <View style={styles.containerInputAddNumberViewInput}>
+                                <TextInput
+                                    style={styles.containerInputAddNumberInput}
+                                    onChangeText={setValue123123}
+                                    keyboardType='number-pad'
+                                    maxLength={6}
+                                    value={value123123}
+                                    placeholder='Введите номер...'
+                                />
+                            </View>
+                            <View >
+                                <Button title='Добавить' onPress={handleBarCodeScanned22} color='#2C9B29' />
+                            </View>
+                        </View>
                     </View>
-                </TouchableOpacity>
+                    :
+                    < View style={styles.Three} >
+                        <TouchableOpacity onPress={scooterGoBrokenAlert} disabled={scooterGoBrokenDisabledButton}>
+                            <View
+                                style={{
+                                    ...styles.button,
+                                    backgroundColor: loadingBroken ? "#444647" : "#444647",
+                                    backgroundColor: scooterGoBrokenDisabledButton ? "#E7E6E6" : "#444647",
+                                }}
+                            >
+                                {loadingBroken && <ActivityIndicator style={styles.buttonText333} size="large" color="white" />}
+                                <Text style={styles.buttonText}>
+                                    {loadingBroken ? "" : scooterGoBrokenDisabledButton ? "Блестяще" : "В ПОЛОМКУ"}
+                                    {/* {scooterGoBrokenDisabledButton ? "" : "В ПОЛОМКУ"} */}
+                                </Text>
+                            </View>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={pressDelete}>
+                            <View style={styles.button2}>
 
-                <TouchableOpacity onPress={pressDelete}>
-                    <View style={styles.button2}>
+                                <MaterialIcons name="delete-sweep" size={26} color="white" />
 
-                        <MaterialIcons name="delete-sweep" size={26} color="white" />
-
-                    </View>
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={scooterGoOpenBatteryAlert} disabled={scooterGoOpenBatteryDisabledButton}>
-                    <View style={{
-                        ...styles.button22,
-                        backgroundColor: !scooterGoOpenBatteryDisabledButton ? "#919E42" : "#E7E6E6",
-                    }}>
-                        {!loadingGoOpenBattery ?
-                            <MaterialCommunityIcons name="battery-charging-medium" size={26} color="white" />
-                            :
-                            <ActivityIndicator size="large" color="white" />
-                        }
-                    </View>
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={scooterGoAvailableAlert}>
-                    <View
-                        style={{
-                            ...styles.button,
-                            backgroundColor: loadingAvailable ? "#2F71A2" : "#2F71A2",
-                            backgroundColor: scooterGoAvailableDisabledButton ? "#E7E6E6" : "#2F71A2",
-                        }}
-                    >
-                        {loadingAvailable && <ActivityIndicator style={styles.buttonText333} size="large" color="white" />}
-                        <Text style={styles.buttonText}>
-                            {loadingAvailable ? "" : scooterGoAvailableDisabledButton ? "Блестяще" : "В СВОБОДЕН"}
-                        </Text>
-                    </View>
-                </TouchableOpacity>
-
-
-
-                {/* <View style={styles.addbutton}>
-          <Button title='РАЗБЛОКИРОВАТЬ' onPress={getContent} color='#2A71A3' />
-        </View> */}
-                {/* <View style={styles.addbutton}>
-          <Button title='ЗАБЛОКИРОВАТЬ' onPress={getContent2} color='#0000A3' />
-        </View> */}
-                {/* <View style={styles.addbutton}>
-          <Button title='РАЗБЛОКИРОВАТЬ' onPress={TESTTTT} color='#2A71A3' />
-        </View> */}
-                {/* <View style={styles.addbutton}>
-          <Button title='ЗАБЛОКИРОВАТЬ' color='#0000A3' />
-        </View> */}
+                            </View>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={scooterGoOpenBatteryAlert} disabled={scooterGoOpenBatteryDisabledButton}>
+                            <View style={{
+                                ...styles.button22,
+                                backgroundColor: !scooterGoOpenBatteryDisabledButton ? "#919E42" : "#E7E6E6",
+                            }}>
+                                {!loadingGoOpenBattery ?
+                                    <MaterialCommunityIcons name="battery-charging-medium" size={26} color="white" />
+                                    :
+                                    <ActivityIndicator size="large" color="white" />
+                                }
+                            </View>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={scooterGoAvailableAlert}>
+                            <View
+                                style={{
+                                    ...styles.button,
+                                    backgroundColor: loadingAvailable ? "#2F71A2" : "#2F71A2",
+                                    backgroundColor: scooterGoAvailableDisabledButton ? "#E7E6E6" : "#2F71A2",
+                                }}
+                            >
+                                {loadingAvailable &&
+                                    <View>
+                                        <ActivityIndicator style={styles.buttonText333} size="large" color="white" />
+                                    </View>
+                                }
+                                <Text style={styles.buttonText}>
+                                    {loadingAvailable ? "" : scooterGoAvailableDisabledButton ? "Блестяще" : "В СВОБОДЕН"}
+                                </Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View >
+                }
             </View >
-
         </View >
     )
 }
@@ -1128,6 +1330,119 @@ const styles = StyleSheet.create({
     MainScreen: {
         flex: 1
     },
+    containerResult: {
+        marginHorizontal: 20,
+        borderWidth: 1,
+        borderColor: '#DADADA',
+        backgroundColor: '#DFDFDF',
+        borderRadius: 15,
+        marginBottom: 10
+    },
+    containerResultTitleBox: {
+        alignItems: "center",
+        marginVertical: 3,
+        flexDirection: "row",
+        justifyContent: "center",
+    },
+    containerResultTitleBoxText: {
+        fontWeight: 'bold',
+        fontSize: 16,
+        marginBottom: 2
+    },
+    containerResultTable: {
+        backgroundColor: "#F1F1F1",
+        paddingBottom: 10,
+        borderWidth: 0,
+        borderColor: '#DADADA',
+        borderRadius: 14,
+        paddingHorizontal: 10
+    },
+    containerAdd: {
+        marginHorizontal: 20,
+        borderWidth: 1,
+        borderColor: '#DADADA',
+        backgroundColor: '#DFDFDF',
+        borderRadius: 15,
+        marginBottom: 25
+    },
+    containerAddTitleBox: {
+        alignItems: "center",
+        marginVertical: 3
+    },
+    containerAddTitleBoxText: {
+        fontWeight: 'bold',
+        fontSize: 16,
+        marginBottom: 2
+    },
+    containerAddTable: {
+        backgroundColor: "#F1F1F1",
+        paddingTop: 5,
+        borderWidth: 0,
+        borderColor: '#DADADA',
+        borderRadius: 14,
+        flexDirection: "row",
+        justifyContent: 'space-between',
+        flexWrap: "wrap",
+        paddingHorizontal: 8
+    },
+    containerAddImageEmptyList: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingTop: 20,
+        height: 220,
+    },
+    imageEmptyList: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'contain',
+        opacity: 0.4
+    },
+    containerInputAddNumber: {
+        paddingHorizontal: 20,
+        paddingVertical: 10,
+        backgroundColor: 'white',
+        // borderStartWidth: 5,
+        borderTopWidth: 1,
+        borderLeftWidth: 1,
+        borderRightWidth: 1,
+        borderTopEndRadius: 20,
+        borderTopStartRadius: 20,
+        borderColor: '#DFDFDF',
+
+    },
+    containerInputAddNumberTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    containerInputAddNumberWithButton: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: 'center',
+        marginBottom: 10,
+
+    },
+    containerInputAddNumberViewInput: {
+        borderBottomColor: "#DFDFDF",
+        borderBottomWidth: 3,
+        flex: 1,
+        marginRight: 30
+
+    }, containerInputAddNumberTitleAndButtonClose: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: 'center',
+        marginBottom: 25,
+
+
+    },
+    containerInputAddNumberButtonClose: {
+
+    },
+
+
+
+
+
     container: {
         // paddingHorizontal: 30,
         // paddingVertical: 20
@@ -1139,9 +1454,8 @@ const styles = StyleSheet.create({
         // backgroundColor: 'blue',
         // marginBottom: 15
     },
-    titlelistscooters: {
-        // paddingHorizontal: 30,
-        paddingVertical: 5,
+    containerCounterAndButtonsTitle: {
+        paddingVertical: 7,
         backgroundColor: '#DFDFDF',
     },
     listscopy: {
@@ -1245,21 +1559,16 @@ const styles = StyleSheet.create({
         // backgroundColor: '#919E42',
         borderColor: "#666",
     },
-    button3: {
-        // flex: 1,
-        // display: "flex",
-        // flexDirection: "row",
-        // justifyContent: "space-evenly",
-        backgroundColor: '#33853B',
-
-        // alignItems: "center",
-        // width: 240,
-        // height: 70,
-        // paddingVertical: 15,
-        // borderWidth: 1,
-        // borderColor: "#666",
+    containerCounterAndButtonsButtonAdd: {
+        backgroundColor: '#728ACA',
         borderRadius: 4,
-        // paddingHorizontal: 10,
+        fontSize: 19,
+        paddingHorizontal: 10,
+        paddingVertical: 3
+    },
+    containerCounterAndButtonsButtonCopy: {
+        backgroundColor: '#6FA75C',
+        borderRadius: 4,
         fontSize: 19,
         paddingHorizontal: 10,
         paddingVertical: 3
@@ -1288,13 +1597,12 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         fontSize: 10
     },
-    counterandbutton: {
+    containerCounterAndButtons: {
         flexDirection: "row",
         backgroundColor: '#DFDFDF',
         alignItems: "center",
         justifyContent: 'space-between',
-        paddingHorizontal: 30,
-
+        paddingHorizontal: 20,
     },
     buttonText3: {
         color: "#fff",
@@ -1314,19 +1622,79 @@ const styles = StyleSheet.create({
         marginBottom: -10,
 
     },
-    imgwrap: {
-
+    containerAddImageEmptyList: {
         alignItems: 'center',
         justifyContent: 'center',
         paddingTop: 20,
         height: 220,
-
     },
-    image: {
+    imageEmptyList: {
         width: '100%',
         height: '100%',
         resizeMode: 'contain',
         opacity: 0.4
+    },
+
+
+
+
+
+    block: {
+        // flexDirection: 'row',
+        // justifyContent: 'space-between',
+        // alignItems: 'center',
+        // marginBottom: 15
+    },
+    barcodeboxcontainer: {
+        // backgroundColor: '#DFDFDF',
+        alignItems: 'center',
+        paddingVertical: 5
+    },
+    barcodebox: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 300,
+        width: 300,
+        overflow: 'hidden',
+        borderRadius: 30,
+    },
+    resultscan: {
+        // alignItems: 'center',
+        // marginHorizontal: 20
+    },
+    resultscan: {
+        justifyContent: 'center',
+    },
+    maintext: {
+        alignItems: 'center',
+        // fontSize: 16,
+        paddingHorizontal: 30,
+        paddingVertical: 5,
+        backgroundColor: '#DFDFDF',
+
+    },
+    scanelsebutton: {
+        paddingHorizontal: 30,
+        paddingTop: 5,
+        paddingBottom: 10
+        // backgroundColor: '#DFDFDF',
+    },
+    addbutton: {
+        paddingHorizontal: 30,
+        paddingVertical: 5,
+        // backgroundColor: '#DFDFDF',
+    },
+    input: {
+        // width: '70%',
+        // padding: 10,
+        // borderStyle: 'solid',
+        // borderBottomWidth: 2,
+        // borderBottomColor: '#3949ab',
+        opacity: 0,
+        height: 0
+    },
+    scanelsebutton2: {
+        color: THEME.MAIN_COLOR
     }
 })
 
