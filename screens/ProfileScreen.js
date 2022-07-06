@@ -14,6 +14,8 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { signInWithEmailAndPassword } from "firebase/auth";
 // import { useNavigation } from '@react-navigation/native';
 import { onAuthStateChanged } from "firebase/auth";
+import { UID_LIST } from "../src/UIDS/UIDS";
+
 
 
 const ProfileScreen = ({ navigation, onSubmit }) => {
@@ -29,17 +31,11 @@ const ProfileScreen = ({ navigation, onSubmit }) => {
             });
     }
 
-
-
-
     const [result, setResult] = useState()
     const [changeApiRicKeyValue, setChangeApiRicKeyValue] = useState()
     const [changeApiTelegramKeyValue, setChangeApiTelegramKeyValue] = useState()
 
-
-
     console.log('nen ', changeApiRicKeyValue)
-
 
     const presss = async (title) => {
 
@@ -200,6 +196,7 @@ const ProfileScreen = ({ navigation, onSubmit }) => {
     const user = auth.currentUser;
 
     const uid = user.uid.toString();
+    console.log('да', uid);
     const email = user.email;
     if (uid == '2yQd4LYgKqYInxbfr4AlHlHhwqG3') {
         console.log('да', uid);
@@ -280,156 +277,98 @@ const ProfileScreen = ({ navigation, onSubmit }) => {
 
     return (
         <View style={styles.MainScreen}>
-            {GOD ?
-                <View style={styles.MainBlock}>
 
-                    <View style={styles.block}>
-                        <Text style={styles.titleText}>
-                            Ваш email:
-                        </Text>
-                        <Text>
-                            {email}
-                        </Text>
-                    </View>
-                    <View style={styles.block}>
-                        <Text style={styles.titleText}>
-                            Ваша роль:
-                        </Text>
-                        <Text>
-                            Администратор
-                        </Text>
-                    </View>
-                    <View style={styles.block}>
-                        <Text style={styles.titleText}>
-                            API KEY RIC
-                        </Text>
-                        <TextInput
-                            style={styles.input}
-                            onChangeText={setChangeApiRicKeyValue}
-                            value={changeApiRicKeyValue}
-                            placeholder='Введите API KEY RIC...'
-                        />
-                        <TouchableOpacity onPress={changeApiRicKey}>
-                            <View style={styles.buttonChange}>
-                                <Text style={styles.buttonText}>
-                                    Изменить
-                                </Text>
-                            </View>
-                        </TouchableOpacity>
-                    </View>
-                    <View style={styles.block}>
-                        <Text style={styles.titleText}>
-                            API KEY TELEGRAM
-                        </Text>
-                        <TextInput
-                            style={styles.input}
-                            onChangeText={setChangeApiTelegramKeyValue}
-                            value={result}
-                            placeholder='Введите API KEY TELEGRAM...'
-                        />
-                        <TouchableOpacity onPress={changeApiTelegramKey}>
-                            <View style={styles.buttonChange}>
-                                <Text style={styles.buttonText}>
-                                    Изменить
-                                </Text>
-                            </View>
-                        </TouchableOpacity>
-                    </View>
-                    <View style={styles.block}>
-                        <Text style={styles.titleText}>
-                            CHAT ID TELEGRAM
-                        </Text>
-                        <TextInput
-                            style={styles.input}
-                            onChangeText={setResult}
-                            value={result}
-                            placeholder='Введите CHAT ID TELEGRAM...'
-                        />
-                        <TouchableOpacity onPress={presss}>
-                            <View style={styles.buttonChange}>
-                                <Text style={styles.buttonText}>
-                                    Изменить
-                                </Text>
-                            </View>
-                        </TouchableOpacity>
-
-                    </View>
-
-
-
-                    {/* <Button
-                    title={'посмотреть'}
-                    onPress={presss221}
-                />
-                <Button
-                    title={'изменить'}
-                    onPress={presss22}
-                /> */}
+            <View style={styles.MainBlock}>
+                <View style={styles.block}>
+                    <Text style={styles.titleText}>
+                        Ваш email:
+                    </Text>
+                    <Text>
+                        {email}
+                    </Text>
                 </View>
-                :
-                <View style={styles.MainBlock}>
-                    <View style={styles.block}>
-                        <Text style={styles.titleText}>
-                            Ваш email:
-                        </Text>
-                        <Text>
-                            {email}
-                        </Text>
-                    </View>
-                    <View style={styles.block}>
-                        <Text style={styles.titleText}>
-                            Ваша роль:
-                        </Text>
-                        <Text>
-                            Механик
-                        </Text>
-                    </View>
-
-                    {/* <Text style={styles.titleText}>
-                        Name
-                    </Text>
-                    <TextInput
-                        style={styles.input}
-                        onChangeText={setName}
-                        value={name}
-                        placeholder='Name...'
-                    />
+                <View style={styles.block}>
                     <Text style={styles.titleText}>
-                        Age
+                        Ваша роль:
                     </Text>
-                    <TextInput
-                        style={styles.input}
-                        onChangeText={setAge}
-                        value={age}
-                        placeholder='Age...'
-                    />
+                    {uid == UID_LIST.UID_ADMIN ?
+                        <Text>Администратор</Text> :
+                        <Text>Механик</Text>
+                    }
+                </View>
+                <View style={styles.block}>
                     <Text style={styles.titleText}>
-                        Salary
+                        Ваш город:
                     </Text>
-                    <TextInput
-                        style={styles.input}
-                        onChangeText={setSalary}
-                        value={salary}
-                        placeholder='Salary...'
-                    />
-                    <Text style={styles.titleText}>
-                        Hobby
-                    </Text>
-                    <TextInput
-                        style={styles.input}
-                        onChangeText={setHobby}
-                        value={hobby}
-                        placeholder='Hobby...'
-                    />
-                    <TouchableOpacity onPress={handleSubmit}>
-                        <View style={styles.buttonChange}>
-                            <Text style={styles.buttonText}>
-                                Отправить
+                    {uid == UID_LIST.UID_MURMANSK ?
+                        <Text>Мурманск</Text> :
+                        uid == UID_LIST.UID_ARCHANGELSK ?
+                            <Text>Архангельск</Text> :
+                            <Text>Вы админ, весь мир подвластен</Text>
+                    }
+                </View>
+                {uid == UID_LIST.UID_ADMIN ?
+                    <View>
+                        <View style={styles.block}>
+                            <Text style={styles.titleText}>
+                                API KEY RIC
                             </Text>
+                            <TextInput
+                                style={styles.input}
+                                onChangeText={setChangeApiRicKeyValue}
+                                value={changeApiRicKeyValue}
+                                placeholder='Введите API KEY RIC...'
+                            />
+                            <TouchableOpacity onPress={changeApiRicKey}>
+                                <View style={styles.buttonChange}>
+                                    <Text style={styles.buttonText}>
+                                        Изменить
+                                    </Text>
+                                </View>
+                            </TouchableOpacity>
                         </View>
-                    </TouchableOpacity> */}
-                </View>
-            }
+                        <View style={styles.block}>
+                            <Text style={styles.titleText}>
+                                API KEY TELEGRAM
+                            </Text>
+                            <TextInput
+                                style={styles.input}
+                                onChangeText={setChangeApiTelegramKeyValue}
+                                value={result}
+                                placeholder='Введите API KEY TELEGRAM...'
+                            />
+                            <TouchableOpacity onPress={changeApiTelegramKey}>
+                                <View style={styles.buttonChange}>
+                                    <Text style={styles.buttonText}>
+                                        Изменить
+                                    </Text>
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.block}>
+                            <Text style={styles.titleText}>
+                                CHAT ID TELEGRAM
+                            </Text>
+                            <TextInput
+                                style={styles.input}
+                                onChangeText={setResult}
+                                value={result}
+                                placeholder='Введите CHAT ID TELEGRAM...'
+                            />
+                            <TouchableOpacity onPress={presss}>
+                                <View style={styles.buttonChange}>
+                                    <Text style={styles.buttonText}>
+                                        Изменить
+                                    </Text>
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                    :
+                    <View></View>
+                }
+            </View>
+
             <View style={styles.bottomBar}>
                 <TouchableOpacity onPress={signOutUser}>
                     <View style={styles.buttonExit}>

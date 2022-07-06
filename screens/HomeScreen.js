@@ -22,11 +22,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { FontAwesome } from '@expo/vector-icons';
 import { KEYS_TELEGRAM } from '../src/keys/keys-telegram'
 import { KEYS_RIC } from '../src/keys/keys-ric'
+import { GoAvaliableButton } from '../src/components/GoAvaliableButton'
+import { ResultContainer } from '../src/components/ResultContainer'
+import { getAuth } from "firebase/auth";
+
+import { UID_LIST } from "../src/UIDS/UIDS";
 
 import { THEME } from '../src/theme'
 
 
-const MainScreen = ({ onSubmit }, { navigation }, setValue) => {
+const MainScreen = ({ navigation }, setValue) => {
 
     // Заголовки запроса (Токен RIC)
     var myHeaders = new Headers();
@@ -144,6 +149,11 @@ const MainScreen = ({ onSubmit }, { navigation }, setValue) => {
     const [scooterGoAvailableDisabledButton, setscooterGoAvailableDisabledButton] = useState(false);
     const [scooterGoOpenBatteryDisabledButton, setscooterGoOpenBatteryDisabledButton] = useState(false);
 
+    const auth = getAuth();
+    const user = auth.currentUser;
+    const uid = user.uid.toString();
+
+
     const scooterGoBrokenAlert = () => {
 
         if (todos.length == 0) {
@@ -219,11 +229,14 @@ const MainScreen = ({ onSubmit }, { navigation }, setValue) => {
             }
             // Если ошибки нет, запускаем:
             else {
+
                 // Выводим в консоль количество объектов в RIC
                 // console.log('Кол-во объектов: ' + dataObjectsListCount.length)
                 // Массив, в котором мы пробегаем по значениям из списка отсканированных объектов
                 setTodos22([]);
                 addTodo22('Номер', 'Онлайн', 'Команда')
+                let eroorExistsGoBroken = 0;
+
                 for (var i = 0; i < todos.length; i++) {
                     var now1 = new Date().toLocaleTimeString();
                     console.log('\n'); // Выводим в консоль номер цикла
@@ -280,18 +293,25 @@ const MainScreen = ({ onSubmit }, { navigation }, setValue) => {
                                         console.log('  Ответ: Самокат в аренде');
                                         console.log(titleResponse);
                                         addTodo22(numQrScooter, objectStatusOnline, 'Ошибка (Самокат в аренде)')
+                                        eroorExistsGoBroken = eroorExistsGoBroken + 1
                                     } else if (titleResponse == 'error_api_cant_change_from_reserved_to_broken') {
                                         console.log('  Ответ: Самокат забронирован');
                                         console.log(titleResponse);
                                         addTodo22(numQrScooter, objectStatusOnline, 'Ошибка (Самокат забронирован)')
+                                        eroorExistsGoBroken = eroorExistsGoBroken + 1
+
                                     } else if (titleResponse == 'error_api_cant_change_from_park_to_broken') {
                                         console.log('  Ответ: Самокат в ожидании');
                                         console.log(titleResponse);
                                         addTodo22(numQrScooter, objectStatusOnline, 'Ошибка (Самокат в ожидании)')
+                                        eroorExistsGoBroken = eroorExistsGoBroken + 1
+
                                     } else {
                                         console.log('  Ответ: НЕИЗВЕСНАЯ ОШИБКА!');
                                         console.log(titleResponse);
                                         addTodo22(numQrScooter, objectStatusOnline, titleResponse)
+                                        eroorExistsGoBroken = eroorExistsGoBroken + 1
+
                                     }
                                 } else if (statusResponse == 200) {
                                     console.log('  Ответ: Статус переведен!');
@@ -299,14 +319,15 @@ const MainScreen = ({ onSubmit }, { navigation }, setValue) => {
                                 } else {
                                     console.log('  Ошибка!\nСтатус ответа: ', statusResponse);
                                     addTodo22(numQrScooter, statusResponse, titleResponse)
+                                    eroorExistsGoBroken = eroorExistsGoBroken + 1
 
                                 }
-
-
                             }
                             catch (err) {
                                 console.log(err);
                             }
+                            console.log('eroorExistsGoBroken1: ' + eroorExistsGoBroken)
+
                             // Запускаем команду на перевод объекта в статус "На складе"
                             // try {
                             //     const api_url_scooterlockall123 = await
@@ -346,6 +367,13 @@ const MainScreen = ({ onSubmit }, { navigation }, setValue) => {
                 const scooterListSendToTelegramBroken = async () => {
                     // Определяем сообщение, которое отправим в Телеграм
                     let message = `Забрал и перевел в поломку:\n${scootlistnum}`;
+
+                    if (eroorExistsGoBroken != 0) {
+                        message = `@vasenkovivan\nЗабрал и перевел в поломку:\n${scootlistnum}`;
+                    }
+                    console.log('eroorExistsGoBroken: ' + eroorExistsGoBroken)
+                    console.log('message: ' + message)
+
                     // Получаем ключ
                     const response = await fetch(
                         'https://bikeme-rt-scanner-default-rtdb.europe-west1.firebasedatabase.app/todos.json',
@@ -357,7 +385,13 @@ const MainScreen = ({ onSubmit }, { navigation }, setValue) => {
                     // console.log('DATATA: ', data)
                     const dataView = Object.keys(data).map(key => ({ ...data[key], id: key }))
                     let API_TELEGRAM_KEY = dataView[1].title;
-                    let TELEGRAM_KEY_CHAT_ID = dataView[2].title;
+
+                    let TELEGRAM_KEY_CHAT_ID
+                    if (uid == UID_LIST.UID_ARCHANGELSK) {
+                        TELEGRAM_KEY_CHAT_ID = dataView[3].title;
+                    } else {
+                        TELEGRAM_KEY_CHAT_ID = dataView[2].title;
+                    }
                     // console.log('КЛЮЧ: ' + API_TELEGRAM_KEY)
                     // Асинхронная функция на axios для отправки POST запроса, для отправки сообщения в Телеграм
                     const api_urlTG = await
@@ -369,7 +403,7 @@ const MainScreen = ({ onSubmit }, { navigation }, setValue) => {
                     // Асинхронная функция на axios для отправки POST запроса, для отправки гео-позиции устройства в Телеграм
                     const api_urlTG2 = await
                         axios.post(KEYS_TELEGRAM.URI_API_LOCATION, {
-                            chat_id: KEYS_TELEGRAM.CHAT_ID,
+                            chat_id: TELEGRAM_KEY_CHAT_ID,
                             latitude: x,
                             longitude: y,
                         })
@@ -604,7 +638,13 @@ const MainScreen = ({ onSubmit }, { navigation }, setValue) => {
                 // console.log('DATATA: ', data)
                 const dataView = Object.keys(data).map(key => ({ ...data[key], id: key }))
                 let API_TELEGRAM_KEY = dataView[1].title;
-                let TELEGRAM_KEY_CHAT_ID = dataView[2].title;
+
+                let TELEGRAM_KEY_CHAT_ID
+                if (uid == UID_LIST.UID_ARCHANGELSK) {
+                    TELEGRAM_KEY_CHAT_ID = dataView[3].title;
+                } else {
+                    TELEGRAM_KEY_CHAT_ID = dataView[2].title;
+                }
                 // console.log('КЛЮЧ: ' + API_TELEGRAM_KEY)
                 // Асинхронная функция на axios для отправки POST запроса, для отправки сообщения в Телеграм
                 const api_urlTG = await
@@ -616,7 +656,7 @@ const MainScreen = ({ onSubmit }, { navigation }, setValue) => {
                 // Асинхронная функция на axios для отправки POST запроса, для отправки гео-позиции устройства в Телеграм
                 const api_urlTG2 = await
                     axios.post(KEYS_TELEGRAM.URI_API_LOCATION, {
-                        chat_id: KEYS_TELEGRAM.CHAT_ID,
+                        chat_id: TELEGRAM_KEY_CHAT_ID,
                         latitude: x,
                         longitude: y,
                     })
@@ -722,11 +762,20 @@ const MainScreen = ({ onSubmit }, { navigation }, setValue) => {
                         // console.log('Вывод QR из скана: ' + todos[i].title)
                         // console.log('Вывод ID из RIC: ' + dataObjectsListCount[j]._id)
                         // console.log('ЗАПУСКАЮ КОМАНДУ НА ПЕРЕВОД В СВОБОДЕН!!!!!')
+
+                        let reqs
+                        console.log('Вывод ID из RIC+: ' + dataObjectsListCount[j]._id)
+
+                        if (uid == UID_LIST.UID_ARCHANGELSK) {
+                            reqs = `https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/meulk_cmd?withChildGroups=true`
+                        } else {
+                            reqs = `https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/scsetmode-eco-wxs9m-7qnlg?withChildGroups=true`
+                        }
                         try {
                             const api_url_scooterlockall = await
-                                fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/scsetmode-eco-wxs9m-7qnlg?withChildGroups=true`, requestOptionsPOST);
+                                fetch(reqs, requestOptionsPOST);
                             // Выводим в консоль статус HTTP ответа
-                            console.log('response.status: ', api_url_scooterlockall.status);
+                            console.log('response.statusMUR: ', api_url_scooterlockall.status);
                         }
                         catch (err) {
                             console.log(err);
@@ -761,7 +810,13 @@ const MainScreen = ({ onSubmit }, { navigation }, setValue) => {
                 // console.log('DATATA: ', data)
                 const dataView = Object.keys(data).map(key => ({ ...data[key], id: key }))
                 let API_TELEGRAM_KEY = dataView[1].title;
-                let TELEGRAM_KEY_CHAT_ID = dataView[2].title;
+
+                let TELEGRAM_KEY_CHAT_ID
+                if (uid == UID_LIST.UID_ARCHANGELSK) {
+                    TELEGRAM_KEY_CHAT_ID = dataView[3].title;
+                } else {
+                    TELEGRAM_KEY_CHAT_ID = dataView[2].title;
+                }
                 // console.log('КЛЮЧ: ' + API_TELEGRAM_KEY)
                 // Асинхронная функция на axios для отправки POST запроса, для отправки сообщения в Телеграм
                 const api_urlTG = await
@@ -773,7 +828,7 @@ const MainScreen = ({ onSubmit }, { navigation }, setValue) => {
                 // Асинхронная функция на axios для отправки POST запроса, для отправки гео-позиции устройства в Телеграм
                 const api_urlTG2 = await
                     axios.post(KEYS_TELEGRAM.URI_API_LOCATION, {
-                        chat_id: KEYS_TELEGRAM.CHAT_ID,
+                        chat_id: TELEGRAM_KEY_CHAT_ID,
                         latitude: x,
                         longitude: y,
                     })
@@ -960,6 +1015,7 @@ const MainScreen = ({ onSubmit }, { navigation }, setValue) => {
 
 
     const [todos, setTodos] = useState([])
+    console.log(todos);
     const [todos22, setTodos22] = useState([])
 
 
@@ -1176,6 +1232,8 @@ const MainScreen = ({ onSubmit }, { navigation }, setValue) => {
                     </View>
                 </View>
 
+
+                {/* <ResultContainer todos22={todos22} onSubmit={todos22} /> */}
                 <ScrollView
                     style={[{
                         paddingVertical: 10,
@@ -1217,7 +1275,7 @@ const MainScreen = ({ onSubmit }, { navigation }, setValue) => {
                             <View style={styles.containerAddTitleBox}>
                                 <Text style={styles.containerAddTitleBoxText}>Вы добавили</Text>
                             </View>
-                            <View style={styles.containerAddTable}>
+                            <View style={styles.containerAddTable} >
                                 {todos.map(todo => (
                                     <Todo todo={todo} key={todo.id} onRemove={removeTodo} />
                                 ))}
@@ -1319,10 +1377,12 @@ const MainScreen = ({ onSubmit }, { navigation }, setValue) => {
                                 </Text>
                             </View>
                         </TouchableOpacity>
+                        {/* <GoAvaliableButton todos={todos} todos22={todos22} /> */}
                     </View >
                 }
             </View >
         </View >
+
     )
 }
 
