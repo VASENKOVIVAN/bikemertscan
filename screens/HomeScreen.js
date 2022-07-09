@@ -170,252 +170,12 @@ const MainScreen = ({ navigation }, setValue) => {
                     },
                     {
                         text: "Да, уверен",
-                        onPress: () => scooterGoBroken(),
+                        onPress: () => scooterGoCommand('GoBroken'),
                     }
                 ]
             )
         }
 
-    }
-    // Функция кнопки "В ПОЛОМКУ" 
-    // Перевод объектов в статус "Поломка" 
-    const scooterGoBroken = async () => {
-
-        // Проверяем, что список объектов не пустой
-        if (todos.length == 0) {
-            showToastErrorEmptyList();
-        } else {
-            // Устанавливаем loading-индикатор кнопки "В ПОЛОМКУ" в значение true, что бы активировать его
-            setLoadingBroken(!loadingBroken);
-            setscooterGoBrokenDisabledButton(!scooterGoBrokenDisabledButton);
-            // Получаем ключ
-            const response = await fetch(
-                'https://bikeme-rt-scanner-default-rtdb.europe-west1.firebasedatabase.app/todos.json',
-                {
-                    method: 'GET',
-                }
-            )
-            const data = await response.json()
-            // console.log('DATATA: ', data)
-            const dataView = Object.keys(data).map(key => ({ ...data[key], id: key }))
-            let API_RIC_KEY = dataView[0].title;
-            // console.log('КЛЮЧ: ' + API_RIC_KEY)
-            // Получаем список объектов от RIC
-            const api_url_objects_list_count = await
-                fetch(`https://app.rightech.io/api/v1/objects?withChildGroups=true`, {
-                    method: "GET",
-                    headers: {
-                        "Authorization": API_RIC_KEY
-                    },
-                });
-            // Приводим к формату JSON
-            const dataObjectsListCount = await api_url_objects_list_count.json();
-            // Проверяем ответ от RIC по запросу списка объектов
-            try {
-                // Проверяем и получаем разрешение на использование камеры
-                const response = await Location.requestForegroundPermissionsAsync();
-                // console.log(response);
-                // Получаем координаты устройства
-                const { coords } = await Location.getCurrentPositionAsync();
-                var x = coords.latitude.toString();
-                var y = coords.longitude.toString();
-            } catch (error) {
-                Alert.alert('Вы не предоставили разрешение на использование гео-позиции (перейдите в настройки)');
-            }
-            if (api_url_objects_list_count.status == 401) {
-                // Если 401 ошибка, то выводим тост и в консоль
-                console.log('Error-401');
-                showToastWithError401();
-            }
-            // Если ошибки нет, запускаем:
-            else {
-
-                // Выводим в консоль количество объектов в RIC
-                // console.log('Кол-во объектов: ' + dataObjectsListCount.length)
-                // Массив, в котором мы пробегаем по значениям из списка отсканированных объектов
-                setTodos22([]);
-                addTodo22('Номер', 'Онлайн', 'Команда')
-                let eroorExistsGoBroken = 0;
-
-                for (var i = 0; i < todos.length; i++) {
-                    var now1 = new Date().toLocaleTimeString();
-                    console.log('\n'); // Выводим в консоль номер цикла
-                    console.log(now1); // Выводим в консоль номер цикла
-
-                    setLoadingAvailable22(0)
-                    console.log('ЦИКЛ: ' + i); // Выводим в консоль номер цикла
-                    setLoadingAvailable22(i + 1)
-                    console.log('var loadingAvailable22: ', loadingAvailable22);
-
-                    // Массив, в котором мы пробегаем по объектам из RIC
-                    for (let j = 0; j < dataObjectsListCount.length; j++) {
-                        // Ищем отсканированный объект в списке объектов RIC
-                        if (dataObjectsListCount[j].config.data.qr == todos[i].title) {
-                            // Выводим кучу бреда в консоль
-                            // console.log('Н А Й Д Е Н О ! ! ! ! !')
-                            // console.log('Номер по RIC: ' + j)
-                            // console.log('Вывод QR из RIC: ' + dataObjectsListCount[j].config.data.qr)
-                            // console.log('Вывод QR из скана: ' + todos[i].title)
-                            // console.log('Вывод ID из RIC: ' + dataObjectsListCount[j]._id)
-                            // console.log('ЗАПУСКАЮ КОМАНДУ НА ПЕРЕВОД В ПОЛОМКУ!!!!!')
-                            // Запускаем команду на перевод объекта в статус "Поломка"
-                            try {
-                                const api_url_scooterlockall = await
-                                    fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/change-status-broken?withChildGroups=true`, {
-                                        method: "POST",
-                                        headers: {
-                                            "Authorization": API_RIC_KEY
-                                        },
-                                    });
-                                // Выводим в консоль статус HTTP ответа
-                                const data2345 = await api_url_scooterlockall.json()
-
-                                let numQrScooter = dataObjectsListCount[j].config.data.qr
-                                let objectStatusOnline = 0;
-                                if (dataObjectsListCount[j].state.online) {
-                                    objectStatusOnline = 'Да'
-                                } else {
-                                    objectStatusOnline = 'Нет'
-                                }
-
-                                console.log('Номер самоката:', numQrScooter);
-                                console.log(' ПЕРЕВОД "В СВОБОДЕН"');
-
-                                let statusResponse = api_url_scooterlockall.status;
-
-                                if (statusResponse == 422) {
-                                    let titleResponse = data2345.codes[0];
-                                    if (titleResponse == 'error_api_already_broken') {
-                                        console.log('  Ответ: Уже в поломке!');
-                                        console.log(titleResponse);
-                                        addTodo22(numQrScooter, objectStatusOnline, 'Уже в поломке')
-                                    } else if (titleResponse == 'error_api_cant_change_from_taken_to_broken') {
-                                        console.log('  Ответ: Самокат в аренде');
-                                        console.log(titleResponse);
-                                        addTodo22(numQrScooter, objectStatusOnline, 'Ошибка (Самокат в аренде)')
-                                        eroorExistsGoBroken = eroorExistsGoBroken + 1
-                                    } else if (titleResponse == 'error_api_cant_change_from_reserved_to_broken') {
-                                        console.log('  Ответ: Самокат забронирован');
-                                        console.log(titleResponse);
-                                        addTodo22(numQrScooter, objectStatusOnline, 'Ошибка (Самокат забронирован)')
-                                        eroorExistsGoBroken = eroorExistsGoBroken + 1
-
-                                    } else if (titleResponse == 'error_api_cant_change_from_park_to_broken') {
-                                        console.log('  Ответ: Самокат в ожидании');
-                                        console.log(titleResponse);
-                                        addTodo22(numQrScooter, objectStatusOnline, 'Ошибка (Самокат в ожидании)')
-                                        eroorExistsGoBroken = eroorExistsGoBroken + 1
-
-                                    } else {
-                                        console.log('  Ответ: НЕИЗВЕСНАЯ ОШИБКА!');
-                                        console.log(titleResponse);
-                                        addTodo22(numQrScooter, objectStatusOnline, titleResponse)
-                                        eroorExistsGoBroken = eroorExistsGoBroken + 1
-
-                                    }
-                                } else if (statusResponse == 200) {
-                                    console.log('  Ответ: Статус переведен!');
-                                    addTodo22(numQrScooter, objectStatusOnline, 'Успешно')
-                                } else {
-                                    console.log('  Ошибка!\nСтатус ответа: ', statusResponse);
-                                    addTodo22(numQrScooter, statusResponse, titleResponse)
-                                    eroorExistsGoBroken = eroorExistsGoBroken + 1
-
-                                }
-                            }
-                            catch (err) {
-                                console.log(err);
-                            }
-                            console.log('eroorExistsGoBroken1: ' + eroorExistsGoBroken)
-
-                            // Запускаем команду на перевод объекта в статус "На складе"
-                            // try {
-                            //     const api_url_scooterlockall123 = await
-                            //         fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/00e9f?withChildGroups=true`, {
-                            //             method: "POST",
-                            //             headers: {
-                            //                 "Authorization": API_RIC_KEY
-                            //             },
-                            //         })
-                            //     console.log(' ПЕРЕВОД "В ГОРОД"');
-                            //     if (api_url_scooterlockall123.status == 200) {
-                            //         console.log('  Ответ: Статус переведен!');
-                            //     } else {
-                            //         console.log('  Ошибка!\nСтатус ответа: ', api_url_scooterlockall123.status);
-                            //     }
-
-                            // }
-                            // catch (err) {
-                            //     console.log(err);
-                            // }
-
-
-                            // Тут дальше я отправляю в гугл таблицу
-                            var now = new Date().toLocaleTimeString();
-                            const objt = `?p1=${todos[i].title}&p2=${now}&p3=Забрал&p4=${x},${y}`
-                            const response2 = await fetch(
-                                `https://script.google.com/macros/s/AKfycbzpfVBOETyWNDXES7goQIq3KQ8c3OQupri_y2581JnPblpAgL6TB6r7K7MebVlieai3/exec${objt}`,
-                                {
-                                    method: 'GET',
-                                }
-                            )
-                        }
-                    }
-                }
-                // На данном этапе мы пробежали по всем объектам и перевели их в статус "Поломка"
-                // Определяем функцию, которая отправит сообщение и гео-позицию в Телеграм
-                const scooterListSendToTelegramBroken = async () => {
-                    // Определяем сообщение, которое отправим в Телеграм
-                    let message = `Забрал и перевел в поломку:\n${scootlistnum}`;
-
-                    if (eroorExistsGoBroken != 0) {
-                        message = `@vasenkovivan\nЗабрал и перевел в поломку:\n${scootlistnum}`;
-                    }
-                    console.log('eroorExistsGoBroken: ' + eroorExistsGoBroken)
-                    console.log('message: ' + message)
-
-                    // Получаем ключ
-                    const response = await fetch(
-                        'https://bikeme-rt-scanner-default-rtdb.europe-west1.firebasedatabase.app/todos.json',
-                        {
-                            method: 'GET',
-                        }
-                    )
-                    const data = await response.json()
-                    // console.log('DATATA: ', data)
-                    const dataView = Object.keys(data).map(key => ({ ...data[key], id: key }))
-                    let API_TELEGRAM_KEY = dataView[1].title;
-
-                    let TELEGRAM_KEY_CHAT_ID
-                    if (uid == UID_LIST.UID_ARCHANGELSK) {
-                        TELEGRAM_KEY_CHAT_ID = dataView[3].title;
-                    } else {
-                        TELEGRAM_KEY_CHAT_ID = dataView[2].title;
-                    }
-                    // console.log('КЛЮЧ: ' + API_TELEGRAM_KEY)
-                    // Асинхронная функция на axios для отправки POST запроса, для отправки сообщения в Телеграм
-                    const api_urlTG = await
-                        axios.post(`https://api.telegram.org/bot${API_TELEGRAM_KEY}/sendMessage`, {
-                            chat_id: TELEGRAM_KEY_CHAT_ID,
-                            text: message
-                        });
-                    // console.log(api_urlTG.status)
-                    // Асинхронная функция на axios для отправки POST запроса, для отправки гео-позиции устройства в Телеграм
-                    const api_urlTG2 = await
-                        axios.post(KEYS_TELEGRAM.URI_API_LOCATION, {
-                            chat_id: TELEGRAM_KEY_CHAT_ID,
-                            latitude: x,
-                            longitude: y,
-                        })
-                }
-                scooterListSendToTelegramBroken();  // Запускаем функцию описанную выше
-                setLoadingBroken(loadingBroken);    // Выключаем loading-индикатор
-                showToastWithGoBroken();            // Показываем тост успеха
-                setTimeout(() => {
-                    setscooterGoBrokenDisabledButton(scooterGoBrokenDisabledButton);
-                }, 5000);
-            }
-        }
     }
 
     const scooterGoAvailableAlert = () => {
@@ -434,20 +194,295 @@ const MainScreen = ({ navigation }, setValue) => {
                     },
                     {
                         text: "Да, уверен",
-                        onPress: () => scooterGoAvailable(),
+                        onPress: () => scooterGoCommand('GoAvailable'),
                     }
                 ]
             )
         }
 
     }
-    // Функция кнопки "В ПОЛОМКУ"
-    // Перевод объектов в статус "Свободен" 
+
+    const scooterGoCommand = async (GoCommand) => {
+        console.log("\nКоманда: " + GoCommand + " = = = = = = = = = =");
+        // Проверяем, что список объектов не пустой
+        if (todos.length == 0) {
+            showToastErrorEmptyList();
+        } else {
+
+            if (GoCommand == 'GoBroken') {
+                setLoadingBroken(!loadingBroken);
+                setscooterGoBrokenDisabledButton(!scooterGoBrokenDisabledButton);
+            } else {
+                setLoadingAvailable(!loadingAvailable);
+                setscooterGoAvailableDisabledButton(!scooterGoAvailableDisabledButton);
+            }
+
+            // Получаем ключ
+            const responseFireBase = await fetch(
+                'https://bikeme-rt-scanner-default-rtdb.europe-west1.firebasedatabase.app/todos.json',
+                {
+                    method: 'GET',
+                }
+            )
+            const dataResponseFireBase = await responseFireBase.json()
+            const dataView = Object.keys(dataResponseFireBase).map(key => ({ ...dataResponseFireBase[key], id: key }))
+            let API_RIC_KEY = dataView[0].title;
+
+            // Получаем список объектов от RIC
+            const RIC_OBJECTS_LIST = await
+                fetch(`https://app.rightech.io/api/v1/objects?withChildGroups=true`, {
+                    method: "GET",
+                    headers: {
+                        "Authorization": API_RIC_KEY
+                    },
+                });
+            const data_RIC_OBJECTS_LIST = await RIC_OBJECTS_LIST.json();
+
+            try {
+                // Проверяем и получаем разрешение на использование камеры
+                const response46 = await Location.requestForegroundPermissionsAsync();
+                // Получаем координаты устройства
+                const { coords } = await Location.getCurrentPositionAsync();
+                var x = coords.latitude.toString();
+                var y = coords.longitude.toString();
+            } catch (error) {
+                Alert.alert('Вы не предоставили разрешение на использование гео-позиции (перейдите в настройки)');
+            }
+
+            if (RIC_OBJECTS_LIST.status == 401) {
+                // Если 401 ошибка, то выводим тост и в консоль
+                console.log('Error-401');
+                showToastWithError401();
+            }
+            // Если ошибки нет, запускаем:
+            else {
+
+                // Массив, в котором мы пробегаем по значениям из списка отсканированных объектов
+                setTodos22([]);
+                addTodo22('Номер', 'Онлайн', 'Команда')
+                let eroorExistsGoBroken = 0;
+
+                for (var i = 0; i < todos.length; i++) {
+                    var now1 = new Date().toLocaleTimeString();
+                    console.log("\n" + now1); // Выводим в консоль номер цикла
+
+                    setCounterPerformedCommands(0)
+                    console.log('ЦИКЛ: ' + i); // Выводим в консоль номер цикла
+                    setCounterPerformedCommands(i + 1)
+
+                    // Массив, в котором мы пробегаем по объектам из RIC
+                    for (let j = 0; j < data_RIC_OBJECTS_LIST.length; j++) {
+                        // Ищем отсканированный объект в списке объектов RIC
+                        if (data_RIC_OBJECTS_LIST[j].config.data.qr == todos[i].title) {
+
+                            let url_go_command;
+                            try {
+                                if (GoCommand == 'GoBroken') {
+                                    url_go_command = `https://app.rightech.io/api/v1/objects/${data_RIC_OBJECTS_LIST[j]._id}/commands/change-status-broken?withChildGroups=true`
+                                } else {
+                                    url_go_command = `https://app.rightech.io/api/v1/objects/${data_RIC_OBJECTS_LIST[j]._id}/commands/change-status-available?withChildGroups=true`
+                                }
+
+                                const api_url_scooterlockall = await
+                                    fetch(url_go_command, {
+                                        method: "POST",
+                                        headers: {
+                                            "Authorization": API_RIC_KEY
+                                        },
+                                    });
+                                // Выводим в консоль статус HTTP ответа
+                                const data2345 = await api_url_scooterlockall.json()
+                                let numQrScooter = data_RIC_OBJECTS_LIST[j].config.data.qr
+                                let objectStatusOnline = 0;
+                                if (data_RIC_OBJECTS_LIST[j].state.online) {
+                                    objectStatusOnline = 'Да'
+                                } else {
+                                    objectStatusOnline = 'Нет'
+                                }
+
+                                console.log('Номер самоката:', numQrScooter);
+
+                                let statusResponse = api_url_scooterlockall.status;
+
+                                if (statusResponse == 422) {
+                                    let titleResponse = data2345.codes[0];
+                                    // Поломка
+                                    if (titleResponse == 'error_api_already_broken') {
+                                        console.log('  Ответ: Уже в поломке!');
+                                        addTodo22(numQrScooter, objectStatusOnline, 'Уже в поломке')
+                                    }
+                                    else if (titleResponse == 'error_api_cant_change_from_taken_to_broken') {
+                                        console.log('  Ответ: Самокат в аренде');
+                                        addTodo22(numQrScooter, objectStatusOnline, 'Ошибка (Самокат в аренде)')
+                                        eroorExistsGoBroken = eroorExistsGoBroken + 1
+                                    }
+                                    else if (titleResponse == 'error_api_cant_change_from_reserved_to_broken') {
+                                        console.log('  Ответ: Самокат забронирован');
+                                        addTodo22(numQrScooter, objectStatusOnline, 'Ошибка (Самокат забронирован)')
+                                        eroorExistsGoBroken = eroorExistsGoBroken + 1
+                                    }
+                                    else if (titleResponse == 'error_api_cant_change_from_park_to_broken') {
+                                        console.log('  Ответ: Самокат в ожидании');
+                                        addTodo22(numQrScooter, objectStatusOnline, 'Ошибка (Самокат в ожидании)')
+                                        eroorExistsGoBroken = eroorExistsGoBroken + 1
+
+                                    }
+                                    // Свободен
+                                    else if (titleResponse == 'error_api_already_available') {
+                                        console.log('  Ответ: Уже свободен!');
+                                        console.log(titleResponse);
+                                        addTodo22(numQrScooter, objectStatusOnline, 'Уже свободен')
+                                    }
+                                    else if (titleResponse == 'error_api_cant_change_from_taken_to_available') {
+                                        console.log('  Ответ: Самокат в аренде');
+                                        console.log(titleResponse);
+                                        addTodo22(numQrScooter, objectStatusOnline, 'Ошибка (Самокат в аренде)')
+                                    }
+                                    else if (titleResponse == 'error_api_cant_change_from_reserved_to_available') {
+                                        console.log('  Ответ: Самокат забронирован');
+                                        console.log(titleResponse);
+                                        addTodo22(numQrScooter, objectStatusOnline, 'Ошибка (Самокат забронирован)')
+                                    }
+                                    else if (titleResponse == 'error_api_cant_change_from_park_to_available') {
+                                        console.log('  Ответ: Самокат в ожидании');
+                                        console.log(titleResponse);
+                                        addTodo22(numQrScooter, objectStatusOnline, 'Ошибка (Самокат в ожидании)')
+                                    }
+                                    // НЕИЗВЕСНАЯ ОШИБКА
+                                    else {
+                                        console.log('  Ответ: НЕИЗВЕСНАЯ ОШИБКА!');
+                                        addTodo22(numQrScooter, objectStatusOnline, titleResponse)
+                                        eroorExistsGoBroken = eroorExistsGoBroken + 1
+                                    }
+                                }
+                                else if (statusResponse == 200) {
+                                    console.log('  Ответ: Статус переведен!');
+                                    addTodo22(numQrScooter, objectStatusOnline, 'Успешно')
+                                }
+                                else {
+                                    console.log('  Ошибка!\nСтатус ответа: ', statusResponse);
+                                    addTodo22(numQrScooter, statusResponse, titleResponse)
+                                    eroorExistsGoBroken = eroorExistsGoBroken + 1
+                                }
+                            }
+                            catch (err) {
+                                console.log(err);
+                            }
+                            // console.log('eroorExistsGoBroken1: ' + eroorExistsGoBroken)
+
+                            // Запускаем команду на перевод объекта в статус "На складе"
+                            // try {
+                            //     const api_url_scooterlockall123 = await
+                            //         fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/00e9f?withChildGroups=true`, {
+                            //             method: "POST",
+                            //             headers: {
+                            //                 "Authorization": API_RIC_KEY
+                            //             },
+                            //         })
+                            //     console.log(' ПЕРЕВОД "В ГОРОД"');
+                            //     if (api_url_scooterlockall123.status == 200) {
+                            //         console.log('  Ответ: Статус переведен!');
+                            //     } else {
+                            //         console.log('  Ошибка!\nСтатус ответа: ', api_url_scooterlockall123.status);
+                            //     }
+                            // }
+                            // catch (err) {
+                            //     console.log(err);
+                            // }
+
+                            // Тут дальше я отправляю в гугл таблицу
+                            var now = new Date().toLocaleTimeString();
+                            const objt = `?p1=${todos[i].title}&p2=${now}&p3=Забрал&p4=${x},${y}`
+                            const GOOGLE_SHEET_PUSH = await fetch(
+                                `https://script.google.com/macros/s/AKfycbzpfVBOETyWNDXES7goQIq3KQ8c3OQupri_y2581JnPblpAgL6TB6r7K7MebVlieai3/exec${objt}`,
+                                {
+                                    method: 'GET',
+                                }
+                            )
+                            let GOOGLE_SHEET_PUSH_StatusResponse = GOOGLE_SHEET_PUSH.status;
+                            console.log("Гугл таблица: " + GOOGLE_SHEET_PUSH_StatusResponse);
+                        }
+                    }
+                }
+                // На данном этапе мы пробежали по всем объектам и перевели их в статус "Поломка"
+                // Определяем функцию, которая отправит сообщение и гео-позицию в Телеграм
+                // Определяем сообщение, которое отправим в Телеграм
+
+                let message
+                if (GoCommand == 'GoBroken') {
+                    message = `Забрал и перевел в поломку:\n${scootlistnum}`;
+                } else {
+                    message = `Выставил и перевел в свободен:\n${scootlistnum}`;
+                }
+
+                if (eroorExistsGoBroken != 0) {
+                    message = `@vasenkovivan\nЗабрал и перевел в поломку:\n${scootlistnum}`;
+                }
+                console.log('\nСообщение в ТГ: \n' + message)
+
+                // Получаем ключ
+                const response = await fetch(
+                    'https://bikeme-rt-scanner-default-rtdb.europe-west1.firebasedatabase.app/todos.json',
+                    {
+                        method: 'GET',
+                    }
+                )
+                const data = await response.json()
+                // console.log('DATATA: ', data)
+                const dataView = Object.keys(data).map(key => ({ ...data[key], id: key }))
+                let API_TELEGRAM_KEY = dataView[1].title;
+
+                let TELEGRAM_KEY_CHAT_ID
+                if (uid == UID_LIST.UID_ARCHANGELSK) {
+                    TELEGRAM_KEY_CHAT_ID = dataView[3].title;
+                } else {
+                    TELEGRAM_KEY_CHAT_ID = dataView[2].title;
+                }
+                // console.log('КЛЮЧ: ' + API_TELEGRAM_KEY)
+                // Асинхронная функция на axios для отправки POST запроса, для отправки сообщения в Телеграм
+                const TG_MESSAGE_PUSH = await
+                    axios.post(`https://api.telegram.org/bot${API_TELEGRAM_KEY}/sendMessage`, {
+                        chat_id: TELEGRAM_KEY_CHAT_ID,
+                        text: message
+                    });
+                let TG_MESSAGE_PUSH_StatusResponse = TG_MESSAGE_PUSH.status;
+                console.log("\nОтправка сообщения в ТГ: " + TG_MESSAGE_PUSH_StatusResponse);
+
+                // console.log(api_urlTG.status)
+                // Асинхронная функция на axios для отправки POST запроса, для отправки гео-позиции устройства в Телеграм
+                const TG_LOCATION_PUSH = await
+                    axios.post(KEYS_TELEGRAM.URI_API_LOCATION, {
+                        chat_id: TELEGRAM_KEY_CHAT_ID,
+                        latitude: x,
+                        longitude: y,
+                    })
+                let TG_LOCATION_PUSH_StatusResponse = TG_LOCATION_PUSH.status;
+                console.log("Отправка гео в ТГ: " + TG_LOCATION_PUSH_StatusResponse);
+
+                if (GoCommand == 'GoBroken') {
+                    setLoadingBroken(loadingBroken);    // Выключаем loading-индикатор
+                    showToastWithGoBroken();            // Показываем тост успеха
+                } else {
+                    setLoadingAvailable(loadingAvailable);  // Выключаем loading-индикатор
+                    showToastWithGoAvailable();
+                }
+
+                setTimeout(() => {
+                    if (GoCommand == 'GoBroken') {
+                        setscooterGoBrokenDisabledButton(scooterGoBrokenDisabledButton);
+                    } else {
+                        setscooterGoAvailableDisabledButton(scooterGoAvailableDisabledButton);
+                    }
+                }, 5000);
+            }
+        }
+    }
 
 
-    const [loadingAvailable22, setLoadingAvailable22] = useState();
+    const [counterPerformedCommands, setCounterPerformedCommands] = useState();
 
     const scooterGoAvailable = async () => {
+
         // Проверяем, что список объектов не пустой
         // Устанавливаем loading-индикатор кнопки "В СВОБОДЕН" в значение true, что бы активировать его
         setLoadingAvailable(!loadingAvailable);
@@ -460,13 +495,12 @@ const MainScreen = ({ navigation }, setValue) => {
             }
         )
         const data = await response.json()
-        // console.log('DATATA: ', data)
+
         const dataView = Object.keys(data).map(key => ({ ...data[key], id: key }))
         let API_RIC_KEY = dataView[0].title;
-        // console.log('КЛЮЧ: ' + API_RIC_KEY)
 
         // Получаем список объектов от RIC
-        const api_url_objects_list_count = await
+        const RIC_OBJECTS_LIST = await
             fetch(`https://app.rightech.io/api/v1/objects?withChildGroups=true`, {
                 method: "GET",
                 headers: {
@@ -474,7 +508,7 @@ const MainScreen = ({ navigation }, setValue) => {
                 },
             });
         // Приводим к формату JSON
-        const dataObjectsListCount = await api_url_objects_list_count.json();
+        const dataObjectsListCount = await RIC_OBJECTS_LIST.json();
 
         // Проверяем ответ от RIC по запросу списка объектов
         try {
@@ -488,7 +522,7 @@ const MainScreen = ({ navigation }, setValue) => {
         } catch (error) {
             Alert.alert('Вы не предоставили разрешение на использование гео-позиции (перейдите в настройки)');
         }
-        if (api_url_objects_list_count.status == 401) {
+        if (RIC_OBJECTS_LIST.status == 401) {
             // Если 401 ошибка, то выводим тост и в консоль
             console.log('Error-401');
             showToastWithError401();
@@ -506,12 +540,11 @@ const MainScreen = ({ navigation }, setValue) => {
                 console.log('\n'); // Выводим в консоль номер цикла
                 console.log(now1); // Выводим в консоль номер цикла
 
-                setLoadingAvailable22(0)
+                setCounterPerformedCommands(0)
                 console.log('ЦИКЛ: ' + i); // Выводим в консоль номер цикла
-                setLoadingAvailable22(i + 1)
-                console.log('var loadingAvailable22: ', loadingAvailable22);
+                setCounterPerformedCommands(i + 1)
 
-                console.log('ЦИКЛ2: ', loadingAvailable22);
+                console.log('ЦИКЛ2: ', counterPerformedCommands);
                 for (let j = 0; j < dataObjectsListCount.length; j++) {
                     // Ищем отсканированный объект в списке объектов RIC
                     if (dataObjectsListCount[j].config.data.qr == todos[i].title) {
@@ -634,6 +667,7 @@ const MainScreen = ({ navigation }, setValue) => {
                         method: 'GET',
                     }
                 )
+
                 const data = await response.json()
                 // console.log('DATATA: ', data)
                 const dataView = Object.keys(data).map(key => ({ ...data[key], id: key }))
@@ -697,36 +731,31 @@ const MainScreen = ({ navigation }, setValue) => {
     // Функция кнопки "В ПОЛОМКУ" 
     // Перевод объектов в статус "Свободен" 
     const scooterGoOpenBattery = async () => {
-        // Проверяем, что список объектов не пустой
 
         setLoadingGoOpenBattery(!loadingGoOpenBattery);
         setscooterGoOpenBatteryDisabledButton(!scooterGoOpenBatteryDisabledButton);
-        // Устанавливаем loading-индикатор кнопки "В СВОБОДЕН" в значение true, что бы активировать его
-        // setLoadingAvailable(!loadingAvailable);
-        // setscooterGoAvailableDisabledButton(!scooterGoAvailableDisabledButton);
-        // Получаем ключ
-        const response = await fetch(
-            'https://bikeme-rt-scanner-default-rtdb.europe-west1.firebasedatabase.app/todos.json',
-            {
-                method: 'GET',
-            }
-        )
-        const data = await response.json()
-        // console.log('DATATA: ', data)
+
+        const responseFireBase = await
+            fetch('https://bikeme-rt-scanner-default-rtdb.europe-west1.firebasedatabase.app/todos.json',
+                {
+                    method: 'GET',
+                }
+            )
+        const data = await responseFireBase.json()
         const dataView = Object.keys(data).map(key => ({ ...data[key], id: key }))
+
         let API_RIC_KEY = dataView[0].title;
-        // console.log('КЛЮЧ: ' + API_RIC_KEY)
 
         // Получаем список объектов от RIC
-        const api_url_objects_list_count = await
+        const RIC_OBJECTS_LIST = await
             fetch(`https://app.rightech.io/api/v1/objects?withChildGroups=true`, {
                 method: "GET",
                 headers: {
                     "Authorization": API_RIC_KEY
                 },
             });
-        // Приводим к формату JSON
-        const dataObjectsListCount = await api_url_objects_list_count.json();
+
+        const dataObjectsListCount = await RIC_OBJECTS_LIST.json();
 
         // Проверяем ответ от RIC по запросу списка объектов
         try {
@@ -740,42 +769,43 @@ const MainScreen = ({ navigation }, setValue) => {
         } catch (error) {
             Alert.alert('Вы не предоставили разрешение на использование гео-позиции (перейдите в настройки)');
         }
-        if (api_url_objects_list_count.status == 401) {
+
+        if (RIC_OBJECTS_LIST.status == 401) {
             // Если 401 ошибка, то выводим тост и в консоль
             console.log('Error-401');
             showToastWithError401();
         }
         // Если ошибки нет, запускаем:
         else {
-            // Выводим в консоль количество объектов в RIC
-            // console.log('Кол-во объектов: ' + dataObjectsListCount.length)
             // Массив, в котором мы пробегаем по значениям из списка отсканированных объектов
             for (var i = 0; i < todos.length; i++) {
-                console.log('ЦИКЛ: ' + i); // Выводим в консоль номер цикла
+
+                console.log('\nЦИКЛ: ' + i); // Выводим в консоль номер цикла
+
                 for (let j = 0; j < dataObjectsListCount.length; j++) {
                     // Ищем отсканированный объект в списке объектов RIC
                     if (dataObjectsListCount[j].config.data.qr == todos[i].title) {
-                        // Выводим кучу бреда в консоль
-                        // console.log('Н А Й Д Е Н О ! ! ! ! !')
-                        // console.log('Номер по RIC: ' + j)
-                        // console.log('Вывод QR из RIC: ' + dataObjectsListCount[j].config.data.qr)
-                        // console.log('Вывод QR из скана: ' + todos[i].title)
-                        // console.log('Вывод ID из RIC: ' + dataObjectsListCount[j]._id)
-                        // console.log('ЗАПУСКАЮ КОМАНДУ НА ПЕРЕВОД В СВОБОДЕН!!!!!')
 
                         let reqs
-                        console.log('Вывод ID из RIC+: ' + dataObjectsListCount[j]._id)
+                        console.log('ID из RIC: ' + dataObjectsListCount[j]._id)
 
                         if (uid == UID_LIST.UID_ARCHANGELSK) {
                             reqs = `https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/meulk_cmd?withChildGroups=true`
+                            console.log("Арх команда АКБ");
                         } else {
                             reqs = `https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/scsetmode-eco-wxs9m-7qnlg?withChildGroups=true`
+                            console.log("Мур команда АКБ");
                         }
                         try {
                             const api_url_scooterlockall = await
-                                fetch(reqs, requestOptionsPOST);
+                                fetch(reqs, {
+                                    method: "POST",
+                                    headers: {
+                                        "Authorization": API_RIC_KEY
+                                    },
+                                });
                             // Выводим в консоль статус HTTP ответа
-                            console.log('response.statusMUR: ', api_url_scooterlockall.status);
+                            console.log('Открытие АКБ статус: ', api_url_scooterlockall.status);
                         }
                         catch (err) {
                             console.log(err);
@@ -791,49 +821,43 @@ const MainScreen = ({ navigation }, setValue) => {
                                 method: 'GET',
                             }
                         )
+                        console.log("Отправка в таблицу: " + response2.status)
+
                     }
                 }
             }
             // На данном этапе мы пробежали по всем объектам и перевели их в статус "Поломка"
             // Определяем функцию, которая отправит сообщение и гео-позицию в Телеграм
-            const scooterListSendToTelegramGoOpenBattery = async () => {
-                // Определяем сообщение, которое отправим в Телеграм
-                let message = `Заменил АКБ:\n${scootlistnum}`;
-                // Получаем ключ
-                const response = await fetch(
-                    'https://bikeme-rt-scanner-default-rtdb.europe-west1.firebasedatabase.app/todos.json',
-                    {
-                        method: 'GET',
-                    }
-                )
-                const data = await response.json()
-                // console.log('DATATA: ', data)
-                const dataView = Object.keys(data).map(key => ({ ...data[key], id: key }))
-                let API_TELEGRAM_KEY = dataView[1].title;
 
-                let TELEGRAM_KEY_CHAT_ID
-                if (uid == UID_LIST.UID_ARCHANGELSK) {
-                    TELEGRAM_KEY_CHAT_ID = dataView[3].title;
-                } else {
-                    TELEGRAM_KEY_CHAT_ID = dataView[2].title;
-                }
-                // console.log('КЛЮЧ: ' + API_TELEGRAM_KEY)
-                // Асинхронная функция на axios для отправки POST запроса, для отправки сообщения в Телеграм
-                const api_urlTG = await
-                    axios.post(`https://api.telegram.org/bot${API_TELEGRAM_KEY}/sendMessage`, {
-                        chat_id: TELEGRAM_KEY_CHAT_ID,
-                        text: message
-                    });
-                // console.log(api_urlTG.status)
-                // Асинхронная функция на axios для отправки POST запроса, для отправки гео-позиции устройства в Телеграм
-                const api_urlTG2 = await
-                    axios.post(KEYS_TELEGRAM.URI_API_LOCATION, {
-                        chat_id: TELEGRAM_KEY_CHAT_ID,
-                        latitude: x,
-                        longitude: y,
-                    })
+            // Определяем сообщение, которое отправим в Телеграм
+            let message = `Заменил АКБ:\n${scootlistnum}`;
+
+            let API_TELEGRAM_KEY = dataView[1].title;
+
+            let TELEGRAM_KEY_CHAT_ID
+            if (uid == UID_LIST.UID_ARCHANGELSK) {
+                TELEGRAM_KEY_CHAT_ID = dataView[3].title;
+                console.log("Арх чат ТГ");
+            } else {
+                TELEGRAM_KEY_CHAT_ID = dataView[2].title;
+                console.log("Мур чат ТГ");
             }
-            scooterListSendToTelegramGoOpenBattery();   // Запускаем функцию описанную выше
+            // console.log('КЛЮЧ: ' + API_TELEGRAM_KEY)
+            // Асинхронная функция на axios для отправки POST запроса, для отправки сообщения в Телеграм
+            const api_urlTG = await
+                axios.post(`https://api.telegram.org/bot${API_TELEGRAM_KEY}/sendMessage`, {
+                    chat_id: TELEGRAM_KEY_CHAT_ID,
+                    text: message
+                });
+            console.log("\nОтправка текста в ТГ: " + api_urlTG.status)
+            // Асинхронная функция на axios для отправки POST запроса, для отправки гео-позиции устройства в Телеграм
+            const api_urlTG2 = await
+                axios.post(KEYS_TELEGRAM.URI_API_LOCATION, {
+                    chat_id: TELEGRAM_KEY_CHAT_ID,
+                    latitude: x,
+                    longitude: y,
+                })
+            console.log("Отправка гео в ТГ: " + api_urlTG2.status)
             setLoadingGoOpenBattery(loadingGoOpenBattery);  // Выключаем loading-индикатор
             showToastWithGoOpenBattery();             // Показываем тост успеха
             setTimeout(() => {
@@ -1014,8 +1038,17 @@ const MainScreen = ({ navigation }, setValue) => {
 
 
 
-    const [todos, setTodos] = useState([])
-    console.log(todos);
+    const [todos, setTodos] = useState([
+        {
+            "id": "1",
+            "title": "290001"
+        },
+        {
+            "id": "2",
+            "title": "290002"
+        }
+    ])
+    // console.log(todos);
     const [todos22, setTodos22] = useState([])
 
 
@@ -1243,7 +1276,7 @@ const MainScreen = ({ navigation }, setValue) => {
                         <View style={styles.containerResult}>
                             <View style={styles.containerResultTitleBox}>
                                 <Text style={styles.containerResultTitleBoxText}>
-                                    Результат ( {loadingAvailable22} / {abc} )
+                                    Результат ( {counterPerformedCommands} / {abc} )
                                 </Text>
                                 {loadingAvailable &&
                                     <ActivityIndicator
