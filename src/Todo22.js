@@ -30,10 +30,14 @@ export const Todo22 = ({ todo22, onRemove }) => {
             <View style={styles.onlineGreen}>
               <Text style={styles.onlineText}>{todo22.code22}</Text>
             </View>
-            :
-            <View style={styles.onlineRed}>
-              <Text style={styles.onlineText}>{todo22.code22}</Text>
-            </View>
+            : todo22.code22 == 'Нет' ?
+              <View style={styles.onlineRed}>
+                <Text style={styles.onlineText}>{todo22.code22}</Text>
+              </View>
+              :
+              <View style={styles.onlineBlue}>
+                <Text style={styles.onlineText}>{todo22.code22}</Text>
+              </View>
         }
 
         {todo22.status22 == 'Команда' ?
@@ -146,6 +150,18 @@ const styles = StyleSheet.create({
     marginBottom: 2,
     marginRight: 2,
     backgroundColor: '#DF9A9A',
+    alignItems: "center"
+  },
+  onlineBlue: {
+    width: 60,
+    fontSize: 7,
+    padding: 2,
+    borderWidth: 1,
+    borderColor: '#555',
+    borderRadius: 5,
+    marginBottom: 2,
+    marginRight: 2,
+    backgroundColor: '#9AADDF',
     alignItems: "center"
   },
   responseGreen: {

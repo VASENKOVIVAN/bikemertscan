@@ -149,6 +149,8 @@ const MainScreen = ({ navigation }, setValue) => {
     const [scooterGoAvailableDisabledButton, setscooterGoAvailableDisabledButton] = useState(false);
     const [scooterGoOpenBatteryDisabledButton, setscooterGoOpenBatteryDisabledButton] = useState(false);
 
+    const [todos22, setTodos22] = useState([])
+
     const auth = getAuth();
     const user = auth.currentUser;
     const uid = user.uid.toString();
@@ -199,7 +201,29 @@ const MainScreen = ({ navigation }, setValue) => {
                 ]
             )
         }
+    }
 
+    const scooterGoOpenBatteryAlert = () => {
+
+        if (todos.length == 0) {
+            showToastErrorEmptyList();
+        } else {
+            Alert.alert(
+                "Открыть слоты АКБ?",
+                "Вы уверены, что хотите\nОТКРЫТЬ СЛОТЫ АКБ\nна выбранных самокатах?",
+                [
+                    {
+                        text: "Закрыть",
+                        onPress: () => console.log("Cancel Pressed"),
+                        style: "cancel"
+                    },
+                    {
+                        text: "Да, уверен",
+                        onPress: () => scooterGoCommand('GoOpenBattery'),
+                    }
+                ]
+            )
+        }
     }
 
     const scooterGoCommand = async (GoCommand) => {
@@ -212,9 +236,14 @@ const MainScreen = ({ navigation }, setValue) => {
             if (GoCommand == 'GoBroken') {
                 setLoadingBroken(!loadingBroken);
                 setscooterGoBrokenDisabledButton(!scooterGoBrokenDisabledButton);
-            } else {
+            }
+            else if (GoCommand == 'GoAvailable') {
                 setLoadingAvailable(!loadingAvailable);
                 setscooterGoAvailableDisabledButton(!scooterGoAvailableDisabledButton);
+            }
+            else {
+                setLoadingGoOpenBattery(!loadingGoOpenBattery);
+                setscooterGoOpenBatteryDisabledButton(!scooterGoOpenBatteryDisabledButton);
             }
 
             // Получаем ключ
@@ -279,8 +308,18 @@ const MainScreen = ({ navigation }, setValue) => {
                             try {
                                 if (GoCommand == 'GoBroken') {
                                     url_go_command = `https://app.rightech.io/api/v1/objects/${data_RIC_OBJECTS_LIST[j]._id}/commands/change-status-broken?withChildGroups=true`
-                                } else {
+                                }
+                                else if (GoCommand == 'GoAvailable') {
                                     url_go_command = `https://app.rightech.io/api/v1/objects/${data_RIC_OBJECTS_LIST[j]._id}/commands/change-status-available?withChildGroups=true`
+                                }
+                                else {
+                                    if (uid == UID_LIST.UID_ARCHANGELSK) {
+                                        url_go_command = `https://app.rightech.io/api/v1/objects/${data_RIC_OBJECTS_LIST[j]._id}/commands/meulk_cmd?withChildGroups=true`
+                                        console.log("Архангельск команда АКБ");
+                                    } else {
+                                        url_go_command = `https://app.rightech.io/api/v1/objects/${data_RIC_OBJECTS_LIST[j]._id}/commands/scsetmode-eco-wxs9m-7qnlg?withChildGroups=true`
+                                        console.log("Мурманск команда АКБ");
+                                    }
                                 }
 
                                 const api_url_scooterlockall = await
@@ -294,18 +333,52 @@ const MainScreen = ({ navigation }, setValue) => {
                                 const data2345 = await api_url_scooterlockall.json()
                                 let numQrScooter = data_RIC_OBJECTS_LIST[j].config.data.qr
                                 let objectStatusOnline = 0;
+
+                                console.log(data2345);
+
                                 if (data_RIC_OBJECTS_LIST[j].state.online) {
                                     objectStatusOnline = 'Да'
                                 } else {
                                     objectStatusOnline = 'Нет'
                                 }
 
-                                console.log('Номер самоката:', numQrScooter);
-
                                 let statusResponse = api_url_scooterlockall.status;
 
+                                console.log('СТАТУС: ' + statusResponse);
+
+                                console.log('Номер самоката:', numQrScooter);
+
+                                let titleResponse
+
+                                if (numQrScooter.substr(0, 2) == 29) {
+                                    console.log('OKAI');
+                                    if (GoCommand == 'GoOpenBattery') {
+                                        if (statusResponse == 400) {
+                                            titleResponse = data2345.codes[0];
+                                        } else {
+                                            titleResponse = "Какая то ошибка";
+                                        }
+                                    }
+                                    else {
+                                        if (statusResponse == 200) {
+                                            titleResponse = "Успешно";
+
+
+                                        } else {
+                                            titleResponse = data2345.codes[0];
+                                        }
+                                    }
+                                } else {
+                                    console.log('НЕ ОКАИ');
+                                    if (statusResponse == 400 || statusResponse == 422) {
+                                        titleResponse = data2345.codes[0];
+                                    } else {
+                                        titleResponse = "Какая то ошибка";
+                                    }
+                                }
+
+
                                 if (statusResponse == 422) {
-                                    let titleResponse = data2345.codes[0];
                                     // Поломка
                                     if (titleResponse == 'error_api_already_broken') {
                                         console.log('  Ответ: Уже в поломке!');
@@ -361,7 +434,7 @@ const MainScreen = ({ navigation }, setValue) => {
                                 }
                                 else {
                                     console.log('  Ошибка!\nСтатус ответа: ', statusResponse);
-                                    addTodo22(numQrScooter, statusResponse, titleResponse)
+                                    addTodo22(numQrScooter, objectStatusOnline, statusResponse + ' ' + titleResponse)
                                     eroorExistsGoBroken = eroorExistsGoBroken + 1
                                 }
                             }
@@ -407,17 +480,33 @@ const MainScreen = ({ navigation }, setValue) => {
                 // На данном этапе мы пробежали по всем объектам и перевели их в статус "Поломка"
                 // Определяем функцию, которая отправит сообщение и гео-позицию в Телеграм
                 // Определяем сообщение, которое отправим в Телеграм
+                // let scootlistnumlog = todos22.map(todo22 => todo22.title22 + ' - ' + todo22.code22 + ' - ' + todo22.status22).join("\n");
 
                 let message
-                if (GoCommand == 'GoBroken') {
-                    message = `Забрал и перевел в поломку:\n${scootlistnum}`;
-                } else {
-                    message = `Выставил и перевел в свободен:\n${scootlistnum}`;
+                if (eroorExistsGoBroken != 0) {
+                    if (GoCommand == 'GoBroken') {
+                        message = `*Забрал и перевел в поломку:*\n${scootlistnum}\n@vasenkovivan`;
+                    }
+                    else if (GoCommand == 'GoAvailable') {
+                        message = `*Выставил и перевел в свободен:*\n${scootlistnum}\n@vasenkovivan`;
+                    }
+                    else {
+                        message = `*Заменил АКБ:*\n${scootlistnum}\n@vasenkovivan`;
+                    }
+                }
+                else {
+                    if (GoCommand == 'GoBroken') {
+                        message = `*Забрал и перевел в поломку:*\n${scootlistnum}`;
+                    }
+                    else if (GoCommand == 'GoAvailable') {
+                        message = `*Выставил и перевел в свободен:*\n${scootlistnum}`;
+                    }
+                    else {
+                        message = `*Заменил АКБ:*\n${scootlistnum}`;
+                    }
                 }
 
-                if (eroorExistsGoBroken != 0) {
-                    message = `@vasenkovivan\nЗабрал и перевел в поломку:\n${scootlistnum}`;
-                }
+
                 console.log('\nСообщение в ТГ: \n' + message)
 
                 // Получаем ключ
@@ -443,10 +532,17 @@ const MainScreen = ({ navigation }, setValue) => {
                 const TG_MESSAGE_PUSH = await
                     axios.post(`https://api.telegram.org/bot${API_TELEGRAM_KEY}/sendMessage`, {
                         chat_id: TELEGRAM_KEY_CHAT_ID,
-                        text: message
+                        text: message,
+                        parse_mode: 'Markdown',
                     });
                 let TG_MESSAGE_PUSH_StatusResponse = TG_MESSAGE_PUSH.status;
                 console.log("\nОтправка сообщения в ТГ: " + TG_MESSAGE_PUSH_StatusResponse);
+
+                if (TG_MESSAGE_PUSH_StatusResponse == 200) {
+                    addTodo22("Telegram", TG_MESSAGE_PUSH_StatusResponse, 'Успешно')
+                } else {
+                    addTodo22("Telegram", TG_MESSAGE_PUSH_StatusResponse, 'Не отправлено!')
+                }
 
                 // console.log(api_urlTG.status)
                 // Асинхронная функция на axios для отправки POST запроса, для отправки гео-позиции устройства в Телеграм
@@ -462,16 +558,25 @@ const MainScreen = ({ navigation }, setValue) => {
                 if (GoCommand == 'GoBroken') {
                     setLoadingBroken(loadingBroken);    // Выключаем loading-индикатор
                     showToastWithGoBroken();            // Показываем тост успеха
-                } else {
+                }
+                else if (GoCommand == 'GoAvailable') {
                     setLoadingAvailable(loadingAvailable);  // Выключаем loading-индикатор
                     showToastWithGoAvailable();
+                }
+                else {
+                    setLoadingGoOpenBattery(loadingGoOpenBattery);  // Выключаем loading-индикатор
+                    showToastWithGoOpenBattery();             // Показываем тост успеха
                 }
 
                 setTimeout(() => {
                     if (GoCommand == 'GoBroken') {
                         setscooterGoBrokenDisabledButton(scooterGoBrokenDisabledButton);
-                    } else {
+                    }
+                    else if (GoCommand == 'GoAvailable') {
                         setscooterGoAvailableDisabledButton(scooterGoAvailableDisabledButton);
+                    }
+                    else {
+                        setscooterGoOpenBatteryDisabledButton(scooterGoOpenBatteryDisabledButton);
                     }
                 }, 5000);
             }
@@ -568,7 +673,7 @@ const MainScreen = ({ navigation }, setValue) => {
                                 });
                             // Выводим в консоль статус HTTP ответа
                             const data2345 = await api_url_scooterlockall.json()
-
+                            console.log(data2345);
                             let numQrScooter = dataObjectsListCount[j].config.data.qr
                             let objectStatusOnline = 0;
                             if (dataObjectsListCount[j].state.online) {
@@ -581,9 +686,10 @@ const MainScreen = ({ navigation }, setValue) => {
                             console.log(' ПЕРЕВОД "В СВОБОДЕН"');
 
                             let statusResponse = api_url_scooterlockall.status;
-
+                            let titleResponse
                             if (statusResponse == 422) {
-                                let titleResponse = data2345.codes[0];
+                                titleResponse = data2345.codes[0];
+                                console.log(titleResponse);
                                 if (titleResponse == 'error_api_already_available') {
                                     console.log('  Ответ: Уже свободен!');
                                     console.log(titleResponse);
@@ -609,6 +715,8 @@ const MainScreen = ({ navigation }, setValue) => {
                                 console.log('  Ответ: Статус переведен!');
                                 addTodo22(numQrScooter, objectStatusOnline, 'Успешно')
                             } else {
+                                titleResponse = data2345.codes[0];
+
                                 console.log('  Ошибка!\nСтатус ответа: ', statusResponse);
                                 addTodo22(numQrScooter, statusResponse, titleResponse)
 
@@ -705,29 +813,7 @@ const MainScreen = ({ navigation }, setValue) => {
     }
 
 
-    const scooterGoOpenBatteryAlert = () => {
 
-        if (todos.length == 0) {
-            showToastErrorEmptyList();
-        } else {
-            Alert.alert(
-                "Открыть слоты АКБ?",
-                "Вы уверены, что хотите\nОТКРЫТЬ СЛОТЫ АКБ\nна выбранных самокатах?",
-                [
-                    {
-                        text: "Закрыть",
-                        onPress: () => console.log("Cancel Pressed"),
-                        style: "cancel"
-                    },
-                    {
-                        text: "Да, уверен",
-                        onPress: () => scooterGoOpenBattery(),
-                    }
-                ]
-            )
-        }
-
-    }
     // Функция кнопки "В ПОЛОМКУ" 
     // Перевод объектов в статус "Свободен" 
     const scooterGoOpenBattery = async () => {
@@ -1037,19 +1123,18 @@ const MainScreen = ({ navigation }, setValue) => {
 
 
 
-
-    const [todos, setTodos] = useState([
-        {
-            "id": "1",
-            "title": "290001"
-        },
-        {
-            "id": "2",
-            "title": "290002"
-        }
-    ])
+    // const [todos, setTodos] = useState([
+    //     {
+    //         "id": "1",
+    //         "title": "290001"
+    //     },
+    //     {
+    //         "id": "2",
+    //         "title": "290002"
+    //     }
+    // ])
+    const [todos, setTodos] = useState([])
     // console.log(todos);
-    const [todos22, setTodos22] = useState([])
 
 
     const pressDelete = () => {
@@ -1129,9 +1214,7 @@ const MainScreen = ({ navigation }, setValue) => {
                 status22: status22
             }
         ])
-
     }
-
     let abc = todos.length
     let lastElem = todos[todos.length - 1];
 
@@ -1357,69 +1440,79 @@ const MainScreen = ({ navigation }, setValue) => {
                         </View>
                     </View>
                     :
-                    < View style={styles.Three} >
-                        <TouchableOpacity onPress={scooterGoBrokenAlert} disabled={scooterGoBrokenDisabledButton}>
-                            <View
-                                style={{
-                                    ...styles.button,
-                                    backgroundColor: loadingBroken ? "#444647" : "#444647",
-                                    backgroundColor: scooterGoBrokenDisabledButton ? "#E7E6E6" : "#444647",
-                                }}
-                            >
-                                {loadingBroken && <ActivityIndicator style={styles.buttonText333} size="large" color="white" />}
-                                <Text style={styles.buttonText}>
-                                    {loadingBroken ? "" : scooterGoBrokenDisabledButton ? "Блестяще" : "В ПОЛОМКУ"}
-                                    {/* {scooterGoBrokenDisabledButton ? "" : "В ПОЛОМКУ"} */}
-                                </Text>
-                            </View>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={pressDelete}>
-                            <View style={styles.button2}>
+                    <View style={styles.bottomContainer}>
+                        <View style={styles.bottomContainerButtons}>
+                            <TouchableOpacity onPress={scooterGoBrokenAlert} disabled={scooterGoBrokenDisabledButton}>
+                                <View
+                                    style={{
+                                        ...styles.button,
+                                        backgroundColor: loadingBroken ? "#444647" : "#444647",
+                                        backgroundColor: scooterGoBrokenDisabledButton ? "#E7E6E6" : "#444647",
+                                    }}
+                                >
+                                    {loadingBroken && <ActivityIndicator style={styles.buttonText333} size="large" color="white" />}
+                                    <Text style={styles.buttonText}>
+                                        {loadingBroken ? "" : scooterGoBrokenDisabledButton ? "Блестяще" : "В ПОЛОМКУ"}
+                                        {/* {scooterGoBrokenDisabledButton ? "" : "В ПОЛОМКУ"} */}
+                                    </Text>
+                                </View>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={pressDelete}>
+                                <View style={styles.button2}>
 
-                                <MaterialIcons name="delete-sweep" size={26} color="white" />
+                                    <MaterialIcons name="delete-sweep" size={26} color="white" />
 
-                            </View>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={scooterGoOpenBatteryAlert} disabled={scooterGoOpenBatteryDisabledButton}>
-                            <View style={{
-                                ...styles.button22,
-                                backgroundColor: !scooterGoOpenBatteryDisabledButton ? "#919E42" : "#E7E6E6",
-                            }}>
-                                {!loadingGoOpenBattery ?
-                                    <MaterialCommunityIcons name="battery-charging-medium" size={26} color="white" />
-                                    :
-                                    <ActivityIndicator size="large" color="white" />
-                                }
-                            </View>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={scooterGoAvailableAlert}>
-                            <View
-                                style={{
-                                    ...styles.button,
-                                    backgroundColor: loadingAvailable ? "#2F71A2" : "#2F71A2",
-                                    backgroundColor: scooterGoAvailableDisabledButton ? "#E7E6E6" : "#2F71A2",
-                                }}
-                            >
-                                {loadingAvailable &&
-                                    <View>
-                                        <ActivityIndicator style={styles.buttonText333} size="large" color="white" />
-                                    </View>
-                                }
-                                <Text style={styles.buttonText}>
-                                    {loadingAvailable ? "" : scooterGoAvailableDisabledButton ? "Блестяще" : "В СВОБОДЕН"}
-                                </Text>
-                            </View>
-                        </TouchableOpacity>
-                        {/* <GoAvaliableButton todos={todos} todos22={todos22} /> */}
+                                </View>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={scooterGoOpenBatteryAlert} disabled={scooterGoOpenBatteryDisabledButton}>
+                                <View style={{
+                                    ...styles.button22,
+                                    backgroundColor: !scooterGoOpenBatteryDisabledButton ? "#919E42" : "#E7E6E6",
+                                }}>
+                                    {!loadingGoOpenBattery ?
+                                        <MaterialCommunityIcons name="battery-charging-medium" size={26} color="white" />
+                                        :
+                                        <ActivityIndicator size="large" color="white" />
+                                    }
+                                </View>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={scooterGoAvailableAlert}>
+                                <View
+                                    style={{
+                                        ...styles.button,
+                                        backgroundColor: loadingAvailable ? "#2F71A2" : "#2F71A2",
+                                        backgroundColor: scooterGoAvailableDisabledButton ? "#E7E6E6" : "#2F71A2",
+                                    }}
+                                >
+                                    {loadingAvailable &&
+                                        <View>
+                                            <ActivityIndicator style={styles.buttonText333} size="large" color="white" />
+                                        </View>
+                                    }
+                                    <Text style={styles.buttonText}>
+                                        {loadingAvailable ? "" : scooterGoAvailableDisabledButton ? "Блестяще" : "В СВОБОДЕН"}
+                                    </Text>
+                                </View>
+                            </TouchableOpacity>
+                            {/* <GoAvaliableButton todos={todos} todos22={todos22} /> */}
+                        </View >
+                        <View style={styles.bottomContainerTitle}>
+                            {uid == UID_LIST.UID_MURMANSK ?
+                                <Text style={styles.bottomContainerText}>version 4.1.0 - Мурманск</Text> :
+                                uid == UID_LIST.UID_ARCHANGELSK ?
+                                    <Text style={styles.bottomContainerText}>version 4.1.0 - Архангельск</Text> :
+                                    <Text>ошибка</Text>
+                            }
+                        </View >
                     </View >
                 }
             </View >
         </View >
-
     )
 }
 
 const styles = StyleSheet.create({
+
     MainScreen: {
         flex: 1
     },
@@ -1531,6 +1624,33 @@ const styles = StyleSheet.create({
     containerInputAddNumberButtonClose: {
 
     },
+    bottomContainer: {
+        flexDirection: "column",
+        backgroundColor: 'white',
+    },
+    bottomContainerButtons: {
+        justifyContent: 'space-between',
+        flexDirection: "row",
+        paddingHorizontal: 30,
+        paddingTop: 10,
+        borderTopWidth: 1,
+        borderLeftWidth: 1,
+        borderRightWidth: 1,
+        borderTopEndRadius: 20,
+        borderTopStartRadius: 20,
+        borderColor: '#DFDFDF',
+    },
+    bottomContainerTitle: {
+        alignItems: 'center',
+
+    },
+    bottomContainerText: {
+        fontSize: 12,
+        color: 'lightgray',
+        marginVertical: 2,
+
+    },
+
 
 
 
@@ -1589,27 +1709,6 @@ const styles = StyleSheet.create({
         // paddingHorizontal: 20,
         // paddingVertical: 10,
         // backgroundColor: 'blue',
-    },
-    Three: {
-        // flex: 1,
-        // backgroundColor: 'lightblue',
-        justifyContent: 'space-between',
-        // width: '100%',
-        flexDirection: "row",
-        // justifyContent: 'space-around',
-        // justifyContent: 'space-between',
-        // alignItems: "center",
-
-        paddingHorizontal: 30,
-        paddingVertical: 10,
-        backgroundColor: 'white',
-        // borderStartWidth: 5,
-        borderTopWidth: 1,
-        borderLeftWidth: 1,
-        borderRightWidth: 1,
-        borderTopEndRadius: 20,
-        borderTopStartRadius: 20,
-        borderColor: '#DFDFDF',
     },
     button: {
         flex: 1,
