@@ -25,13 +25,35 @@ import { KEYS_RIC } from '../src/keys/keys-ric'
 import { GoAvaliableButton } from '../src/components/GoAvaliableButton'
 import { ResultContainer } from '../src/components/ResultContainer'
 import { getAuth } from "firebase/auth";
-
+import { StatusBar } from 'expo-status-bar';
 import { UID_LIST } from "../src/UIDS/UIDS";
-
+import * as ScreenOrientation from 'expo-screen-orientation'
 import { THEME } from '../src/theme'
 
 
 const MainScreen = ({ navigation }, setValue) => {
+    // const [orientationIsLandscape, setOrientation] = useState(true)
+    // console.log(ScreenOrientation.getOrientationAsync())
+
+    // ScreenOrientation.getOrientationAsync().then((letqScreenOrientation) => console.log(letqScreenOrientation));
+
+    const [orientation, setOrientation] = useState(0);
+    // console.log(ScreenOrientation.Orientation.PORTRAIT_UP)
+
+    const listener = () => {
+        console.log('Сменил');
+        // ScreenOrientation.getOrientationAsync().then((letqScreenOrientation) => console.log(letqScreenOrientation));
+        if (ScreenOrientation.getOrientationAsync() == 1 || ScreenOrientation.getOrientationAsync() == 2) {
+            setOrientation(12)
+        } else {
+            setOrientation(34)
+        }
+        console.log(orientation);
+    }
+
+    let qweasd = ScreenOrientation.addOrientationChangeListener(listener)
+
+
 
     // Заголовки запроса (Токен RIC)
     var myHeaders = new Headers();
@@ -1123,17 +1145,33 @@ const MainScreen = ({ navigation }, setValue) => {
 
 
 
-    // const [todos, setTodos] = useState([
-    //     {
-    //         "id": "1",
-    //         "title": "290001"
-    //     },
-    //     {
-    //         "id": "2",
-    //         "title": "290002"
-    //     }
-    // ])
-    const [todos, setTodos] = useState([])
+    const [todos, setTodos] = useState([
+        {
+            "id": "1",
+            "title": "290001"
+        },
+        {
+            "id": "2",
+            "title": "290002"
+        },
+        {
+            "id": "3",
+            "title": "290003"
+        },
+        {
+            "id": "4",
+            "title": "290004"
+        },
+        {
+            "id": "5",
+            "title": "290005"
+        },
+        {
+            "id": "6",
+            "title": "290006"
+        }
+    ])
+    // const [todos, setTodos] = useState([])
     // console.log(todos);
 
 
@@ -1303,114 +1341,217 @@ const MainScreen = ({ navigation }, setValue) => {
 
     return (
         <View style={styles.MainScreen}>
+            {orientation == 12 ?
+                <View style={styles.One} >
 
-            <View style={styles.One} >
-
-                <View style={styles.container}>
-                    <AddTodo onSubmit={addTodo} />
-                    {/* {getContent()} */}
-                </View>
-
-                <View style={styles.containerCounterAndButtons} >
-
-                    <View >
-                        <Text style={styles.containerCounterAndButtonsTitle} >Выбрано:
-                            <Text style={{ color: '#DFDFDF', }}>
-                                -
-                            </Text>
-                            <Text style={{ fontWeight: "bold" }}>
-                                {abc} шт.
-                            </Text>
-                        </Text>
+                    <View style={styles.container}>
+                        <AddTodo onSubmit={addTodo} />
+                        {/* {getContent()} */}
                     </View>
 
-                    <View style={{
-                        flexDirection: "row",
-                        alignItems: 'center'
-                    }}>
-                        <View style={{
-                            marginRight: 15
-                        }}>
-                            <TouchableOpacity onPress={InputAddNumberOpen}>
-                                <View style={styles.containerCounterAndButtonsButtonAdd}>
-                                    <FontAwesome name="pencil-square-o" size={18} color="white" />
-                                </View>
-                            </TouchableOpacity>
-                        </View>
-                        <View>
-                            <TouchableOpacity onPress={copyToClipboard}>
-                                <View style={styles.containerCounterAndButtonsButtonCopy}>
-                                    <AntDesign name="copy1" size={18} color="white" />
-                                </View>
-                            </TouchableOpacity>
-                        </View>
+                    <View style={styles.containerCounterAndButtons} >
 
-                    </View>
-                </View>
-
-
-                {/* <ResultContainer todos22={todos22} onSubmit={todos22} /> */}
-                <ScrollView
-                    style={[{
-                        paddingVertical: 10,
-                    }]}
-                >
-                    {todos22.length ?
-                        <View style={styles.containerResult}>
-                            <View style={styles.containerResultTitleBox}>
-                                <Text style={styles.containerResultTitleBoxText}>
-                                    Результат ( {counterPerformedCommands} / {abc} )
+                        <View >
+                            <Text style={styles.containerCounterAndButtonsTitle} >Выбрано:
+                                <Text style={{ color: '#DFDFDF', }}>
+                                    -
                                 </Text>
-                                {loadingAvailable &&
-                                    <ActivityIndicator
-                                        style={{
-                                            // backgroundColor: 'red',
-                                            alignItems: "center",
-                                            justifyContent: "center",
-                                            marginLeft: 5
-                                        }}
-                                        size="small"
-                                        color="black" />
-                                }
-                            </View>
-                            <View style={styles.containerResultTable}>
-                                {todos22.map(todo22 => (
-                                    <Todo22
-                                        todo22={todo22}
-                                        status22={todo22.status22}
-                                        key={todo22.id}
-                                        onRemove={removeTodo} />
-                                ))}
-                            </View>
+                                <Text style={{ fontWeight: "bold" }}>
+                                    {abc} шт.
+                                </Text>
+                            </Text>
                         </View>
-                        :
-                        <View ></View>
-                    }
-                    {todos.length ?
-                        <View style={styles.containerAdd}>
-                            <View style={styles.containerAddTitleBox}>
-                                <Text style={styles.containerAddTitleBoxText}>Вы добавили</Text>
+
+                        <View style={{
+                            flexDirection: "row",
+                            alignItems: 'center'
+                        }}>
+                            <View style={{
+                                marginRight: 15
+                            }}>
+                                <TouchableOpacity onPress={InputAddNumberOpen}>
+                                    <View style={styles.containerCounterAndButtonsButtonAdd}>
+                                        <FontAwesome name="pencil-square-o" size={18} color="white" />
+                                    </View>
+                                </TouchableOpacity>
                             </View>
-                            <View style={styles.containerAddTable} >
-                                {todos.map(todo => (
-                                    <Todo todo={todo} key={todo.id} onRemove={removeTodo} />
-                                ))}
+                            <View>
+                                <TouchableOpacity onPress={copyToClipboard}>
+                                    <View style={styles.containerCounterAndButtonsButtonCopy}>
+                                        <AntDesign name="copy1" size={18} color="white" />
+                                    </View>
+                                </TouchableOpacity>
                             </View>
+
                         </View>
-                        :
-                        <View style={styles.containerAddImageEmptyList}>
-                            <Image
-                                style={styles.imageEmptyList}
-                                source={require('../src/img/empty.png')}
-                            />
-                        </View>}
-                </ScrollView>
-            </View >
+                    </View>
+
+
+                    {/* <ResultContainer todos22={todos22} onSubmit={todos22} /> */}
+                    <ScrollView
+                        style={[{
+                            paddingVertical: 10,
+                        }]}
+                    >
+                        {todos22.length ?
+                            <View style={styles.containerResult}>
+                                <View style={styles.containerResultTitleBox}>
+                                    <Text style={styles.containerResultTitleBoxText}>
+                                        Результат ( {counterPerformedCommands} / {abc} )
+                                    </Text>
+                                    {loadingAvailable &&
+                                        <ActivityIndicator
+                                            style={{
+                                                // backgroundColor: 'red',
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                marginLeft: 5
+                                            }}
+                                            size="small"
+                                            color="black" />
+                                    }
+                                </View>
+                                <View style={styles.containerResultTable}>
+                                    {todos22.map(todo22 => (
+                                        <Todo22
+                                            todo22={todo22}
+                                            status22={todo22.status22}
+                                            key={todo22.id}
+                                            onRemove={removeTodo} />
+                                    ))}
+                                </View>
+                            </View>
+                            :
+                            <View ></View>
+                        }
+                        {todos.length ?
+                            <View style={styles.containerAdd}>
+                                <View style={styles.containerAddTitleBox}>
+                                    <Text style={styles.containerAddTitleBoxText}>Вы добавили</Text>
+                                </View>
+                                <View style={styles.containerAddTable} >
+                                    {todos.map(todo => (
+                                        <Todo todo={todo} key={todo.id} onRemove={removeTodo} />
+                                    ))}
+                                </View>
+                            </View>
+                            :
+                            <View style={styles.containerAddImageEmptyList}>
+                                <Image
+                                    style={styles.imageEmptyList}
+                                    source={require('../src/img/empty.png')}
+                                />
+                            </View>}
+                    </ScrollView>
+                </View >
+                :
+                <ScrollView style={styles.One} >
+
+                    <View style={styles.container}>
+                        <AddTodo onSubmit={addTodo} />
+                        {/* {getContent()} */}
+                    </View>
+
+                    <View style={styles.containerCounterAndButtons} >
+
+                        <View >
+                            <Text style={styles.containerCounterAndButtonsTitle} >Выбрано:
+                                <Text style={{ color: '#DFDFDF', }}>
+                                    -
+                                </Text>
+                                <Text style={{ fontWeight: "bold" }}>
+                                    {abc} шт.
+                                </Text>
+                            </Text>
+                        </View>
+
+                        <View style={{
+                            flexDirection: "row",
+                            alignItems: 'center'
+                        }}>
+                            <View style={{
+                                marginRight: 15
+                            }}>
+                                <TouchableOpacity onPress={InputAddNumberOpen}>
+                                    <View style={styles.containerCounterAndButtonsButtonAdd}>
+                                        <FontAwesome name="pencil-square-o" size={18} color="white" />
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+                            <View>
+                                <TouchableOpacity onPress={copyToClipboard}>
+                                    <View style={styles.containerCounterAndButtonsButtonCopy}>
+                                        <AntDesign name="copy1" size={18} color="white" />
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+
+                        </View>
+                    </View>
+
+
+                    {/* <ResultContainer todos22={todos22} onSubmit={todos22} /> */}
+                    <ScrollView
+                        style={[{
+                            paddingVertical: 10,
+                        }]}
+                    >
+                        {todos22.length ?
+                            <View style={styles.containerResult}>
+                                <View style={styles.containerResultTitleBox}>
+                                    <Text style={styles.containerResultTitleBoxText}>
+                                        Результат ( {counterPerformedCommands} / {abc} )
+                                    </Text>
+                                    {loadingAvailable &&
+                                        <ActivityIndicator
+                                            style={{
+                                                // backgroundColor: 'red',
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                marginLeft: 5
+                                            }}
+                                            size="small"
+                                            color="black" />
+                                    }
+                                </View>
+                                <View style={styles.containerResultTable}>
+                                    {todos22.map(todo22 => (
+                                        <Todo22
+                                            todo22={todo22}
+                                            status22={todo22.status22}
+                                            key={todo22.id}
+                                            onRemove={removeTodo} />
+                                    ))}
+                                </View>
+                            </View>
+                            :
+                            <View ></View>
+                        }
+                        {todos.length ?
+                            <View style={styles.containerAdd}>
+                                <View style={styles.containerAddTitleBox}>
+                                    <Text style={styles.containerAddTitleBoxText}>Вы добавили</Text>
+                                </View>
+                                <View style={styles.containerAddTable} >
+                                    {todos.map(todo => (
+                                        <Todo todo={todo} key={todo.id} onRemove={removeTodo} />
+                                    ))}
+                                </View>
+                            </View>
+                            :
+                            <View style={styles.containerAddImageEmptyList}>
+                                <Image
+                                    style={styles.imageEmptyList}
+                                    source={require('../src/img/empty.png')}
+                                />
+                            </View>}
+                    </ScrollView>
+                </ScrollView >
+            }
 
             {/* <View style={styles.Two}>
+            </View> */}
 
-
-      </View> */}
             <View>
                 {inputAddNumber ?
                     <View style={styles.containerInputAddNumber} >
@@ -1498,9 +1639,9 @@ const MainScreen = ({ navigation }, setValue) => {
                         </View >
                         <View style={styles.bottomContainerTitle}>
                             {uid == UID_LIST.UID_MURMANSK ?
-                                <Text style={styles.bottomContainerText}>version 4.1.0 - Мурманск</Text> :
+                                <Text style={styles.bottomContainerText}>version 4.1.1 - Мурманск</Text> :
                                 uid == UID_LIST.UID_ARCHANGELSK ?
-                                    <Text style={styles.bottomContainerText}>version 4.1.0 - Архангельск</Text> :
+                                    <Text style={styles.bottomContainerText}>version 4.1.1 - Архангельск</Text> :
                                     <Text>ошибка</Text>
                             }
                         </View >
@@ -1567,9 +1708,10 @@ const styles = StyleSheet.create({
         borderColor: '#DADADA',
         borderRadius: 14,
         flexDirection: "row",
-        justifyContent: 'space-between',
+        // justifyContent: 'space-between',
         flexWrap: "wrap",
-        paddingHorizontal: 8
+        paddingHorizontal: 8,
+        // flexGrow: 4
     },
     containerAddImageEmptyList: {
         alignItems: 'center',
