@@ -248,6 +248,8 @@ const MainScreen = ({ navigation }, setValue) => {
         }
     }
 
+
+
     const scooterGoCommand = async (GoCommand) => {
         console.log("\nКоманда: " + GoCommand + " = = = = = = = = = =");
         // Проверяем, что список объектов не пустой
@@ -312,6 +314,7 @@ const MainScreen = ({ navigation }, setValue) => {
                 setTodos22([]);
                 addTodo22('Номер', 'Онлайн', 'Команда')
                 let eroorExistsGoBroken = 0;
+                let IDsForLabels = [];
 
                 for (var i = 0; i < todos.length; i++) {
                     var now1 = new Date().toLocaleTimeString();
@@ -325,6 +328,16 @@ const MainScreen = ({ navigation }, setValue) => {
                     for (let j = 0; j < data_RIC_OBJECTS_LIST.length; j++) {
                         // Ищем отсканированный объект в списке объектов RIC
                         if (data_RIC_OBJECTS_LIST[j].config.data.qr == todos[i].title) {
+
+                            IDsForLabels.push(`${data_RIC_OBJECTS_LIST[j]._id}`);
+
+
+
+
+
+
+
+
 
                             let url_go_command;
                             try {
@@ -356,7 +369,7 @@ const MainScreen = ({ navigation }, setValue) => {
                                 let numQrScooter = data_RIC_OBJECTS_LIST[j].config.data.qr
                                 let objectStatusOnline = 0;
 
-                                console.log(data2345);
+                                // console.log(data2345);
 
                                 if (data_RIC_OBJECTS_LIST[j].state.online) {
                                     objectStatusOnline = 'Да'
@@ -487,7 +500,17 @@ const MainScreen = ({ navigation }, setValue) => {
 
                             // Тут дальше я отправляю в гугл таблицу
                             var now = new Date().toLocaleTimeString();
-                            const objt = `?p1=${todos[i].title}&p2=${now}&p3=Забрал&p4=${x},${y}`
+                            let objt
+                            if (GoCommand == 'GoBroken') {
+                                objt = `?p1=${todos[i].title}&p2=${now}&p3=Забрал&p4=${x},${y}`
+                            }
+                            else if (GoCommand == 'GoAvailable') {
+                                objt = `?p1=${todos[i].title}&p2=${now}&p3=Выставил&p4=${x},${y}`
+                            }
+                            else {
+                                objt = `?p1=${todos[i].title}&p2=${now}&p3=Замена АКБ&p4=${x},${y}`
+                            }
+
                             const GOOGLE_SHEET_PUSH = await fetch(
                                 `https://script.google.com/macros/s/AKfycbzpfVBOETyWNDXES7goQIq3KQ8c3OQupri_y2581JnPblpAgL6TB6r7K7MebVlieai3/exec${objt}`,
                                 {
@@ -499,6 +522,84 @@ const MainScreen = ({ navigation }, setValue) => {
                         }
                     }
                 }
+
+                var rawLinkGoBroken
+                var rawUnlinkGoBroken
+                var rawLinkGoAvailable
+                var rawUnlinkGoAvailable
+
+                if (GoCommand == 'GoBroken') {
+                    console.log("ПЕРЕВОЖУ МЕТКИ НА СКЛАД");
+                    rawLinkGoBroken = {
+                        "item": "62e235a14630030010ec2131",
+                        "link": IDsForLabels,
+                        "unlink": []
+                    }
+                    await fetch("https://app.rightech.io/api/v1/links/labels/to/objects", {
+                        method: "POST",
+                        headers: {
+                            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2MmNlYjYzODU1ZWFhMTAwMTA0ZTFhZGQiLCJzdWIiOiI2MGMxY2FhOWFiZmM4NzAwMTBmM2IyYTUiLCJncnAiOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJvcmciOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJsaWMiOmZhbHNlLCJ1c2ciOiJhcGkiLCJmdWxsIjpmYWxzZSwicmlnaHRzIjoxLjUsImlhdCI6MTY1NzcxNDIzMiwiZXhwIjoxNjYwMjUxNjAwfQ.3xbtlgva90_2DMQi95dutbCYEy-BIzmlEWqRUi2lZ8M",
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(rawLinkGoBroken),
+                    })
+                        .then(response => console.log("Метка склад (статус): " + response.status))
+                        .catch(error => console.log('error', error));
+
+                    rawUnlinkGoBroken = {
+                        "item": "62e38291595fd50010ade2fb",
+                        "link": [],
+                        "unlink": IDsForLabels
+                    }
+                    await fetch("https://app.rightech.io/api/v1/links/labels/to/objects", {
+                        method: "POST",
+                        headers: {
+                            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2MmNlYjYzODU1ZWFhMTAwMTA0ZTFhZGQiLCJzdWIiOiI2MGMxY2FhOWFiZmM4NzAwMTBmM2IyYTUiLCJncnAiOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJvcmciOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJsaWMiOmZhbHNlLCJ1c2ciOiJhcGkiLCJmdWxsIjpmYWxzZSwicmlnaHRzIjoxLjUsImlhdCI6MTY1NzcxNDIzMiwiZXhwIjoxNjYwMjUxNjAwfQ.3xbtlgva90_2DMQi95dutbCYEy-BIzmlEWqRUi2lZ8M",
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(rawUnlinkGoBroken),
+                    })
+                        .then(response => console.log("Метка город анлинк (статус): " + response.status))
+                        .catch(error => console.log('error', error));
+                }
+                else if (GoCommand == 'GoAvailable') {
+                    console.log("ПЕРЕВОЖУ МЕТКИ В ГОРОД");
+                    rawLinkGoAvailable = {
+                        "item": "62e38291595fd50010ade2fb",
+                        "link": IDsForLabels,
+                        "unlink": []
+                    }
+                    await fetch("https://app.rightech.io/api/v1/links/labels/to/objects", {
+                        method: "POST",
+                        headers: {
+                            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2MmNlYjYzODU1ZWFhMTAwMTA0ZTFhZGQiLCJzdWIiOiI2MGMxY2FhOWFiZmM4NzAwMTBmM2IyYTUiLCJncnAiOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJvcmciOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJsaWMiOmZhbHNlLCJ1c2ciOiJhcGkiLCJmdWxsIjpmYWxzZSwicmlnaHRzIjoxLjUsImlhdCI6MTY1NzcxNDIzMiwiZXhwIjoxNjYwMjUxNjAwfQ.3xbtlgva90_2DMQi95dutbCYEy-BIzmlEWqRUi2lZ8M",
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(rawLinkGoAvailable),
+                    })
+                        .then(response => console.log("Метка город (статус): " + response.status))
+                        .catch(error => console.log('error', error));
+
+                    rawUnlinkGoAvailable = {
+                        "item": "62e235a14630030010ec2131",
+                        "link": [],
+                        "unlink": IDsForLabels
+                    }
+                    await fetch("https://app.rightech.io/api/v1/links/labels/to/objects", {
+                        method: "POST",
+                        headers: {
+                            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2MmNlYjYzODU1ZWFhMTAwMTA0ZTFhZGQiLCJzdWIiOiI2MGMxY2FhOWFiZmM4NzAwMTBmM2IyYTUiLCJncnAiOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJvcmciOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJsaWMiOmZhbHNlLCJ1c2ciOiJhcGkiLCJmdWxsIjpmYWxzZSwicmlnaHRzIjoxLjUsImlhdCI6MTY1NzcxNDIzMiwiZXhwIjoxNjYwMjUxNjAwfQ.3xbtlgva90_2DMQi95dutbCYEy-BIzmlEWqRUi2lZ8M",
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(rawUnlinkGoAvailable),
+                    })
+                        .then(response => console.log("Метка склад анлинк (статус): " + response.status))
+                        .catch(error => console.log('error', error));
+                }
+
+
+
+
                 // На данном этапе мы пробежали по всем объектам и перевели их в статус "Поломка"
                 // Определяем функцию, которая отправит сообщение и гео-позицию в Телеграм
                 // Определяем сообщение, которое отправим в Телеграм
@@ -1145,33 +1246,33 @@ const MainScreen = ({ navigation }, setValue) => {
 
 
 
-    const [todos, setTodos] = useState([
-        {
-            "id": "1",
-            "title": "290001"
-        },
-        {
-            "id": "2",
-            "title": "290002"
-        },
-        {
-            "id": "3",
-            "title": "290003"
-        },
-        {
-            "id": "4",
-            "title": "290004"
-        },
-        {
-            "id": "5",
-            "title": "290005"
-        },
-        {
-            "id": "6",
-            "title": "290006"
-        }
-    ])
-    // const [todos, setTodos] = useState([])
+    // const [todos, setTodos] = useState([
+    //     {
+    //         "id": "1",
+    //         "title": "290001"
+    //     },
+    //     {
+    //         "id": "2",
+    //         "title": "290002"
+    //     },
+    //     {
+    //         "id": "3",
+    //         "title": "290003"
+    //     },
+    //     {
+    //         "id": "4",
+    //         "title": "290004"
+    //     },
+    //     {
+    //         "id": "5",
+    //         "title": "290005"
+    //     },
+    //     {
+    //         "id": "6",
+    //         "title": "290006"
+    //     }
+    // ])
+    const [todos, setTodos] = useState([])
     // console.log(todos);
 
 
@@ -1639,9 +1740,9 @@ const MainScreen = ({ navigation }, setValue) => {
                         </View >
                         <View style={styles.bottomContainerTitle}>
                             {uid == UID_LIST.UID_MURMANSK ?
-                                <Text style={styles.bottomContainerText}>version 4.1.1 - Мурманск</Text> :
+                                <Text style={styles.bottomContainerText}>version 4.1.3 - Мурманск</Text> :
                                 uid == UID_LIST.UID_ARCHANGELSK ?
-                                    <Text style={styles.bottomContainerText}>version 4.1.1 - Архангельск</Text> :
+                                    <Text style={styles.bottomContainerText}>version 4.1.3 - Архангельск</Text> :
                                     <Text>ошибка</Text>
                             }
                         </View >
