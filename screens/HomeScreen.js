@@ -1738,9 +1738,9 @@ const MainScreen = ({ navigation }, setValue) => {
                         </View >
                         <View style={styles.bottomContainerTitle}>
                             {uid == UID_LIST.UID_MURMANSK ?
-                                <Text style={styles.bottomContainerText}>version 4.1.3 - Мурманск</Text> :
+                                <Text style={styles.bottomContainerText}>version 4.1.4 - Мурманск</Text> :
                                 uid == UID_LIST.UID_ARCHANGELSK ?
-                                    <Text style={styles.bottomContainerText}>version 4.1.3 - Архангельск</Text> :
+                                    <Text style={styles.bottomContainerText}>version 4.1.4 - Архангельск</Text> :
                                     <Text>ошибка</Text>
                             }
                         </View >

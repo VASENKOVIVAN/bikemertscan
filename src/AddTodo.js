@@ -4,7 +4,7 @@ import { BarCodeScanner } from 'expo-barcode-scanner';
 import { Camera, CameraType } from 'expo-camera';
 import { THEME } from './theme'
 import { useIsFocused } from "@react-navigation/native";
-
+import { Ionicons } from '@expo/vector-icons';
 
 export const AddTodo = ({ onSubmit }) => {
 
@@ -62,9 +62,7 @@ export const AddTodo = ({ onSubmit }) => {
   }
   // What happens when we scan the bar code
   const handleBarCodeScanned = ({ type, data, todos }) => {
-    console.log("я готов " + qwre);
-    setQwre(!qwre)
-    console.log("я готов " + qwre);
+
     setScanned(true);
     setValue(data)
     // console.log('Type: ' + type + '\nData: ' + data)
@@ -142,7 +140,13 @@ export const AddTodo = ({ onSubmit }) => {
   // value.replace("http://murmansk.bikeme.ru/?id=", "TEST---");
 
   const [type, setType] = useState('off');
-
+  const changeFlashMode = () => {
+    if (type == 'off') {
+      setType('torch')
+    } else {
+      setType('off')
+    }
+  }
   return (
 
     <View style={styles.block}>
@@ -151,63 +155,45 @@ export const AddTodo = ({ onSubmit }) => {
 
       <View style={styles.barcodeboxcontainer}>
 
-
-        {/* 
-        <View style={styles.container}>
-
-
-          <View style={styles.barcodebox}>
-
-            {isFocused && <Camera
-              style={styles.camera}
-              // flashMode='torch'
-              barCodeScannerSettings={{
-                barCodeTypes: [BarCodeScanner.Constants.BarCodeType.qr],
-              }}
-              onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-            />
-
-            }
-            <Button
-              //   onPress={onPressLearnMore}
-              title="Learn More"
-              color="#841584"
-              accessibilityLabel="Learn more about this purple button"
-            />
-          </View>
-
-
-          <Camera
-            style={styles.camera}
-            barCodeScannerSettings={{
-              barCodeTypes: [BarCodeScanner.Constants.BarCodeType.qr],
-            }}
-            onBarCodeScanned={({ type, data }) => {
-              console.log(`Bar code with type ${type} and data ${data} has been scanned!`);
-            }}
-          />
-
-          <Camera style={styles.camera} flashMode={type}
-            onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-          >
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={styles.button}
-                onPress={() => {
-                  setType(type === 'off' ? 'torch' : 'off');
-                }}>
-                <Text style={styles.text}> Flip </Text>
-              </TouchableOpacity>
-            </View>
-          </Camera>
-        </View> */}
-
         <View style={styles.barcodebox}>
+
+          {isFocused &&
+            <Camera style={styles.camera} flashMode={type}
+              onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+            >
+
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity >
+
+                  {type == 'off' ?
+                    < Ionicons
+                      style={styles.button}
+                      name="flash-off"
+                      size={20}
+                      color="black"
+                      onPress={changeFlashMode}
+                    />
+                    :
+                    <Ionicons
+                      style={styles.button}
+                      name="flash"
+                      size={20}
+                      color="black"
+                      onPress={changeFlashMode}
+                    />
+                  }
+                </TouchableOpacity>
+              </View>
+            </Camera>
+          }
+        </View>
+
+        {/* <View style={styles.barcodebox}>
           {isFocused && <BarCodeScanner
             onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
             style={{ height: 400, width: 400, }} />
           }
-        </View>
+        </View> */}
 
       </View>
 
@@ -252,22 +238,28 @@ export const AddTodo = ({ onSubmit }) => {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    height: 400, width: 400
-  },
+
   camera: {
-    height: 400, width: 400
+    height: 400,
+    width: 320,
   },
   buttonContainer: {
+
     flex: 1,
     backgroundColor: 'transparent',
     flexDirection: 'row',
+    justifyContent: 'flex-end',
     margin: 20,
   },
   button: {
-    flex: 0.1,
-    alignSelf: 'flex-end',
+    marginTop: 40,
+
+    paddingHorizontal: 5,
+    paddingVertical: 5,
+    backgroundColor: 'white',
+    borderRadius: 50,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   text: {
     fontSize: 18,
@@ -276,23 +268,29 @@ const styles = StyleSheet.create({
 
 
   block: {
+    backgroundColor: "#F1F1F1",
     // flexDirection: 'row',
     // justifyContent: 'space-between',
     // alignItems: 'center',
     // marginBottom: 15
   },
   barcodeboxcontainer: {
-    // backgroundColor: '#DFDFDF',
+
+    // backgroundColor: 'red',
     alignItems: 'center',
-    paddingVertical: 5
+    paddingVertical: 5,
+    // height: 300,
+    // width: 300,
   },
   barcodebox: {
+    // backgroundColor: 'blue',
     alignItems: 'center',
     justifyContent: 'center',
     height: 300,
     width: 300,
+
     overflow: 'hidden',
-    borderRadius: 30,
+    borderRadius: 20,
   },
   resultscan: {
     // alignItems: 'center',
