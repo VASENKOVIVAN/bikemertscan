@@ -1,24 +1,27 @@
 import React, { useState, useEffect } from 'react'
-import { Text, View, StyleSheet, TextInput, Button, ToastAndroid } from 'react-native'
+import { Text, View, StyleSheet, TextInput, Button, ToastAndroid, TouchableOpacity } from 'react-native'
 import { BarCodeScanner } from 'expo-barcode-scanner';
-
+import { Camera, CameraType } from 'expo-camera';
 import { THEME } from './theme'
+import { useIsFocused } from "@react-navigation/native";
+
 
 export const AddTodo = ({ onSubmit }) => {
 
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
   // const [text, setText] = useState('Not yet scanned')
-
+  console.log(scanned);
   const [value, setValue] = useState('')
+
 
   const askForCameraPermission = () => {
     (async () => {
-      const { status } = await BarCodeScanner.requestPermissionsAsync();
-      setHasPermission(status === 'granted');
+      // const { status } = await BarCodeScanner.requestPermissionsAsync();
+      // setHasPermission(status === 'granted');
     })()
   }
-
+  const isFocused = useIsFocused();
   // Request Camera Permission
   useEffect(() => {
     askForCameraPermission();
@@ -51,9 +54,17 @@ export const AddTodo = ({ onSubmit }) => {
     );
   };
 
+  const [qwre, setQwre] = useState(true)
 
+  const qwreqwre = () => {
+    console.log("qwre " + qwre);
+    setQwre(!qwre)
+  }
   // What happens when we scan the bar code
   const handleBarCodeScanned = ({ type, data, todos }) => {
+    console.log("я готов " + qwre);
+    setQwre(!qwre)
+    console.log("я готов " + qwre);
     setScanned(true);
     setValue(data)
     // console.log('Type: ' + type + '\nData: ' + data)
@@ -130,18 +141,72 @@ export const AddTodo = ({ onSubmit }) => {
 
   // value.replace("http://murmansk.bikeme.ru/?id=", "TEST---");
 
-
+  const [type, setType] = useState('off');
 
   return (
 
     <View style={styles.block}>
 
+
+
       <View style={styles.barcodeboxcontainer}>
 
+
+        {/* 
+        <View style={styles.container}>
+
+
+          <View style={styles.barcodebox}>
+
+            {isFocused && <Camera
+              style={styles.camera}
+              // flashMode='torch'
+              barCodeScannerSettings={{
+                barCodeTypes: [BarCodeScanner.Constants.BarCodeType.qr],
+              }}
+              onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+            />
+
+            }
+            <Button
+              //   onPress={onPressLearnMore}
+              title="Learn More"
+              color="#841584"
+              accessibilityLabel="Learn more about this purple button"
+            />
+          </View>
+
+
+          <Camera
+            style={styles.camera}
+            barCodeScannerSettings={{
+              barCodeTypes: [BarCodeScanner.Constants.BarCodeType.qr],
+            }}
+            onBarCodeScanned={({ type, data }) => {
+              console.log(`Bar code with type ${type} and data ${data} has been scanned!`);
+            }}
+          />
+
+          <Camera style={styles.camera} flashMode={type}
+            onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+          >
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => {
+                  setType(type === 'off' ? 'torch' : 'off');
+                }}>
+                <Text style={styles.text}> Flip </Text>
+              </TouchableOpacity>
+            </View>
+          </Camera>
+        </View> */}
+
         <View style={styles.barcodebox}>
-          <BarCodeScanner
+          {isFocused && <BarCodeScanner
             onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
             style={{ height: 400, width: 400, }} />
+          }
         </View>
 
       </View>
@@ -187,6 +252,29 @@ export const AddTodo = ({ onSubmit }) => {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    height: 400, width: 400
+  },
+  camera: {
+    height: 400, width: 400
+  },
+  buttonContainer: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    flexDirection: 'row',
+    margin: 20,
+  },
+  button: {
+    flex: 0.1,
+    alignSelf: 'flex-end',
+    alignItems: 'center',
+  },
+  text: {
+    fontSize: 18,
+    color: 'white',
+  },
+
+
   block: {
     // flexDirection: 'row',
     // justifyContent: 'space-between',

@@ -30,7 +30,6 @@ import { UID_LIST } from "../src/UIDS/UIDS";
 import * as ScreenOrientation from 'expo-screen-orientation'
 import { THEME } from '../src/theme'
 
-
 const MainScreen = ({ navigation }, setValue) => {
     // const [orientationIsLandscape, setOrientation] = useState(true)
     // console.log(ScreenOrientation.getOrientationAsync())
@@ -1552,7 +1551,6 @@ const MainScreen = ({ navigation }, setValue) => {
                         <AddTodo onSubmit={addTodo} />
                         {/* {getContent()} */}
                     </View>
-
                     <View style={styles.containerCounterAndButtons} >
 
                         <View >
