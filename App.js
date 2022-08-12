@@ -12,7 +12,11 @@ import { AppHeaderIcon } from './src/components/AppHeaderIcon'
 
 import { THEME } from './src/theme'
 
-
+// import { Provider, useDispatch } from 'react-redux';
+import store from './src/store';
+// import { Provider } from 'react-redux/es/exports';
+import { Provider } from 'react-redux';
+import { useDispatch } from 'react-redux/es/hooks/useDispatch';
 const Stack = createNativeStackNavigator();
 
 function LogoTitle() {
@@ -25,58 +29,118 @@ function LogoTitle() {
 }
 
 export default function App() {
-
-
   return (
+    <Provider store={store}>
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerTitleAlign: "center" }}>
+          <Stack.Screen options={{ headerShown: false }} name="LoginScreen" component={LoginScreen} />
+          <Stack.Screen name="ProfileScreen" component={ProfileScreen}
+            options={{
+              title: 'Профиль',
+              headerTintColor: '#fff',
+              headerStyle: {
+                backgroundColor: THEME.MAIN_COLOR,
 
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerTitleAlign: "center" }}>
-        <Stack.Screen options={{ headerShown: false }} name="LoginScreen" component={LoginScreen} />
-        <Stack.Screen name="ProfileScreen" component={ProfileScreen}
-          options={{
-            title: 'Профиль',
-            headerTintColor: '#fff',
-            headerStyle: {
-              backgroundColor: THEME.MAIN_COLOR,
+                // elevation: 0, // remove shadow on Android
+                // shadowOpacity: 0, // remove shadow on iOS
+              },
+            }}
+          />
+          <Stack.Screen name="MainScreen" component={HomeScreen}
+            options={({ navigation }) => ({
 
-              // elevation: 0, // remove shadow on Android
-              // shadowOpacity: 0, // remove shadow on iOS
-            },
-          }}
-        />
-        <Stack.Screen name="MainScreen" component={HomeScreen}
-          options={({ navigation }) => ({
+              title: 'BikeMe - Scanner',
+              headerTintColor: '#fff',
+              headerStyle: {
+                backgroundColor: THEME.MAIN_COLOR,
 
-            title: 'BikeMe - Scanner',
-            headerTintColor: '#fff',
-            headerStyle: {
-              backgroundColor: THEME.MAIN_COLOR,
+                // elevation: 0, // remove shadow on Android
+                // shadowOpacity: 0, // remove shadow on iOS
+              },
+              headerRight: () => (
+                <HeaderButtons HeaderButtonComponent={AppHeaderIcon} >
+                  <Item title='Filter' iconName='account-circle'
+                    onPress={() => navigation.navigate('ProfileScreen')}
+                  />
+                </HeaderButtons>
+                // <Button
+                //   onPress={() => navigation.navigate('ProfileScreen')}
+                //   title="Info"
+                //   color="#00cc00"
+                // />
+              ),
+              headerLeft: () => (
+                <LogoTitle />
+              ),
+            })} />
 
-              // elevation: 0, // remove shadow on Android
-              // shadowOpacity: 0, // remove shadow on iOS
-            },
-            headerRight: () => (
-              <HeaderButtons HeaderButtonComponent={AppHeaderIcon} >
-                <Item title='Filter' iconName='account-circle'
-                  onPress={() => navigation.navigate('ProfileScreen')}
-                />
-              </HeaderButtons>
-              // <Button
-              //   onPress={() => navigation.navigate('ProfileScreen')}
-              //   title="Info"
-              //   color="#00cc00"
-              // />
-            ),
-            headerLeft: () => (
-              <LogoTitle />
-            ),
-          })} />
-
-      </Stack.Navigator>
-    </NavigationContainer>
-
+        </Stack.Navigator>
+      </NavigationContainer>
+    </Provider>
   )
 }
+
+// const AppWrapper = () => {
+//   return (
+//     <Provider store={store}>
+//       <NavigationContainer>
+//         <Stack.Navigator screenOptions={{ headerTitleAlign: "center" }}>
+//           <Stack.Screen options={{ headerShown: false }} name="LoginScreen" component={LoginScreen} />
+//           <Stack.Screen name="ProfileScreen" component={ProfileScreen}
+//             options={{
+//               title: 'Профиль',
+//               headerTintColor: '#fff',
+//               headerStyle: {
+//                 backgroundColor: THEME.MAIN_COLOR,
+
+//                 // elevation: 0, // remove shadow on Android
+//                 // shadowOpacity: 0, // remove shadow on iOS
+//               },
+//             }}
+//           />
+//           <Stack.Screen name="MainScreen" component={HomeScreen}
+//             options={({ navigation }) => ({
+
+//               title: 'BikeMe - Scanner',
+//               headerTintColor: '#fff',
+//               headerStyle: {
+//                 backgroundColor: THEME.MAIN_COLOR,
+
+//                 // elevation: 0, // remove shadow on Android
+//                 // shadowOpacity: 0, // remove shadow on iOS
+//               },
+//               headerRight: () => (
+//                 <HeaderButtons HeaderButtonComponent={AppHeaderIcon} >
+//                   <Item title='Filter' iconName='account-circle'
+//                     onPress={() => navigation.navigate('ProfileScreen')}
+//                   />
+//                 </HeaderButtons>
+//                 // <Button
+//                 //   onPress={() => navigation.navigate('ProfileScreen')}
+//                 //   title="Info"
+//                 //   color="#00cc00"
+//                 // />
+//               ),
+//               headerLeft: () => (
+//                 <LogoTitle />
+//               ),
+//             })} />
+
+//         </Stack.Navigator>
+//       </NavigationContainer>
+//     </Provider>
+//   )
+// }
+// const App = () => {
+//   // const dispatch = useDispatch(); // Works!
+//   return (
+//     <AppWrapper />
+//   )
+// }
+
+// export default App;
+
+
 
 // const styles = StyleSheet.create({
 

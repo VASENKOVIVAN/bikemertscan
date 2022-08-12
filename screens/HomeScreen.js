@@ -1,6 +1,6 @@
-import React, { useState, useEffect, Component } from 'react'
+import React, { useCallback, useState, useEffect, Component, useImperativeHandle, useRef } from 'react'
 import * as Location from 'expo-location';
-import { StyleSheet, Text, View, Button, Image, ScrollView, TouchableOpacity, ToastAndroid, ActivityIndicator, Alert, TextInput } from 'react-native'
+import { Dimensions, StyleSheet, Text, View, Button, Image, ScrollView, TouchableOpacity, ToastAndroid, ActivityIndicator, Alert, TextInput } from 'react-native'
 import { Navbar } from '../src/Navbar'
 import { AddTodo } from '../src/AddTodo'
 import { AddTodo22 } from '../src/AddTodo22'
@@ -30,7 +30,94 @@ import { UID_LIST } from "../src/UIDS/UIDS";
 import * as ScreenOrientation from 'expo-screen-orientation'
 import { THEME } from '../src/theme'
 
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, {
+    Extrapolate,
+    interpolate,
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
+    withTiming,
+} from 'react-native-reanimated';
+
+import { useSelector, useDispatch } from "react-redux";
+import { addPosts, changeValueInputAddNumberOpen, deleteAllPosts } from '../src/store/actions/post';
+import { Todo123 } from '../src/Todo123';
+import { ButtonGoAvaliable } from '../src/components/buttons/ButtonGoAvaliable';
+import { ButtonGoBroken } from '../src/components/buttons/ButtonGoBroken';
+
+import { ResultsCommandsScootersContainer } from '../src/ResultsCommandsScootersContainer';
+import { ButtonGoOpenBattery } from '../src/components/buttons/ButtonGoOpenBattery';
+import { ButtonDelete } from '../src/components/buttons/ButtonDelete';
+import { ContainerAddedObjects } from '../src/components/containers-tables/ContainerAddedObjects';
+import { ImageEmpty } from '../src/components/image/ImageEmpty';
+import { ContainerResultsCommands } from '../src/components/containers-tables/ContainerResultsCommands';
+import { TitleLine } from '../src/components/TitleLine';
+
+// Высота экрана для стилей, ни на что не влияет
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+// Высота навигатор-бара устройства
+const NAVIGATOR_BAR_Y = Dimensions.get('screen').height - Dimensions.get('window').height - (StatusBar.currentHeight || 24);
+// Высота нижней слайд-панели (минус высота навигатор-бара, минус высота всех элементов, которые должны выводиться)
+const BOTTOM_SHEET_HEIGHT = -NAVIGATOR_BAR_Y - 1 - 10 - 4 - 5 - 48 - 20
+// Насколько можно поднимать слайд-панель
+const MAX_TRANSLATE_Y = BOTTOM_SHEET_HEIGHT - 30;
+// Насколько можно опускать слайд-панель
+const MIN_TRANSLATE_Y = BOTTOM_SHEET_HEIGHT;
+
 const MainScreen = ({ navigation }, setValue) => {
+
+    // = = = = = = = = = = = = = = = = = = = = = 
+    // СЛАЙД-ПАНЕЛЬ
+    const translateY = useSharedValue(0);
+
+    const context = useSharedValue({ y: 0 });
+    const gesture = Gesture.Pan()
+        .onStart(() => {
+            context.value = { y: translateY.value };
+        })
+        .onUpdate((event) => {
+            translateY.value = event.translationY + context.value.y;
+            // Насколько можно поднимать слайд-панель
+            translateY.value = Math.max(translateY.value, MAX_TRANSLATE_Y);
+            // Насколько можно опускать слайд-панель
+            translateY.value = Math.min(translateY.value, MIN_TRANSLATE_Y);
+        })
+        .onEnd(() => {
+            // Если подняли панель выше чем BOTTOM_SHEET_HEIGHT, то установи ей высоту BOTTOM_SHEET_HEIGHT (верни назад)
+            if (translateY.value > BOTTOM_SHEET_HEIGHT) {
+                translateY.value = withSpring(BOTTOM_SHEET_HEIGHT, { damping: 50 })
+            }
+            // Если опустили панель ниже чем BOTTOM_SHEET_HEIGHT, то установи ей высоту BOTTOM_SHEET_HEIGHT (верни назад)
+            else if (translateY.value < BOTTOM_SHEET_HEIGHT) {
+                translateY.value = withSpring(BOTTOM_SHEET_HEIGHT, { damping: 50 })
+            }
+        });
+
+    useEffect(() => {
+        // Дефолтная установка (на какой высоте будет отображаться слайд-панель)
+        translateY.value = withSpring(BOTTOM_SHEET_HEIGHT, { damping: 50 });
+    }, []);
+    // Это фича для изменения радиуса закругления углов слайд-панели (хз как работает)
+    const rBottomSheetStyle = useAnimatedStyle(() => {
+        const borderRadius = interpolate(
+            translateY.value,
+            [MAX_TRANSLATE_Y + 50, MAX_TRANSLATE_Y],
+            [25, 5],
+            Extrapolate.CLAMP
+        );
+
+        return {
+            borderRadius,
+            transform: [{ translateY: translateY.value }],
+        };
+    });
+    // СЛАЙД-ПАНЕЛЬ
+    // = = = = = = = = = = = = = = = = = = = = = 
+
+
+
     // const [orientationIsLandscape, setOrientation] = useState(true)
     // console.log(ScreenOrientation.getOrientationAsync())
 
@@ -247,12 +334,478 @@ const MainScreen = ({ navigation }, setValue) => {
         }
     }
 
+    // =======================================================================================================
+    // =======================================================================================================
+    // =======================================================================================================
+    // =======================================================================================================
+    // =======================================================================================================
+    // =======================================================================================================
+    // =======================================================================================================
+    // =======================================================================================================
+    // =======================================================================================================
+    // =======================================================================================================
+    // =======================================================================================================
+    // =======================================================================================================
+    // =======================================================================================================
+    // const scooterGoCommand = async (GoCommand) => {
+    //     console.log("\nКоманда: " + GoCommand + " = = = = = = = = = =");
+    //     // Проверяем, что список объектов не пустой
+    //     if (todos.length == 0) {
+    //         showToastErrorEmptyList();
+    //     } else {
 
+    //         if (GoCommand == 'GoBroken') {
+    //             setLoadingBroken(!loadingBroken);
+    //             setscooterGoBrokenDisabledButton(!scooterGoBrokenDisabledButton);
+    //         }
+    //         else if (GoCommand == 'GoAvailable') {
+    //             setLoadingAvailable(!loadingAvailable);
+    //             setscooterGoAvailableDisabledButton(!scooterGoAvailableDisabledButton);
+    //         }
+    //         else {
+    //             setLoadingGoOpenBattery(!loadingGoOpenBattery);
+    //             setscooterGoOpenBatteryDisabledButton(!scooterGoOpenBatteryDisabledButton);
+    //         }
+
+    //         // Получаем ключ
+    //         const responseFireBase = await fetch(
+    //             'https://bikeme-rt-scanner-default-rtdb.europe-west1.firebasedatabase.app/todos.json',
+    //             {
+    //                 method: 'GET',
+    //             }
+    //         )
+    //         const dataResponseFireBase = await responseFireBase.json()
+    //         const dataView = Object.keys(dataResponseFireBase).map(key => ({ ...dataResponseFireBase[key], id: key }))
+    //         let API_RIC_KEY = dataView[0].title;
+
+    //         // Получаем список объектов от RIC
+    //         const RIC_OBJECTS_LIST = await
+    //             fetch(`https://app.rightech.io/api/v1/objects?withChildGroups=true`, {
+    //                 method: "GET",
+    //                 headers: {
+    //                     "Authorization": API_RIC_KEY
+    //                 },
+    //             });
+    //         const data_RIC_OBJECTS_LIST = await RIC_OBJECTS_LIST.json();
+
+    //         try {
+    //             // Проверяем и получаем разрешение на использование камеры
+    //             const response46 = await Location.requestForegroundPermissionsAsync();
+    //             // Получаем координаты устройства
+    //             const { coords } = await Location.getCurrentPositionAsync();
+    //             var x = coords.latitude.toString();
+    //             var y = coords.longitude.toString();
+    //         } catch (error) {
+    //             Alert.alert('Вы не предоставили разрешение на использование гео-позиции (перейдите в настройки)');
+    //         }
+
+    //         if (RIC_OBJECTS_LIST.status == 401) {
+    //             // Если 401 ошибка, то выводим тост и в консоль
+    //             console.log('Error-401');
+    //             showToastWithError401();
+    //         }
+    //         // Если ошибки нет, запускаем:
+    //         else {
+
+    //             // Массив, в котором мы пробегаем по значениям из списка отсканированных объектов
+    //             setTodos22([]);
+    //             addTodo22('Номер', 'Онлайн', 'Команда')
+    //             let eroorExistsGoBroken = 0;
+    //             let IDsForLabels = [];
+
+    //             for (var i = 0; i < todos.length; i++) {
+    //                 var now1 = new Date().toLocaleTimeString();
+    //                 console.log("\n" + now1); // Выводим в консоль номер цикла
+
+    //                 setCounterPerformedCommands(0)
+    //                 console.log('ЦИКЛ: ' + i); // Выводим в консоль номер цикла
+    //                 setCounterPerformedCommands(i + 1)
+
+    //                 // Массив, в котором мы пробегаем по объектам из RIC
+    //                 for (let j = 0; j < data_RIC_OBJECTS_LIST.length; j++) {
+    //                     // Ищем отсканированный объект в списке объектов RIC
+    //                     if (data_RIC_OBJECTS_LIST[j].config.data.qr == todos[i].title) {
+
+    //                         IDsForLabels.push(`${data_RIC_OBJECTS_LIST[j]._id}`);
+
+    //                         let url_go_command;
+    //                         try {
+    //                             if (GoCommand == 'GoBroken') {
+    //                                 url_go_command = `https://app.rightech.io/api/v1/objects/${data_RIC_OBJECTS_LIST[j]._id}/commands/change-status-broken?withChildGroups=true`
+    //                             }
+    //                             else if (GoCommand == 'GoAvailable') {
+    //                                 url_go_command = `https://app.rightech.io/api/v1/objects/${data_RIC_OBJECTS_LIST[j]._id}/commands/change-status-available?withChildGroups=true`
+    //                             }
+    //                             else {
+    //                                 if (uid == UID_LIST.UID_ARCHANGELSK) {
+    //                                     url_go_command = `https://app.rightech.io/api/v1/objects/${data_RIC_OBJECTS_LIST[j]._id}/commands/meulk_cmd?withChildGroups=true`
+    //                                     console.log("Архангельск команда АКБ");
+    //                                 } else {
+    //                                     url_go_command = `https://app.rightech.io/api/v1/objects/${data_RIC_OBJECTS_LIST[j]._id}/commands/scsetmode-eco-wxs9m-7qnlg?withChildGroups=true`
+    //                                     console.log("Мурманск команда АКБ");
+    //                                 }
+    //                             }
+
+    //                             const api_url_scooterlockall = await
+    //                                 fetch(url_go_command, {
+    //                                     method: "POST",
+    //                                     headers: {
+    //                                         "Authorization": API_RIC_KEY
+    //                                     },
+    //                                 });
+    //                             // Выводим в консоль статус HTTP ответа
+    //                             const data2345 = await api_url_scooterlockall.json()
+    //                             let numQrScooter = data_RIC_OBJECTS_LIST[j].config.data.qr
+    //                             let objectStatusOnline = 0;
+
+    //                             // console.log(data2345);
+
+    //                             if (data_RIC_OBJECTS_LIST[j].state.online) {
+    //                                 objectStatusOnline = 'Да'
+    //                             } else {
+    //                                 objectStatusOnline = 'Нет'
+    //                             }
+
+    //                             let statusResponse = api_url_scooterlockall.status;
+
+    //                             console.log('СТАТУС: ' + statusResponse);
+
+    //                             console.log('Номер самоката:', numQrScooter);
+
+    //                             let titleResponse
+
+    //                             if (numQrScooter.substr(0, 2) == 29) {
+    //                                 console.log('OKAI');
+    //                                 if (GoCommand == 'GoOpenBattery') {
+    //                                     if (statusResponse == 400) {
+    //                                         titleResponse = data2345.codes[0];
+    //                                     } else {
+    //                                         titleResponse = "Какая то ошибка";
+    //                                     }
+    //                                 }
+    //                                 else {
+    //                                     if (statusResponse == 200) {
+    //                                         titleResponse = "Успешно";
+
+
+    //                                     } else {
+    //                                         titleResponse = data2345.codes[0];
+    //                                     }
+    //                                 }
+    //                             } else {
+    //                                 console.log('НЕ ОКАИ');
+    //                                 if (statusResponse == 400 || statusResponse == 422) {
+    //                                     titleResponse = data2345.codes[0];
+    //                                 } else {
+    //                                     titleResponse = "Какая то ошибка";
+    //                                 }
+    //                             }
+
+
+    //                             if (statusResponse == 422) {
+    //                                 // Поломка
+    //                                 if (titleResponse == 'error_api_already_broken') {
+    //                                     console.log('  Ответ: Уже в поломке!');
+    //                                     addTodo22(numQrScooter, objectStatusOnline, 'Уже в поломке')
+    //                                 }
+    //                                 else if (titleResponse == 'error_api_cant_change_from_taken_to_broken') {
+    //                                     console.log('  Ответ: Самокат в аренде');
+    //                                     addTodo22(numQrScooter, objectStatusOnline, 'Ошибка (Самокат в аренде)')
+    //                                     eroorExistsGoBroken = eroorExistsGoBroken + 1
+    //                                 }
+    //                                 else if (titleResponse == 'error_api_cant_change_from_reserved_to_broken') {
+    //                                     console.log('  Ответ: Самокат забронирован');
+    //                                     addTodo22(numQrScooter, objectStatusOnline, 'Ошибка (Самокат забронирован)')
+    //                                     eroorExistsGoBroken = eroorExistsGoBroken + 1
+    //                                 }
+    //                                 else if (titleResponse == 'error_api_cant_change_from_park_to_broken') {
+    //                                     console.log('  Ответ: Самокат в ожидании');
+    //                                     addTodo22(numQrScooter, objectStatusOnline, 'Ошибка (Самокат в ожидании)')
+    //                                     eroorExistsGoBroken = eroorExistsGoBroken + 1
+
+    //                                 }
+    //                                 // Свободен
+    //                                 else if (titleResponse == 'error_api_already_available') {
+    //                                     console.log('  Ответ: Уже свободен!');
+    //                                     console.log(titleResponse);
+    //                                     addTodo22(numQrScooter, objectStatusOnline, 'Уже свободен')
+    //                                 }
+    //                                 else if (titleResponse == 'error_api_cant_change_from_taken_to_available') {
+    //                                     console.log('  Ответ: Самокат в аренде');
+    //                                     console.log(titleResponse);
+    //                                     addTodo22(numQrScooter, objectStatusOnline, 'Ошибка (Самокат в аренде)')
+    //                                 }
+    //                                 else if (titleResponse == 'error_api_cant_change_from_reserved_to_available') {
+    //                                     console.log('  Ответ: Самокат забронирован');
+    //                                     console.log(titleResponse);
+    //                                     addTodo22(numQrScooter, objectStatusOnline, 'Ошибка (Самокат забронирован)')
+    //                                 }
+    //                                 else if (titleResponse == 'error_api_cant_change_from_park_to_available') {
+    //                                     console.log('  Ответ: Самокат в ожидании');
+    //                                     console.log(titleResponse);
+    //                                     addTodo22(numQrScooter, objectStatusOnline, 'Ошибка (Самокат в ожидании)')
+    //                                 }
+    //                                 // НЕИЗВЕСНАЯ ОШИБКА
+    //                                 else {
+    //                                     console.log('  Ответ: НЕИЗВЕСНАЯ ОШИБКА!');
+    //                                     addTodo22(numQrScooter, objectStatusOnline, titleResponse)
+    //                                     eroorExistsGoBroken = eroorExistsGoBroken + 1
+    //                                 }
+    //                             }
+    //                             else if (statusResponse == 200) {
+    //                                 console.log('  Ответ: Статус переведен!');
+    //                                 addTodo22(numQrScooter, objectStatusOnline, 'Успешно')
+    //                             }
+    //                             else {
+    //                                 console.log('  Ошибка!\nСтатус ответа: ', statusResponse);
+    //                                 addTodo22(numQrScooter, objectStatusOnline, statusResponse + ' ' + titleResponse)
+    //                                 eroorExistsGoBroken = eroorExistsGoBroken + 1
+    //                             }
+    //                         }
+    //                         catch (err) {
+    //                             console.log(err);
+    //                         }
+    //                         // console.log('eroorExistsGoBroken1: ' + eroorExistsGoBroken)
+
+    //                         // Запускаем команду на перевод объекта в статус "На складе"
+    //                         // try {
+    //                         //     const api_url_scooterlockall123 = await
+    //                         //         fetch(`https://app.rightech.io/api/v1/objects/${dataObjectsListCount[j]._id}/commands/00e9f?withChildGroups=true`, {
+    //                         //             method: "POST",
+    //                         //             headers: {
+    //                         //                 "Authorization": API_RIC_KEY
+    //                         //             },
+    //                         //         })
+    //                         //     console.log(' ПЕРЕВОД "В ГОРОД"');
+    //                         //     if (api_url_scooterlockall123.status == 200) {
+    //                         //         console.log('  Ответ: Статус переведен!');
+    //                         //     } else {
+    //                         //         console.log('  Ошибка!\nСтатус ответа: ', api_url_scooterlockall123.status);
+    //                         //     }
+    //                         // }
+    //                         // catch (err) {
+    //                         //     console.log(err);
+    //                         // }
+
+    //                         // Тут дальше я отправляю в гугл таблицу
+    //                         var now = new Date().toLocaleTimeString();
+    //                         let objt
+    //                         if (GoCommand == 'GoBroken') {
+    //                             objt = `?p1=${todos[i].title}&p2=${now}&p3=Забрал&p4=${x},${y}`
+    //                         }
+    //                         else if (GoCommand == 'GoAvailable') {
+    //                             objt = `?p1=${todos[i].title}&p2=${now}&p3=Выставил&p4=${x},${y}`
+    //                         }
+    //                         else {
+    //                             objt = `?p1=${todos[i].title}&p2=${now}&p3=Замена АКБ&p4=${x},${y}`
+    //                         }
+
+    //                         const GOOGLE_SHEET_PUSH = await fetch(
+    //                             `https://script.google.com/macros/s/AKfycbzpfVBOETyWNDXES7goQIq3KQ8c3OQupri_y2581JnPblpAgL6TB6r7K7MebVlieai3/exec${objt}`,
+    //                             {
+    //                                 method: 'GET',
+    //                             }
+    //                         )
+    //                         let GOOGLE_SHEET_PUSH_StatusResponse = GOOGLE_SHEET_PUSH.status;
+    //                         console.log("Гугл таблица: " + GOOGLE_SHEET_PUSH_StatusResponse);
+    //                     }
+    //                 }
+    //             }
+
+    //             var rawLinkGoBroken
+    //             var rawUnlinkGoBroken
+    //             var rawLinkGoAvailable
+    //             var rawUnlinkGoAvailable
+
+    //             if (GoCommand == 'GoBroken') {
+    //                 console.log("ПЕРЕВОЖУ МЕТКИ НА СКЛАД");
+    //                 rawLinkGoBroken = {
+    //                     "item": "62e235a14630030010ec2131",
+    //                     "link": IDsForLabels,
+    //                     "unlink": []
+    //                 }
+    //                 await fetch("https://app.rightech.io/api/v1/links/labels/to/objects", {
+    //                     method: "POST",
+    //                     headers: {
+    //                         "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2MmNlYjYzODU1ZWFhMTAwMTA0ZTFhZGQiLCJzdWIiOiI2MGMxY2FhOWFiZmM4NzAwMTBmM2IyYTUiLCJncnAiOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJvcmciOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJsaWMiOmZhbHNlLCJ1c2ciOiJhcGkiLCJmdWxsIjpmYWxzZSwicmlnaHRzIjoxLjUsImlhdCI6MTY1NzcxNDIzMiwiZXhwIjoxNjYwMjUxNjAwfQ.3xbtlgva90_2DMQi95dutbCYEy-BIzmlEWqRUi2lZ8M",
+    //                         "Content-Type": "application/json"
+    //                     },
+    //                     body: JSON.stringify(rawLinkGoBroken),
+    //                 })
+    //                     .then(response => console.log("Метка склад (статус): " + response.status))
+    //                     .catch(error => console.log('error', error));
+
+    //                 rawUnlinkGoBroken = {
+    //                     "item": "62e38291595fd50010ade2fb",
+    //                     "link": [],
+    //                     "unlink": IDsForLabels
+    //                 }
+    //                 await fetch("https://app.rightech.io/api/v1/links/labels/to/objects", {
+    //                     method: "POST",
+    //                     headers: {
+    //                         "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2MmNlYjYzODU1ZWFhMTAwMTA0ZTFhZGQiLCJzdWIiOiI2MGMxY2FhOWFiZmM4NzAwMTBmM2IyYTUiLCJncnAiOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJvcmciOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJsaWMiOmZhbHNlLCJ1c2ciOiJhcGkiLCJmdWxsIjpmYWxzZSwicmlnaHRzIjoxLjUsImlhdCI6MTY1NzcxNDIzMiwiZXhwIjoxNjYwMjUxNjAwfQ.3xbtlgva90_2DMQi95dutbCYEy-BIzmlEWqRUi2lZ8M",
+    //                         "Content-Type": "application/json"
+    //                     },
+    //                     body: JSON.stringify(rawUnlinkGoBroken),
+    //                 })
+    //                     .then(response => console.log("Метка город анлинк (статус): " + response.status))
+    //                     .catch(error => console.log('error', error));
+    //             }
+    //             else if (GoCommand == 'GoAvailable') {
+    //                 console.log("ПЕРЕВОЖУ МЕТКИ В ГОРОД");
+    //                 rawLinkGoAvailable = {
+    //                     "item": "62e38291595fd50010ade2fb",
+    //                     "link": IDsForLabels,
+    //                     "unlink": []
+    //                 }
+    //                 await fetch("https://app.rightech.io/api/v1/links/labels/to/objects", {
+    //                     method: "POST",
+    //                     headers: {
+    //                         "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2MmNlYjYzODU1ZWFhMTAwMTA0ZTFhZGQiLCJzdWIiOiI2MGMxY2FhOWFiZmM4NzAwMTBmM2IyYTUiLCJncnAiOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJvcmciOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJsaWMiOmZhbHNlLCJ1c2ciOiJhcGkiLCJmdWxsIjpmYWxzZSwicmlnaHRzIjoxLjUsImlhdCI6MTY1NzcxNDIzMiwiZXhwIjoxNjYwMjUxNjAwfQ.3xbtlgva90_2DMQi95dutbCYEy-BIzmlEWqRUi2lZ8M",
+    //                         "Content-Type": "application/json"
+    //                     },
+    //                     body: JSON.stringify(rawLinkGoAvailable),
+    //                 })
+    //                     .then(response => console.log("Метка город (статус): " + response.status))
+    //                     .catch(error => console.log('error', error));
+
+    //                 rawUnlinkGoAvailable = {
+    //                     "item": "62e235a14630030010ec2131",
+    //                     "link": [],
+    //                     "unlink": IDsForLabels
+    //                 }
+    //                 await fetch("https://app.rightech.io/api/v1/links/labels/to/objects", {
+    //                     method: "POST",
+    //                     headers: {
+    //                         "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2MmNlYjYzODU1ZWFhMTAwMTA0ZTFhZGQiLCJzdWIiOiI2MGMxY2FhOWFiZmM4NzAwMTBmM2IyYTUiLCJncnAiOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJvcmciOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJsaWMiOmZhbHNlLCJ1c2ciOiJhcGkiLCJmdWxsIjpmYWxzZSwicmlnaHRzIjoxLjUsImlhdCI6MTY1NzcxNDIzMiwiZXhwIjoxNjYwMjUxNjAwfQ.3xbtlgva90_2DMQi95dutbCYEy-BIzmlEWqRUi2lZ8M",
+    //                         "Content-Type": "application/json"
+    //                     },
+    //                     body: JSON.stringify(rawUnlinkGoAvailable),
+    //                 })
+    //                     .then(response => console.log("Метка склад анлинк (статус): " + response.status))
+    //                     .catch(error => console.log('error', error));
+    //             }
+
+
+
+
+    //             // На данном этапе мы пробежали по всем объектам и перевели их в статус "Поломка"
+    //             // Определяем функцию, которая отправит сообщение и гео-позицию в Телеграм
+    //             // Определяем сообщение, которое отправим в Телеграм
+    //             // let scootlistnumlog = todos22.map(todo22 => todo22.title22 + ' - ' + todo22.code22 + ' - ' + todo22.status22).join("\n");
+
+    //             let message
+    //             if (eroorExistsGoBroken != 0) {
+    //                 if (GoCommand == 'GoBroken') {
+    //                     message = `*Забрал и перевел в поломку:*\n${scootlistnum}\n@vasenkovivan`;
+    //                 }
+    //                 else if (GoCommand == 'GoAvailable') {
+    //                     message = `*Выставил и перевел в свободен:*\n${scootlistnum}\n@vasenkovivan`;
+    //                 }
+    //                 else {
+    //                     message = `*Заменил АКБ:*\n${scootlistnum}\n@vasenkovivan`;
+    //                 }
+    //             }
+    //             else {
+    //                 if (GoCommand == 'GoBroken') {
+    //                     message = `*Забрал и перевел в поломку:*\n${scootlistnum}`;
+    //                 }
+    //                 else if (GoCommand == 'GoAvailable') {
+    //                     message = `*Выставил и перевел в свободен:*\n${scootlistnum}`;
+    //                 }
+    //                 else {
+    //                     message = `*Заменил АКБ:*\n${scootlistnum}`;
+    //                 }
+    //             }
+
+
+    //             console.log('\nСообщение в ТГ: \n' + message)
+
+    //             // Получаем ключ
+    //             const response = await fetch(
+    //                 'https://bikeme-rt-scanner-default-rtdb.europe-west1.firebasedatabase.app/todos.json',
+    //                 {
+    //                     method: 'GET',
+    //                 }
+    //             )
+    //             const data = await response.json()
+    //             // console.log('DATATA: ', data)
+    //             const dataView = Object.keys(data).map(key => ({ ...data[key], id: key }))
+    //             let API_TELEGRAM_KEY = dataView[1].title;
+
+    //             let TELEGRAM_KEY_CHAT_ID
+    //             if (uid == UID_LIST.UID_ARCHANGELSK) {
+    //                 TELEGRAM_KEY_CHAT_ID = dataView[3].title;
+    //             } else {
+    //                 TELEGRAM_KEY_CHAT_ID = dataView[2].title;
+    //             }
+    //             // console.log('КЛЮЧ: ' + API_TELEGRAM_KEY)
+    //             // Асинхронная функция на axios для отправки POST запроса, для отправки сообщения в Телеграм
+    //             const TG_MESSAGE_PUSH = await
+    //                 axios.post(`https://api.telegram.org/bot${API_TELEGRAM_KEY}/sendMessage`, {
+    //                     chat_id: TELEGRAM_KEY_CHAT_ID,
+    //                     text: message,
+    //                     parse_mode: 'Markdown',
+    //                 });
+    //             let TG_MESSAGE_PUSH_StatusResponse = TG_MESSAGE_PUSH.status;
+    //             console.log("\nОтправка сообщения в ТГ: " + TG_MESSAGE_PUSH_StatusResponse);
+
+    //             if (TG_MESSAGE_PUSH_StatusResponse == 200) {
+    //                 addTodo22("Telegram", TG_MESSAGE_PUSH_StatusResponse, 'Успешно')
+    //             } else {
+    //                 addTodo22("Telegram", TG_MESSAGE_PUSH_StatusResponse, 'Не отправлено!')
+    //             }
+
+    //             // console.log(api_urlTG.status)
+    //             // Асинхронная функция на axios для отправки POST запроса, для отправки гео-позиции устройства в Телеграм
+    //             const TG_LOCATION_PUSH = await
+    //                 axios.post(KEYS_TELEGRAM.URI_API_LOCATION, {
+    //                     chat_id: TELEGRAM_KEY_CHAT_ID,
+    //                     latitude: x,
+    //                     longitude: y,
+    //                 })
+    //             let TG_LOCATION_PUSH_StatusResponse = TG_LOCATION_PUSH.status;
+    //             console.log("Отправка гео в ТГ: " + TG_LOCATION_PUSH_StatusResponse);
+
+    //             if (GoCommand == 'GoBroken') {
+    //                 setLoadingBroken(loadingBroken);    // Выключаем loading-индикатор
+    //                 showToastWithGoBroken();            // Показываем тост успеха
+    //             }
+    //             else if (GoCommand == 'GoAvailable') {
+    //                 setLoadingAvailable(loadingAvailable);  // Выключаем loading-индикатор
+    //                 showToastWithGoAvailable();
+    //             }
+    //             else {
+    //                 setLoadingGoOpenBattery(loadingGoOpenBattery);  // Выключаем loading-индикатор
+    //                 showToastWithGoOpenBattery();             // Показываем тост успеха
+    //             }
+
+    //             setTimeout(() => {
+    //                 if (GoCommand == 'GoBroken') {
+    //                     setscooterGoBrokenDisabledButton(scooterGoBrokenDisabledButton);
+    //                 }
+    //                 else if (GoCommand == 'GoAvailable') {
+    //                     setscooterGoAvailableDisabledButton(scooterGoAvailableDisabledButton);
+    //                 }
+    //                 else {
+    //                     setscooterGoOpenBatteryDisabledButton(scooterGoOpenBatteryDisabledButton);
+    //                 }
+    //             }, 5000);
+    //         }
+    //     }
+    // }
+    // =======================================================================================================
+    // =======================================================================================================
+    // =======================================================================================================
+
+
+    const objectsInSuper = useSelector(state => state.post.allAddedObjectsArray)
+    // console.log("objectsInSuper: ", objectsInSuper.length);
 
     const scooterGoCommand = async (GoCommand) => {
         console.log("\nКоманда: " + GoCommand + " = = = = = = = = = =");
         // Проверяем, что список объектов не пустой
-        if (todos.length == 0) {
+        if (objectsInSuper.length == 0) {
             showToastErrorEmptyList();
         } else {
 
@@ -315,7 +868,7 @@ const MainScreen = ({ navigation }, setValue) => {
                 let eroorExistsGoBroken = 0;
                 let IDsForLabels = [];
 
-                for (var i = 0; i < todos.length; i++) {
+                for (var i = 0; i < objectsInSuper.length; i++) {
                     var now1 = new Date().toLocaleTimeString();
                     console.log("\n" + now1); // Выводим в консоль номер цикла
 
@@ -326,17 +879,9 @@ const MainScreen = ({ navigation }, setValue) => {
                     // Массив, в котором мы пробегаем по объектам из RIC
                     for (let j = 0; j < data_RIC_OBJECTS_LIST.length; j++) {
                         // Ищем отсканированный объект в списке объектов RIC
-                        if (data_RIC_OBJECTS_LIST[j].config.data.qr == todos[i].title) {
+                        if (data_RIC_OBJECTS_LIST[j].config.data.qr == objectsInSuper[i].title) {
 
                             IDsForLabels.push(`${data_RIC_OBJECTS_LIST[j]._id}`);
-
-
-
-
-
-
-
-
 
                             let url_go_command;
                             try {
@@ -501,13 +1046,13 @@ const MainScreen = ({ navigation }, setValue) => {
                             var now = new Date().toLocaleTimeString();
                             let objt
                             if (GoCommand == 'GoBroken') {
-                                objt = `?p1=${todos[i].title}&p2=${now}&p3=Забрал&p4=${x},${y}`
+                                objt = `?p1=${objectsInSuper[i].title}&p2=${now}&p3=Забрал&p4=${x},${y}`
                             }
                             else if (GoCommand == 'GoAvailable') {
-                                objt = `?p1=${todos[i].title}&p2=${now}&p3=Выставил&p4=${x},${y}`
+                                objt = `?p1=${objectsInSuper[i].title}&p2=${now}&p3=Выставил&p4=${x},${y}`
                             }
                             else {
-                                objt = `?p1=${todos[i].title}&p2=${now}&p3=Замена АКБ&p4=${x},${y}`
+                                objt = `?p1=${objectsInSuper[i].title}&p2=${now}&p3=Замена АКБ&p4=${x},${y}`
                             }
 
                             const GOOGLE_SHEET_PUSH = await fetch(
@@ -705,6 +1250,19 @@ const MainScreen = ({ navigation }, setValue) => {
         }
     }
 
+    // =======================================================================================================
+    // =======================================================================================================
+    // =======================================================================================================
+    // =======================================================================================================
+    // =======================================================================================================
+    // =======================================================================================================
+    // =======================================================================================================
+    // =======================================================================================================
+    // =======================================================================================================
+    // =======================================================================================================
+    // =======================================================================================================
+    // =======================================================================================================
+    // =======================================================================================================
 
     const [counterPerformedCommands, setCounterPerformedCommands] = useState();
 
@@ -1302,9 +1860,12 @@ const MainScreen = ({ navigation }, setValue) => {
         setTodos([]);
         setTodos22([]);
         showToastWithCleared();
+        dispatch(deleteAllPosts())
     }
 
-
+    // console.log("allPosts2: ", useSelector(state => state.post.allAddedObjectsArray));
+    useSelector(state => state.post.allAddedObjectsArray)
+    useSelector(state => state.post.resultsCommandsScootersArray)
     const addTodo = (title) => {
         // const newTodo = {
         //   id: Date.now().toString(),
@@ -1403,6 +1964,7 @@ const MainScreen = ({ navigation }, setValue) => {
 
 
     const [value123123, setValue123123] = useState('')
+    const dispatch = useDispatch()
     const handleBarCodeScanned22 = () => {
 
         if (value123123.trim().length < 6) {
@@ -1425,6 +1987,11 @@ const MainScreen = ({ navigation }, setValue) => {
                 25,
                 50
             );
+            const scooter = {
+                title: value123123
+            }
+
+            dispatch(addPosts(scooter))
 
         }
 
@@ -1432,327 +1999,181 @@ const MainScreen = ({ navigation }, setValue) => {
 
     }
 
+    const inputAddNumberOpenValue = useSelector(state => state.post.inputAddNumberOpen)
+
+    // const InputAddNumberOpen = () => {
+    //     setInputAddNumber(true)
+    // }
+    // const InputAddNumberClose = () => {
+    //     setInputAddNumber(false)
+    // }
     const InputAddNumberOpen = () => {
-        setInputAddNumber(true)
+        dispatch(changeValueInputAddNumberOpen())
     }
     const InputAddNumberClose = () => {
-        setInputAddNumber(false)
+        dispatch(changeValueInputAddNumberOpen())
     }
 
+
+    const allAddedObjectsArray = useSelector(state => state.post.allAddedObjectsArray)
+    const resultsCommandsScootersArray = useSelector(state => state.post.resultsCommandsScootersArray)
+
+    // console.log("Массив результата (ХомСкрин):\n", useSelector(state => state.post.resultsCommandsScootersArray));
     return (
-        <View style={styles.MainScreen}>
-            {orientation == 12 ?
-                <View style={styles.One} >
+        <GestureHandlerRootView style={{ flex: 1 }}>
 
-                    <View style={styles.container}>
-                        <AddTodo onSubmit={addTodo} />
-                        {/* {getContent()} */}
-                    </View>
-
-                    <View style={styles.containerCounterAndButtons} >
-
-                        <View >
-                            <Text style={styles.containerCounterAndButtonsTitle} >Выбрано:
-                                <Text style={{ color: '#DFDFDF', }}>
-                                    -
-                                </Text>
-                                <Text style={{ fontWeight: "bold" }}>
-                                    {abc} шт.
-                                </Text>
-                            </Text>
+            <View style={styles.MainScreen}>
+                {orientation == 34 ?
+                    <ScrollView style={styles.One}>
+                        <View style={styles.container}>
+                            <AddTodo onSubmit={addTodo} />
                         </View>
 
-                        <View style={{
-                            flexDirection: "row",
-                            alignItems: 'center'
-                        }}>
-                            <View style={{
-                                marginRight: 15
-                            }}>
-                                <TouchableOpacity onPress={InputAddNumberOpen}>
-                                    <View style={styles.containerCounterAndButtonsButtonAdd}>
-                                        <FontAwesome name="pencil-square-o" size={18} color="white" />
-                                    </View>
-                                </TouchableOpacity>
-                            </View>
-                            <View>
-                                <TouchableOpacity onPress={copyToClipboard}>
-                                    <View style={styles.containerCounterAndButtonsButtonCopy}>
-                                        <AntDesign name="copy1" size={18} color="white" />
-                                    </View>
-                                </TouchableOpacity>
-                            </View>
+                        <TitleLine />
 
-                        </View>
-                    </View>
+                        <ScrollView style={styles.containerWithTables}>
+                            <ContainerResultsCommands />
+                            <ContainerAddedObjects />
+                        </ScrollView>
 
-
-                    {/* <ResultContainer todos22={todos22} onSubmit={todos22} /> */}
-                    <ScrollView
-                        style={[{
-                            paddingVertical: 10,
-                        }]}
-                    >
-                        {todos22.length ?
-                            <View style={styles.containerResult}>
-                                <View style={styles.containerResultTitleBox}>
-                                    <Text style={styles.containerResultTitleBoxText}>
-                                        Результат ( {counterPerformedCommands} / {abc} )
-                                    </Text>
-                                    {loadingAvailable &&
-                                        <ActivityIndicator
-                                            style={{
-                                                // backgroundColor: 'red',
-                                                alignItems: "center",
-                                                justifyContent: "center",
-                                                marginLeft: 5
-                                            }}
-                                            size="small"
-                                            color="black" />
-                                    }
-                                </View>
-                                <View style={styles.containerResultTable}>
-                                    {todos22.map(todo22 => (
-                                        <Todo22
-                                            todo22={todo22}
-                                            status22={todo22.status22}
-                                            key={todo22.id}
-                                            onRemove={removeTodo} />
-                                    ))}
-                                </View>
-                            </View>
-                            :
-                            <View ></View>
-                        }
-                        {todos.length ?
-                            <View style={styles.containerAdd}>
-                                <View style={styles.containerAddTitleBox}>
-                                    <Text style={styles.containerAddTitleBoxText}>Вы добавили</Text>
-                                </View>
-                                <View style={styles.containerAddTable} >
-                                    {todos.map(todo => (
-                                        <Todo todo={todo} key={todo.id} onRemove={removeTodo} />
-                                    ))}
-                                </View>
-                            </View>
-                            :
-                            <View style={styles.containerAddImageEmptyList}>
-                                <Image
-                                    style={styles.imageEmptyList}
-                                    source={require('../src/img/empty.png')}
-                                />
-                            </View>}
-                    </ScrollView>
-                </View >
-                :
-                <ScrollView style={styles.One} >
-
-                    <View style={styles.container}>
-                        <AddTodo onSubmit={addTodo} />
-                        {/* {getContent()} */}
-                    </View>
-                    <View style={styles.containerCounterAndButtons} >
-
-                        <View >
-                            <Text style={styles.containerCounterAndButtonsTitle} >Выбрано:
-                                <Text style={{ color: '#DFDFDF', }}>
-                                    -
-                                </Text>
-                                <Text style={{ fontWeight: "bold" }}>
-                                    {abc} шт.
-                                </Text>
-                            </Text>
-                        </View>
-
-                        <View style={{
-                            flexDirection: "row",
-                            alignItems: 'center'
-                        }}>
-                            <View style={{
-                                marginRight: 15
-                            }}>
-                                <TouchableOpacity onPress={InputAddNumberOpen}>
-                                    <View style={styles.containerCounterAndButtonsButtonAdd}>
-                                        <FontAwesome name="pencil-square-o" size={18} color="white" />
-                                    </View>
-                                </TouchableOpacity>
-                            </View>
-                            <View>
-                                <TouchableOpacity onPress={copyToClipboard}>
-                                    <View style={styles.containerCounterAndButtonsButtonCopy}>
-                                        <AntDesign name="copy1" size={18} color="white" />
-                                    </View>
-                                </TouchableOpacity>
-                            </View>
-
-                        </View>
-                    </View>
-
-
-                    {/* <ResultContainer todos22={todos22} onSubmit={todos22} /> */}
-                    <ScrollView
-                        style={[{
-                            paddingVertical: 10,
-                        }]}
-                    >
-                        {todos22.length ?
-                            <View style={styles.containerResult}>
-                                <View style={styles.containerResultTitleBox}>
-                                    <Text style={styles.containerResultTitleBoxText}>
-                                        Результат ( {counterPerformedCommands} / {abc} )
-                                    </Text>
-                                    {loadingAvailable &&
-                                        <ActivityIndicator
-                                            style={{
-                                                // backgroundColor: 'red',
-                                                alignItems: "center",
-                                                justifyContent: "center",
-                                                marginLeft: 5
-                                            }}
-                                            size="small"
-                                            color="black" />
-                                    }
-                                </View>
-                                <View style={styles.containerResultTable}>
-                                    {todos22.map(todo22 => (
-                                        <Todo22
-                                            todo22={todo22}
-                                            status22={todo22.status22}
-                                            key={todo22.id}
-                                            onRemove={removeTodo} />
-                                    ))}
-                                </View>
-                            </View>
-                            :
-                            <View ></View>
-                        }
-                        {todos.length ?
-                            <View style={styles.containerAdd}>
-                                <View style={styles.containerAddTitleBox}>
-                                    <Text style={styles.containerAddTitleBoxText}>Вы добавили</Text>
-                                </View>
-                                <View style={styles.containerAddTable} >
-                                    {todos.map(todo => (
-                                        <Todo todo={todo} key={todo.id} onRemove={removeTodo} />
-                                    ))}
-                                </View>
-                            </View>
-                            :
-                            <View style={styles.containerAddImageEmptyList}>
-                                <Image
-                                    style={styles.imageEmptyList}
-                                    source={require('../src/img/empty.png')}
-                                />
-                            </View>}
-                    </ScrollView>
-                </ScrollView >
-            }
-
-            {/* <View style={styles.Two}>
-            </View> */}
-
-            <View>
-                {inputAddNumber ?
-                    <View style={styles.containerInputAddNumber} >
-                        <View style={styles.containerInputAddNumberTitleAndButtonClose}>
-                            <Text style={styles.containerInputAddNumberTitle} >
-                                Ручной ввод номера
-                            </Text>
-                            <TouchableOpacity onPress={InputAddNumberClose}>
-                                <Ionicons name="close-sharp" size={30} color="#DF9A9A" />
-                            </TouchableOpacity>
-                        </View>
-                        <View style={styles.containerInputAddNumberWithButton}>
-
-                            <View style={styles.containerInputAddNumberViewInput}>
-                                <TextInput
-                                    style={styles.containerInputAddNumberInput}
-                                    onChangeText={setValue123123}
-                                    keyboardType='number-pad'
-                                    maxLength={6}
-                                    value={value123123}
-                                    placeholder='Введите номер...'
-                                />
-                            </View>
-                            <View >
-                                <Button title='Добавить' onPress={handleBarCodeScanned22} color='#2C9B29' />
-                            </View>
-                        </View>
-                    </View>
+                    </ScrollView >
                     :
-                    <View style={styles.bottomContainer}>
-                        <View style={styles.bottomContainerButtons}>
-                            <TouchableOpacity onPress={scooterGoBrokenAlert} disabled={scooterGoBrokenDisabledButton}>
-                                <View
-                                    style={{
-                                        ...styles.button,
-                                        backgroundColor: loadingBroken ? "#444647" : "#444647",
-                                        backgroundColor: scooterGoBrokenDisabledButton ? "#E7E6E6" : "#444647",
-                                    }}
-                                >
-                                    {loadingBroken && <ActivityIndicator style={styles.buttonText333} size="large" color="white" />}
-                                    <Text style={styles.buttonText}>
-                                        {loadingBroken ? "" : scooterGoBrokenDisabledButton ? "Блестяще" : "В ПОЛОМКУ"}
-                                        {/* {scooterGoBrokenDisabledButton ? "" : "В ПОЛОМКУ"} */}
-                                    </Text>
-                                </View>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={pressDelete}>
-                                <View style={styles.button2}>
+                    <View style={styles.One} >
+                        {/* <Text>1231321</Text> */}
+                        <View style={styles.container}>
+                            <AddTodo onSubmit={addTodo} />
+                        </View>
 
-                                    <MaterialIcons name="delete-sweep" size={26} color="white" />
+                        <TitleLine />
 
-                                </View>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={scooterGoOpenBatteryAlert} disabled={scooterGoOpenBatteryDisabledButton}>
-                                <View style={{
-                                    ...styles.button22,
-                                    backgroundColor: !scooterGoOpenBatteryDisabledButton ? "#919E42" : "#E7E6E6",
-                                }}>
-                                    {!loadingGoOpenBattery ?
-                                        <MaterialCommunityIcons name="battery-charging-medium" size={26} color="white" />
-                                        :
-                                        <ActivityIndicator size="large" color="white" />
-                                    }
-                                </View>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={scooterGoAvailableAlert}>
-                                <View
-                                    style={{
-                                        ...styles.button,
-                                        backgroundColor: loadingAvailable ? "#2F71A2" : "#2F71A2",
-                                        backgroundColor: scooterGoAvailableDisabledButton ? "#E7E6E6" : "#2F71A2",
-                                    }}
-                                >
-                                    {loadingAvailable &&
-                                        <View>
-                                            <ActivityIndicator style={styles.buttonText333} size="large" color="white" />
-                                        </View>
-                                    }
-                                    <Text style={styles.buttonText}>
-                                        {loadingAvailable ? "" : scooterGoAvailableDisabledButton ? "Блестяще" : "В СВОБОДЕН"}
-                                    </Text>
-                                </View>
-                            </TouchableOpacity>
-                            {/* <GoAvaliableButton todos={todos} todos22={todos22} /> */}
-                        </View >
-                        <View style={styles.bottomContainerTitle}>
-                            {uid == UID_LIST.UID_MURMANSK ?
-                                <Text style={styles.bottomContainerText}>version 4.1.4 - Мурманск</Text> :
-                                uid == UID_LIST.UID_ARCHANGELSK ?
-                                    <Text style={styles.bottomContainerText}>version 4.1.4 - Архангельск</Text> :
-                                    <Text>ошибка</Text>
-                            }
-                        </View >
+                        <ScrollView style={styles.containerWithTables}>
+                            <ContainerResultsCommands />
+                            <ContainerAddedObjects />
+                        </ScrollView>
+
                     </View >
                 }
             </View >
-        </View >
+
+            {inputAddNumberOpenValue ?
+                <View style={styles.containerInputAddNumber} >
+                    <View style={styles.containerInputAddNumberTitleAndButtonClose}>
+                        <Text style={styles.containerInputAddNumberTitle} >
+                            Ручной ввод номера
+                        </Text>
+                        <TouchableOpacity onPress={InputAddNumberClose}>
+                            <Ionicons name="close-sharp" size={30} color="#DF9A9A" />
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.containerInputAddNumberWithButton}>
+
+                        <View style={styles.containerInputAddNumberViewInput}>
+                            <TextInput
+                                style={styles.containerInputAddNumberInput}
+                                onChangeText={setValue123123}
+                                keyboardType='number-pad'
+                                maxLength={6}
+                                value={value123123}
+                                placeholder='Введите номер...'
+                            />
+                        </View>
+                        <View >
+                            <Button title='Добавить' onPress={handleBarCodeScanned22} color='#2C9B29' />
+                        </View>
+                    </View>
+                </View>
+                :
+                <GestureDetector gesture={gesture}>
+                    <Animated.View style={[styles.bottomSheetContainer, rBottomSheetStyle]}>
+                        <View style={styles.line} />
+                        <View>
+                            {inputAddNumber ?
+                                <View style={styles.containerInputAddNumber} >
+                                    <View style={styles.containerInputAddNumberTitleAndButtonClose}>
+                                        <Text style={styles.containerInputAddNumberTitle} >
+                                            Ручной ввод номера
+                                        </Text>
+                                        <TouchableOpacity onPress={InputAddNumberClose}>
+                                            <Ionicons name="close-sharp" size={30} color="#DF9A9A" />
+                                        </TouchableOpacity>
+                                    </View>
+                                    <View style={styles.containerInputAddNumberWithButton}>
+
+                                        <View style={styles.containerInputAddNumberViewInput}>
+                                            <TextInput
+                                                style={styles.containerInputAddNumberInput}
+                                                onChangeText={setValue123123}
+                                                keyboardType='number-pad'
+                                                maxLength={6}
+                                                value={value123123}
+                                                placeholder='Введите номер...'
+                                            />
+                                        </View>
+                                        <View >
+                                            <Button title='Добавить' onPress={handleBarCodeScanned22} color='#2C9B29' />
+                                        </View>
+                                    </View>
+                                </View>
+                                :
+                                <View style={styles.bottomContainer}>
+
+                                    <View style={styles.bottomContainerButtons}>
+                                        <ButtonGoBroken />
+                                        <ButtonDelete />
+                                        <ButtonGoOpenBattery />
+                                        <ButtonGoAvaliable />
+                                    </View >
+
+                                    <View style={styles.bottomContainerTitle}>
+                                        {uid == UID_LIST.UID_MURMANSK ?
+                                            <Text style={styles.bottomContainerText}>version 4.1.4 - Мурманск</Text> :
+                                            uid == UID_LIST.UID_ARCHANGELSK ?
+                                                <Text style={styles.bottomContainerText}>version 4.1.4 - Архангельск</Text> :
+                                                <Text>ошибка</Text>
+                                        }
+                                    </View >
+                                </View >
+                            }
+                        </View >
+                    </Animated.View>
+                </GestureDetector>
+            }
+
+        </GestureHandlerRootView >
     )
 }
 
 const styles = StyleSheet.create({
+    container99999: {
+        flex: 1,
+        backgroundColor: '#111',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
 
+    bottomSheetContainer: {
+        height: SCREEN_HEIGHT,
+        width: '100%',
+        backgroundColor: 'white',
+        position: 'absolute',
+        top: SCREEN_HEIGHT,
+        borderRadius: 25,
+        borderTopWidth: 1,
+        borderLeftWidth: 1,
+        borderRightWidth: 1,
+        borderTopEndRadius: 20,
+        borderTopStartRadius: 20,
+        borderColor: '#DFDFDF',
+    },
+    line: {
+        width: 75,
+        height: 4,
+        backgroundColor: '#DFDFDF',
+        alignSelf: 'center',
+        marginTop: 10,
+        marginBottom: 5,
+        borderRadius: 2,
+    },
     MainScreen: {
         flex: 1
     },
@@ -1873,13 +2294,9 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         flexDirection: "row",
         paddingHorizontal: 30,
-        paddingTop: 10,
-        borderTopWidth: 1,
-        borderLeftWidth: 1,
-        borderRightWidth: 1,
-        borderTopEndRadius: 20,
-        borderTopStartRadius: 20,
-        borderColor: '#DFDFDF',
+        marginVertical: 10
+        // paddingTop: 10,
+
     },
     bottomContainerTitle: {
         alignItems: 'center',
@@ -2128,6 +2545,9 @@ const styles = StyleSheet.create({
     },
     scanelsebutton2: {
         color: THEME.MAIN_COLOR
+    },
+    containerWithTables: {
+        paddingVertical: 10
     }
 })
 

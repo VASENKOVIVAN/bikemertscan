@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import { Text, View, StyleSheet, TextInput, Button, ToastAndroid, TouchableOpacity } from 'react-native'
+import { Text, View, StyleSheet, TextInput, Button, ToastAndroid, TouchableOpacity, Image } from 'react-native'
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import { Camera, CameraType } from 'expo-camera';
 import { THEME } from './theme'
 import { useIsFocused } from "@react-navigation/native";
 import { Ionicons } from '@expo/vector-icons';
+import { Audio } from 'expo-av';
+
+import { useSelector, useDispatch } from "react-redux";
+import { addPosts } from './store/actions/post';
 
 export const AddTodo = ({ onSubmit }) => {
 
@@ -60,9 +64,17 @@ export const AddTodo = ({ onSubmit }) => {
     console.log("qwre " + qwre);
     setQwre(!qwre)
   }
+
+  const [sound, setSound] = React.useState();
   // What happens when we scan the bar code
+
+  const dispatch = useDispatch()
   const handleBarCodeScanned = ({ type, data, todos }) => {
 
+
+
+
+    playSound()
     setScanned(true);
     setValue(data)
     // console.log('Type: ' + type + '\nData: ' + data)
@@ -104,7 +116,6 @@ export const AddTodo = ({ onSubmit }) => {
     //   }
     // }
 
-
     if (result.trim()) {
       onSubmit(result)
       setValue('')
@@ -113,10 +124,33 @@ export const AddTodo = ({ onSubmit }) => {
     }
 
 
+    const scooter = {
+      title: result
+    }
 
-
+    dispatch(addPosts(scooter))
 
   };
+
+  async function playSound() {
+    console.log('Loading Sound');
+    const { sound } = await Audio.Sound.createAsync(
+      require('./sound/scan-sound.mp3')
+    );
+    setSound(sound);
+
+    console.log('Playing Sound');
+    await sound.playAsync();
+  }
+
+  React.useEffect(() => {
+    return sound
+      ? () => {
+        console.log('Unloading Sound');
+        sound.unloadAsync();
+      }
+      : undefined;
+  }, [sound]);
 
   // const pressHandler = () => {
   //   if (result.trim()) {
@@ -147,11 +181,12 @@ export const AddTodo = ({ onSubmit }) => {
       setType('off')
     }
   }
+
+
+
   return (
 
     <View style={styles.block}>
-
-
 
       <View style={styles.barcodeboxcontainer}>
 
@@ -305,12 +340,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     paddingVertical: 5,
     backgroundColor: '#DFDFDF',
-
   },
   scanelsebutton: {
     paddingHorizontal: 30,
-    paddingTop: 5,
-    paddingBottom: 10
+    marginBottom: 5
     // backgroundColor: '#DFDFDF',
   },
   addbutton: {
