@@ -56,24 +56,124 @@ import { TitleLine } from '../src/components/TitleLine';
 import { InputAddNumber } from '../src/components/InputAddNumber';
 import { VersionLine } from '../src/components/VersionLine';
 
+import Constants from 'expo-constants';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
-
-// Высота экрана для стилей, ни на что не влияет
-// const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-
-let SCREEN_HEIGHT = Dimensions.get('screen').height
-let WINDOW_HEIGHT = Dimensions.get('window').height
-let STATUS_HEIGHT = getStatusBarHeight()
-let NAVBAR_HEIGHT = SCREEN_HEIGHT - WINDOW_HEIGHT - STATUS_HEIGHT
-// Высота нижней слайд-панели (минус высота навигатор-бара, минус высота всех элементов, которые должны выводиться)
-const BOTTOM_SHEET_HEIGHT = - 1 - 10 - 4 - 5 - 10 - 48 - 10
-// Насколько можно поднимать слайд-панель
-const MAX_TRANSLATE_Y = BOTTOM_SHEET_HEIGHT - 34.2;
-// Насколько можно опускать слайд-панель
-const MIN_TRANSLATE_Y = BOTTOM_SHEET_HEIGHT;
 
 const MainScreen = ({ navigation }, setValue) => {
 
+
+    // Высота экрана для стилей, ни на что не влияет
+    // let SCREEN_HEIGHT = Dimensions.get('window');
+    // Высота навигатор-бара устройства
+
+
+
+
+
+    let SCREEN_HEIGHT = Dimensions.get('screen').height
+    console.log("SCREEN_HEIGHT 1:", SCREEN_HEIGHT);
+
+    let WINDOW_HEIGHT = Dimensions.get('window').height
+    console.log("WINDOW_HEIGHT 1:", WINDOW_HEIGHT);
+
+    let STATUS_HEIGHT = getStatusBarHeight()
+    console.log("STATUS_HEIGHT 1:", STATUS_HEIGHT);
+
+    let NAVBAR_HEIGHT = SCREEN_HEIGHT - WINDOW_HEIGHT - STATUS_HEIGHT
+    console.log("NAVBAR_HEIGHT 1:", NAVBAR_HEIGHT);
+
+
+
+    let TESTTTTTTTTTTTTTTTT = 0
+
+    const [orientation, setOrientation] = useState(0);
+
+    const TESTFUNK = async (TESTTTTTTTTTTTTTTTT) => {
+        const orientationId = await ScreenOrientation.getOrientationAsync();
+        console.log("ТЕКУЩАЯ ОРИЕНТАЦИЯ 2564:", orientationId);
+        if (orientationId == 1 || orientationId == 2) {
+            console.log("Я ТУТ - ");
+            TESTTTTTTTTTTTTTTTT = 50
+            console.log("Я ТУТ2 - ", TESTTTTTTTTTTTTTTTT);
+        } else {
+            TESTTTTTTTTTTTTTTTT = 50
+        }
+    }
+    TESTFUNK()
+    console.log("Я ТУТ 5644 - ", TESTTTTTTTTTTTTTTTT);
+    const listener = async () => {
+        console.log('Сменил');
+
+        const orientationId = await ScreenOrientation.getOrientationAsync();
+        console.log("ТЕКУЩАЯ ОРИЕНТАЦИЯ 2:", orientationId);
+
+        if (orientationId == 1 || orientationId == 2) {
+
+
+
+            setOrientation(12)
+            console.log("ВЕРТИКАЛЬНАЯ");
+            SCREEN_HEIGHT = Dimensions.get('screen').height
+            console.log("SCREEN_HEIGHT 2:", SCREEN_HEIGHT);
+
+            WINDOW_HEIGHT = Dimensions.get('window').height
+            console.log("WINDOW_HEIGHT 2:", WINDOW_HEIGHT);
+
+            STATUS_HEIGHT = getStatusBarHeight()
+            console.log("STATUS_HEIGHT 2:", STATUS_HEIGHT);
+
+            NAVBAR_HEIGHT = SCREEN_HEIGHT - WINDOW_HEIGHT - STATUS_HEIGHT
+            console.log("NAVBAR_HEIGHT 2:", NAVBAR_HEIGHT);
+
+        } else {
+
+
+
+            setOrientation(34)
+            console.log("ГОРИЗОНТАЛЬНАЯ");
+            SCREEN_HEIGHT = Dimensions.get('screen').height
+            console.log("SCREEN_HEIGHT 2:", SCREEN_HEIGHT);
+
+            WINDOW_HEIGHT = Dimensions.get('window').height
+            console.log("WINDOW_HEIGHT 2:", WINDOW_HEIGHT);
+
+            STATUS_HEIGHT = getStatusBarHeight()
+            console.log("STATUS_HEIGHT 2:", STATUS_HEIGHT);
+
+            NAVBAR_HEIGHT = 0
+            console.log("NAVBAR_HEIGHT 2:", NAVBAR_HEIGHT);
+        }
+
+    }
+
+    const [count, setCount] = useState(0)
+
+    const onPressLearnMore = () => {
+        console.log("BOTTOM_SHEET_HEIGHT123231:", TESTTTTTTTTTTTTTTTT);
+        TESTTTTTTTTTTTTTTTT = TESTTTTTTTTTTTTTTTT - 20
+        console.log("BOTTOM_SHEET_HEIGHT123231:", TESTTTTTTTTTTTTTTTT);
+        setCount(count + 1)
+    }
+    console.log("Я ТУТ 5644 ---- ", TESTTTTTTTTTTTTTTTT);
+
+    // Высота нижней слайд-панели (минус высота навигатор-бара, минус высота всех элементов, которые должны выводиться)
+    let BOTTOM_SHEET_HEIGHT = -NAVBAR_HEIGHT - 1 - 10 - 4 - 5 - 48 - 20 - TESTTTTTTTTTTTTTTTT
+    // Насколько можно поднимать слайд-панель
+    const MAX_TRANSLATE_Y = BOTTOM_SHEET_HEIGHT - 30;
+    // Насколько можно опускать слайд-панель
+    const MIN_TRANSLATE_Y = BOTTOM_SHEET_HEIGHT;
+
+
+
+
+
+
+
+
+
+
+    // SCREEN_HEIGHT = Dimensions.get('window');
+    // console.log("Я тут: " + SCREEN_HEIGHT);
     // = = = = = = = = = = = = = = = = = = = = = 
     // СЛАЙД-ПАНЕЛЬ
     const translateY = useSharedValue(0);
@@ -86,39 +186,41 @@ const MainScreen = ({ navigation }, setValue) => {
         .onUpdate((event) => {
             translateY.value = event.translationY + context.value.y;
             // Насколько можно поднимать слайд-панель
-            translateY.value = Math.max(translateY.value, MAX_TRANSLATE_Y);
+            // translateY.value = Math.max(translateY.value, MAX_TRANSLATE_Y);
             // Насколько можно опускать слайд-панель
-            translateY.value = Math.min(translateY.value, MIN_TRANSLATE_Y);
+            // translateY.value = Math.min(translateY.value, MIN_TRANSLATE_Y);
         })
         .onEnd(() => {
             // Если подняли панель выше чем BOTTOM_SHEET_HEIGHT, то установи ей высоту BOTTOM_SHEET_HEIGHT (верни назад)
-            if (translateY.value > BOTTOM_SHEET_HEIGHT) {
-                translateY.value = withSpring(BOTTOM_SHEET_HEIGHT, { damping: 50 })
-            }
+            // if (translateY.value > BOTTOM_SHEET_HEIGHT) {
+            //     translateY.value = withSpring(BOTTOM_SHEET_HEIGHT, { damping: 50 })
+            // }
             // Если опустили панель ниже чем BOTTOM_SHEET_HEIGHT, то установи ей высоту BOTTOM_SHEET_HEIGHT (верни назад)
-            else if (translateY.value < BOTTOM_SHEET_HEIGHT) {
-                translateY.value = withSpring(BOTTOM_SHEET_HEIGHT, { damping: 50 })
-            }
+            // else if (translateY.value < BOTTOM_SHEET_HEIGHT) {
+            //     translateY.value = withSpring(BOTTOM_SHEET_HEIGHT, { damping: 50 })
+            // }
         });
 
     useEffect(() => {
         // Дефолтная установка (на какой высоте будет отображаться слайд-панель)
-        translateY.value = withSpring(BOTTOM_SHEET_HEIGHT, { damping: 50 });
+        // translateY.value = withSpring(WINDOW_HEIGHT + BOTTOM_SHEET_HEIGHT, { damping: 50 });
+        translateY.value = withSpring(100, { damping: 50 });
+
     }, []);
     // Это фича для изменения радиуса закругления углов слайд-панели (хз как работает)
-    const rBottomSheetStyle = useAnimatedStyle(() => {
-        const borderRadius = interpolate(
-            translateY.value,
-            [MAX_TRANSLATE_Y + 50, MAX_TRANSLATE_Y],
-            [25, 5],
-            Extrapolate.CLAMP
-        );
+    // const rBottomSheetStyle = useAnimatedStyle(() => {
+    //     const borderRadius = interpolate(
+    //         translateY.value,
+    //         [MAX_TRANSLATE_Y + 50, MAX_TRANSLATE_Y],
+    //         [25, 5],
+    //         Extrapolate.CLAMP
+    //     );
 
-        return {
-            borderRadius,
-            transform: [{ translateY: translateY.value }],
-        };
-    });
+    //     return {
+    //         borderRadius,
+    //         transform: [{ translateY: translateY.value }],
+    //     };
+    // });
     // СЛАЙД-ПАНЕЛЬ
     // = = = = = = = = = = = = = = = = = = = = = 
 
@@ -129,19 +231,7 @@ const MainScreen = ({ navigation }, setValue) => {
 
     // ScreenOrientation.getOrientationAsync().then((letqScreenOrientation) => console.log(letqScreenOrientation));
 
-    const [orientation, setOrientation] = useState(0);
-    // console.log(ScreenOrientation.Orientation.PORTRAIT_UP)
 
-    const listener = () => {
-        console.log('Сменил');
-        // ScreenOrientation.getOrientationAsync().then((letqScreenOrientation) => console.log(letqScreenOrientation));
-        if (ScreenOrientation.getOrientationAsync() == 1 || ScreenOrientation.getOrientationAsync() == 2) {
-            setOrientation(12)
-        } else {
-            setOrientation(34)
-        }
-        console.log(orientation);
-    }
 
     let qweasd = ScreenOrientation.addOrientationChangeListener(listener)
 
@@ -2026,58 +2116,31 @@ const MainScreen = ({ navigation }, setValue) => {
 
     // console.log("Массив результата (ХомСкрин):\n", useSelector(state => state.post.resultsCommandsScootersArray));
     return (
-        <GestureHandlerRootView style={{ flex: 1 }}>
-
+        <GestureHandlerRootView style={{ flex: 1 }} count={count}>
+            <Text >
+                {count}
+            </Text>
             <View style={styles.MainScreen}>
                 {orientation == 34 ?
-                    <View style={styles.One}>
-                        <ScrollView >
+                    <ScrollView style={styles.One}>
+                        <View style={styles.container}>
                             <AddTodo onSubmit={addTodo} />
-                            <TitleLine />
-                            <ScrollView style={styles.containerWithTables}>
-                                <ContainerResultsCommands />
-                                <ContainerAddedObjects />
-                                <View style={styles.safeAreaBox} />
-                            </ScrollView>
-                        </ScrollView >
-                        {inputAddNumberOpenValue ?
-                            <InputAddNumber />
-                            :
-                            <GestureDetector gesture={gesture}>
-                                <Animated.View style={[styles.bottomSheetContainer, rBottomSheetStyle]}>
-                                    <View style={styles.line} />
+                        </View>
 
-                                    <View style={styles.bottomContainer}>
-                                        <View style={styles.bottomContainerButtons}>
-                                            <ButtonGoBroken />
-                                            <ButtonDelete />
-                                            <ButtonGoOpenBattery />
-                                            <ButtonGoAvaliable />
-                                        </View >
-
-                                        <VersionLine />
-                                    </View >
-
-                                </Animated.View>
-                            </GestureDetector>
-                        }
-                    </View>
-                    :
-                    <View style={styles.One} >
-
-                        <AddTodo onSubmit={addTodo} />
                         <TitleLine />
+
                         <ScrollView style={styles.containerWithTables}>
                             <ContainerResultsCommands />
                             <ContainerAddedObjects />
-                            <View style={styles.safeAreaBox} />
                         </ScrollView>
 
                         {inputAddNumberOpenValue ?
                             <InputAddNumber />
                             :
                             <GestureDetector gesture={gesture}>
-                                <Animated.View style={[styles.bottomSheetContainer, rBottomSheetStyle]}>
+                                {/* <Animated.View style={[styles.bottomSheetContainer, rBottomSheetStyle]}> */}
+                                <Animated.View style={[styles.bottomSheetContainer]}>
+
                                     <View style={styles.line} />
 
                                     <View style={styles.bottomContainer}>
@@ -2087,7 +2150,51 @@ const MainScreen = ({ navigation }, setValue) => {
                                             <ButtonGoOpenBattery />
                                             <ButtonGoAvaliable />
                                         </View >
+                                        <VersionLine />
+                                    </View >
 
+                                </Animated.View>
+                            </GestureDetector>
+                        }
+
+                    </ScrollView >
+                    :
+                    <View style={styles.One} >
+                        <Button
+                            onPress={onPressLearnMore}
+                            title="Learn More"
+                            color="#841584"
+                            accessibilityLabel="Learn more about this purple button"
+                        />
+
+
+                        {/* <Text>1231321</Text> */}
+                        <View style={styles.container}>
+                            <AddTodo onSubmit={addTodo} />
+                        </View>
+
+                        <TitleLine />
+
+                        <ScrollView style={styles.containerWithTables}>
+                            <ContainerResultsCommands />
+                            <ContainerAddedObjects />
+                        </ScrollView>
+
+                        {inputAddNumberOpenValue ?
+                            <InputAddNumber />
+                            :
+                            <GestureDetector gesture={gesture} >
+                                {/* <Animated.View style={[styles.bottomSheetContainer, rBottomSheetStyle]}> */}
+                                <Animated.View style={[styles.bottomSheetContainer]}>
+                                    <View style={styles.line} />
+
+                                    <View style={styles.bottomContainer}>
+                                        <View style={styles.bottomContainerButtons}>
+                                            <ButtonGoBroken />
+                                            <ButtonDelete />
+                                            <ButtonGoOpenBattery />
+                                            <ButtonGoAvaliable />
+                                        </View >
                                         <VersionLine />
                                     </View >
 
@@ -2106,12 +2213,6 @@ const MainScreen = ({ navigation }, setValue) => {
 }
 
 const styles = StyleSheet.create({
-    safeAreaBox: {
-        width: 50,
-        height: 1 + 10 + 4 + 5 + 10 + 48 + 10,
-
-        // backgroundColor: 'white',
-    },
     container99999: {
         flex: 1,
         backgroundColor: '#111',
@@ -2121,11 +2222,13 @@ const styles = StyleSheet.create({
 
     bottomSheetContainer: {
         // height: SCREEN_HEIGHT,
+        height: 200,
+
         width: '100%',
         backgroundColor: 'white',
         position: 'absolute',
         // top: SCREEN_HEIGHT,
-        top: "100%",
+        top: '80%',
 
         borderRadius: 25,
         borderTopWidth: 1,

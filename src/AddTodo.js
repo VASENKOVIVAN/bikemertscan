@@ -194,7 +194,7 @@ export const AddTodo = ({ onSubmit }) => {
 
           {isFocused &&
             <Camera style={styles.camera} flashMode={type}
-              onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+              onBarCodeScanned={scanned ? false : handleBarCodeScanned}
             >
 
               <View style={styles.buttonContainer}>
