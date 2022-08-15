@@ -1,10 +1,12 @@
 import React from 'react'
 import { View, StyleSheet, Text } from 'react-native'
 import { useSelector } from "react-redux"
-import { ResultsCommandsScootersContainer } from '../../ResultsCommandsScootersContainer'
-import { Todo123 } from '../../Todo123'
+import { ResultsCommands } from './ResultsCommands'
 
 export const ContainerResultsCommands = () => {
+
+    // Получаем массив добавленных объектов в переменную
+    const ALL_ADDED_OBJECTS_ARRAY = useSelector(state => state.post.allAddedObjectsArray)
 
     // Получаем массив добавленных объектов в переменную
     const RESULTS_COMMANDS_SCOOTERS_ARRAY = useSelector(state => state.post.resultsCommandsScootersArray)
@@ -16,12 +18,12 @@ export const ContainerResultsCommands = () => {
                     <View style={styles.containerResultTitleBox}>
                         <Text style={styles.containerResultTitleBoxText}>
                             Результат
-                            {/* ( {counterPerformedCommands} / {abc} ) */}
+                            ( {RESULTS_COMMANDS_SCOOTERS_ARRAY.length - 2} / {ALL_ADDED_OBJECTS_ARRAY.length} )
                         </Text>
                     </View>
                     <View style={styles.containerResultTable}>
                         {RESULTS_COMMANDS_SCOOTERS_ARRAY.map(resultsCommandsScooter => (
-                            <ResultsCommandsScootersContainer
+                            <ResultsCommands
                                 resultsCommandsScooter={resultsCommandsScooter}
                                 key={resultsCommandsScooter.id}
                             />

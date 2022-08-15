@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from "react-redux"
 import axios from 'axios'
 import * as Location from 'expo-location'
 import { getAuth } from "firebase/auth"
-import { addNewResultCommandScooter, deleteAllResultCommandScooter } from '../../store/actions/post'
+import { addNewResultCommandScooter } from '../../store/actions/post'
 import { UID_LIST } from '../../UIDS/UIDS'
 
 

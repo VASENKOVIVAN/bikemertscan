@@ -2,11 +2,8 @@ import React, { useCallback, useState, useEffect, Component, useImperativeHandle
 import * as Location from 'expo-location';
 import { Dimensions, StyleSheet, Text, View, Button, Image, ScrollView, TouchableOpacity, ToastAndroid, ActivityIndicator, Alert, TextInput } from 'react-native'
 import { Navbar } from '../src/Navbar'
-import { AddTodo } from '../src/AddTodo'
-import { AddTodo22 } from '../src/AddTodo22'
+import { AddTodo, CameraBox } from '../src/components/CameraBox'
 import { Keyboard } from 'react-native'
-import { Todo } from '../src/Todo'
-import { Todo22 } from '../src/Todo22'
 import {
     AppRegistry,
     TouchableHighlight
@@ -22,7 +19,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { FontAwesome } from '@expo/vector-icons';
 import { KEYS_TELEGRAM } from '../src/keys/keys-telegram'
 import { KEYS_RIC } from '../src/keys/keys-ric'
-import { ResultContainer } from '../src/components/ResultContainer'
 import { getAuth } from "firebase/auth";
 import { StatusBar } from 'expo-status-bar';
 import { UID_LIST } from "../src/UIDS/UIDS";
@@ -42,16 +38,16 @@ import Animated, {
 
 import { useSelector, useDispatch } from "react-redux";
 import { addPosts, changeValueInputAddNumberOpen, deleteAllPosts } from '../src/store/actions/post';
-import { Todo123 } from '../src/Todo123';
+import { Todo123 } from '../src/components/containers-tables/container-added-objects/AddedObjects';
 import { ButtonGoAvaliable } from '../src/components/buttons/ButtonGoAvaliable';
 import { ButtonGoBroken } from '../src/components/buttons/ButtonGoBroken';
 
-import { ResultsCommandsScootersContainer } from '../src/ResultsCommandsScootersContainer';
+
 import { ButtonGoOpenBattery } from '../src/components/buttons/ButtonGoOpenBattery';
 import { ButtonDelete } from '../src/components/buttons/ButtonDelete';
-import { ContainerAddedObjects } from '../src/components/containers-tables/ContainerAddedObjects';
+import { ContainerAddedObjects } from '../src/components/containers-tables/container-added-objects/ContainerAddedObjects';
 import { ImageEmpty } from '../src/components/image/ImageEmpty';
-import { ContainerResultsCommands } from '../src/components/containers-tables/ContainerResultsCommands';
+import { ContainerResultsCommands } from '../src/components/containers-tables/container-results-commands/ContainerResultsCommands';
 import { TitleLine } from '../src/components/TitleLine';
 import { InputAddNumber } from '../src/components/InputAddNumber';
 import { VersionLine } from '../src/components/VersionLine';
@@ -2029,74 +2025,40 @@ const MainScreen = ({ navigation }, setValue) => {
         <GestureHandlerRootView style={{ flex: 1 }}>
 
             <View style={styles.MainScreen}>
-                {orientation == 34 ?
-                    <View style={styles.One}>
-                        <ScrollView >
-                            <AddTodo onSubmit={addTodo} />
-                            <TitleLine />
-                            <ScrollView style={styles.containerWithTables}>
-                                <ContainerResultsCommands />
-                                <ContainerAddedObjects />
-                                <View style={styles.safeAreaBox} />
-                            </ScrollView>
-                        </ScrollView >
-                        {inputAddNumberOpenValue ?
-                            <InputAddNumber />
-                            :
-                            <GestureDetector gesture={gesture}>
-                                <Animated.View style={[styles.bottomSheetContainer, rBottomSheetStyle]}>
-                                    <View style={styles.line} />
 
-                                    <View style={styles.bottomContainer}>
-                                        <View style={styles.bottomContainerButtons}>
-                                            <ButtonGoBroken />
-                                            <ButtonDelete />
-                                            <ButtonGoOpenBattery />
-                                            <ButtonGoAvaliable />
-                                        </View >
-
-                                        <VersionLine />
-                                    </View >
-
-                                </Animated.View>
-                            </GestureDetector>
-                        }
-                    </View>
-                    :
-                    <View style={styles.One} >
-
-                        <AddTodo onSubmit={addTodo} />
+                <View style={styles.One}>
+                    <ScrollView >
+                        <CameraBox />
                         <TitleLine />
                         <ScrollView style={styles.containerWithTables}>
                             <ContainerResultsCommands />
                             <ContainerAddedObjects />
                             <View style={styles.safeAreaBox} />
                         </ScrollView>
+                    </ScrollView >
+                    {inputAddNumberOpenValue ?
+                        <InputAddNumber />
+                        :
+                        <GestureDetector gesture={gesture}>
+                            <Animated.View style={[styles.bottomSheetContainer, rBottomSheetStyle]}>
+                                <View style={styles.line} />
 
-                        {inputAddNumberOpenValue ?
-                            <InputAddNumber />
-                            :
-                            <GestureDetector gesture={gesture}>
-                                <Animated.View style={[styles.bottomSheetContainer, rBottomSheetStyle]}>
-                                    <View style={styles.line} />
-
-                                    <View style={styles.bottomContainer}>
-                                        <View style={styles.bottomContainerButtons}>
-                                            <ButtonGoBroken />
-                                            <ButtonDelete />
-                                            <ButtonGoOpenBattery />
-                                            <ButtonGoAvaliable />
-                                        </View >
-
-                                        <VersionLine />
+                                <View style={styles.bottomContainer}>
+                                    <View style={styles.bottomContainerButtons}>
+                                        <ButtonGoBroken />
+                                        <ButtonDelete />
+                                        <ButtonGoOpenBattery />
+                                        <ButtonGoAvaliable />
                                     </View >
 
-                                </Animated.View>
-                            </GestureDetector>
-                        }
+                                    <VersionLine />
+                                </View >
 
-                    </View >
-                }
+                            </Animated.View>
+                        </GestureDetector>
+                    }
+                </View>
+
             </View >
 
 
@@ -2106,6 +2068,10 @@ const MainScreen = ({ navigation }, setValue) => {
 }
 
 const styles = StyleSheet.create({
+
+    One1: {
+        flex: 1,
+    },
     safeAreaBox: {
         width: 50,
         height: 1 + 10 + 4 + 5 + 10 + 48 + 10,
@@ -2325,7 +2291,7 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
     },
     One: {
-        flex: 3,
+        flex: 1,
         // backgroundColor: 'white',
         // backgroundColor: 'blue',
         // justifyContent: 'center',

@@ -1,13 +1,10 @@
 import React from 'react'
 import { Text, View, StyleSheet, TouchableOpacity } from 'react-native'
 
-export const ResultsCommandsScootersContainer = ({ resultsCommandsScooter, onRemove }) => {
+export const ResultsCommands = ({ resultsCommandsScooter, onRemove }) => {
   return (
-    <TouchableOpacity
+    <View
       style={styles.container12}
-      activeOpacity={0.5}
-      onPress={() => console.log("TAP")}
-      onLongPress={() => onRemove(resultsCommandsScooter.id)}
     >
       <View style={styles.container}>
         {resultsCommandsScooter.title == 'Номер' ?
@@ -65,7 +62,7 @@ export const ResultsCommandsScootersContainer = ({ resultsCommandsScooter, onRem
               </View>
         }
       </View>
-    </TouchableOpacity >
+    </View >
   )
 }
 

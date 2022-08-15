@@ -1,12 +1,7 @@
 import React from 'react'
 import { View, StyleSheet, Image } from 'react-native'
-import { useSelector } from "react-redux"
-import { Todo123 } from '../../Todo123'
 
 export const ImageEmpty = () => {
-
-    // Получаем массив добавленных объектов в переменную
-    const ALL_ADDED_OBJECTS_ARRAY = useSelector(state => state.post.allAddedObjectsArray)
 
     return (
 
@@ -26,7 +21,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         paddingTop: 20,
-        height: 220,
+        height: 180,
     },
     imageEmptyList: {
         width: '100%',

@@ -1,4 +1,4 @@
-import { ADD_NEW_RESULT_COMMAND_SCOOTER, ADD_POSTS, CHANGE_VALUE_INPUT_ADD_NUMBER_OPEN, DELETE_ALL_POSTS, DELETE_ALL_RESULT_COMMAND_SCOOTER, EDIT_POST, LOAD_POSTS } from "../types"
+import { ADD_NEW_RESULT_COMMAND_SCOOTER, ADD_POSTS, CHANGE_VALUE_INPUT_ADD_NUMBER_OPEN, DELETE_ALL_POSTS, DELETE_ALL_RESULT_COMMAND_SCOOTER, DELETE_ONE_POSTS, EDIT_POST, LOAD_POSTS } from "../types"
 
 export const loadPosts = () => {
     return {
@@ -26,6 +26,13 @@ export const deleteAllPosts = allPosts => {
     }
 }
 
+export const deleteOnePosts = id => {
+    return {
+        type: DELETE_ONE_POSTS,
+        payload: id
+    }
+}
+
 export const editPost = scooternum => {
     return {
         type: EDIT_POST,
@@ -47,6 +54,13 @@ export const addNewResultCommandScooter = scooter => {
     }
 }
 
+export const deleteAllResultCommandScooter = scooter => {
+    return {
+        type: DELETE_ALL_RESULT_COMMAND_SCOOTER,
+        payload: scooter
+    }
+}
+
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // ДЛЯ ПЕРЕМЕННОЙ ОТКРЫТИЯ РУЧНОГО ВВОДА НОМЕРА
 
@@ -59,9 +73,3 @@ export const changeValueInputAddNumberOpen = scooter => {
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // ДЕФОЛТ
 
-export const deleteAllResultCommandScooter = scooter => {
-    return {
-        type: DELETE_ALL_RESULT_COMMAND_SCOOTER,
-        payload: scooter
-    }
-}

@@ -1,8 +1,8 @@
 import React from 'react'
 import { View, StyleSheet, Text } from 'react-native'
 import { useSelector } from "react-redux"
-import { Todo123 } from '../../Todo123'
-import { ImageEmpty } from '../image/ImageEmpty'
+import { AddedObjects } from './AddedObjects'
+import { ImageEmpty } from '../../image/ImageEmpty'
 
 export const ContainerAddedObjects = () => {
 
@@ -18,7 +18,7 @@ export const ContainerAddedObjects = () => {
                     </View>
                     <View style={styles.containerAddTable} >
                         {ALL_ADDED_OBJECTS_ARRAY.map(scootersNumQR => (
-                            <Todo123 scootersNumQR={scootersNumQR} key={scootersNumQR.id} />
+                            <AddedObjects scootersNumQR={scootersNumQR} key={scootersNumQR.id} />
                         ))}
                     </View>
                 </View>

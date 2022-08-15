@@ -58,8 +58,8 @@ export const ButtonGoOpenBattery = () => {
         )
     }
 
-    // Список номеров для отправки в ТГ
-    let NUMBERS_LIST_FOT_PUSH_TELEGRAM = useSelector(state => state.post.allAddedObjectsArray).map(num => num.title + '').join(",\n")
+    // Получаем массив добавленных объектов в переменную
+    let RESULTS_COMMANDS_SCOOTERS_ARRAY = useSelector(state => state.post.resultsCommandsScootersArray)
 
     // Алерт подтверждения команды
     const goOpenBatteryAlert = () => {
@@ -386,6 +386,13 @@ export const ButtonGoOpenBattery = () => {
 
                 // Переменная для сообщения, которое отправлю в Telegram
                 let message
+
+                // Удаляю первый и последний элемент из массива результата (заголовки и отчет Телеграма)
+                RESULTS_COMMANDS_SCOOTERS_ARRAY.shift()
+                RESULTS_COMMANDS_SCOOTERS_ARRAY.pop()
+
+                // Список номеров для отправки в ТГ
+                let NUMBERS_LIST_FOT_PUSH_TELEGRAM = RESULTS_COMMANDS_SCOOTERS_ARRAY.map(num => num.title + ' - ' + num.online + ' - ' + num.command).join("\n")
 
                 // Если ошибок нет, то отправим без пинга, если есть то пингуем
                 if (isEroorExists != 0) {

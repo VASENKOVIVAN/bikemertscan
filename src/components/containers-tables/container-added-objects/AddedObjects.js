@@ -1,12 +1,26 @@
 import React from 'react'
 import { Text, View, StyleSheet, TouchableOpacity } from 'react-native'
+import { useDispatch } from 'react-redux'
+import { deleteOnePosts } from '../../../store/actions/post'
 
-export const Todo123 = ({ scootersNumQR, onRemove }) => {
+export const AddedObjects = ({ scootersNumQR, onRemove }) => {
+
+  // Объявляем диспач (чтобы пушить объекты в стор)
+  const dispatch = useDispatch()
+
+  const removeObject = id => {
+
+    dispatch(deleteOnePosts({
+      id: id
+    }))
+
+  }
+
   return (
     <TouchableOpacity
       activeOpacity={0.5}
       onPress={() => console.log("TAP")}
-      onLongPress={() => onRemove(scootersNumQR.id)}
+      onLongPress={() => removeObject(scootersNumQR.id)}
     >
       <View style={styles.container}>
         <View style={styles.todo}>
