@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ToastAndroid, ActivityIndicator } from 'react-native'
 import { useSelector, useDispatch } from "react-redux"
 import axios from 'axios'
 import * as Location from 'expo-location'
 import { getAuth } from "firebase/auth"
-import { addNewResultCommandScooter } from '../../store/actions/post'
+import { addNewResultCommandScooter, deleteAllResultCommandScooter } from '../../store/actions/post'
 import { UID_LIST } from '../../UIDS/UIDS'
 
 
@@ -23,6 +23,21 @@ export const ButtonGoAvaliable = () => {
 
     // Отключение кнопки
     const [disabledButtonSwitch, setDisabledButtonSwitch] = useState(false)
+
+    // = = = = 
+    const [isEroorExists, setIsEroorExists] = useState(0)
+
+    const [DATA_FIREBASE, setDATA_FIREBASE] = useState({
+        API_RIC_KEY: '',
+        API_TELEGRAM_KEY: '',
+        TELEGRAM_KEY_CHAT_ID_MURMANSK: '',
+        TELEGRAM_KEY_CHAT_ID_ARCHANGELSK: '',
+    });
+
+    const [DATA_GEO_LOCATION, setDATA_GEO_LOCATION] = useState({
+        geo_x: '',
+        geo_y: '',
+    });
 
     // Тост успеха
     const showToastSuccess = () => {
@@ -59,6 +74,9 @@ export const ButtonGoAvaliable = () => {
 
     // Список номеров для отправки в ТГ
     let NUMBERS_LIST_FOT_PUSH_TELEGRAM = useSelector(state => state.post.allAddedObjectsArray).map(num => num.title + '').join(",\n")
+
+    // Список номеров для отправки в ТГ
+    let NUMBERS_LIST_RESULT_COMMANDS = useSelector(state => state.post.resultsCommandsScootersArray)
 
     // Алерт подтверждения команды
     const goAvaliableAlert = () => {
@@ -113,6 +131,13 @@ export const ButtonGoAvaliable = () => {
             // Получаем ключ от RIC из FireBase
             let API_RIC_KEY = MAP_DATA_REQUEST_FIREBASE[0].title
 
+            setDATA_FIREBASE({
+                API_RIC_KEY: API_RIC_KEY,
+                API_TELEGRAM_KEY: MAP_DATA_REQUEST_FIREBASE[1].title,
+                TELEGRAM_KEY_CHAT_ID_MURMANSK: MAP_DATA_REQUEST_FIREBASE[2].title,
+                TELEGRAM_KEY_CHAT_ID_ARCHANGELSK: MAP_DATA_REQUEST_FIREBASE[3].title,
+            });
+
             // Получаем список объектов от RIC
             const REQUEST_RIC_OBJECTS_LIST = await
                 fetch(`https://app.rightech.io/api/v1/objects?withChildGroups=true`, {
@@ -135,6 +160,10 @@ export const ButtonGoAvaliable = () => {
                 const { coords } = await Location.getCurrentPositionAsync()
                 x = coords.latitude.toString()
                 y = coords.longitude.toString()
+                setDATA_GEO_LOCATION({
+                    geo_x: x,
+                    geo_y: y,
+                });
             } catch (error) {
                 Alert.alert('Вы не предоставили разрешение на использование гео-позиции (перейдите в настройки)')
             }
@@ -147,6 +176,9 @@ export const ButtonGoAvaliable = () => {
             // Если ошибки нет, запускаем:
             else {
 
+                // Отчищаем массив объектов добавленных в стейт результата
+                dispatch(deleteAllResultCommandScooter())
+
                 // Добавляем первый элемент в массив результата (заголовки таблицы)
                 dispatch(addNewResultCommandScooter({
                     title: "Номер",
@@ -155,7 +187,7 @@ export const ButtonGoAvaliable = () => {
                 }))
 
                 // Переменная, которая будет считать количество ошибок (если ошибки есть добавим в сообщение в тг пинг Ивана)
-                let isEroorExists = 0
+                // let isEroorExists = 0
 
                 // Массив, в который записываю все id объектов, чтобы потом сменить метки склад/город
                 let IDsForLabels = []
@@ -223,9 +255,9 @@ export const ButtonGoAvaliable = () => {
 
                             // Записываю в переменную онлайн самокат или оффлайн
                             if (DATA_RIC_OBJECTS_LIST[j].state.online) {
-                                objectStatusOnline = 'Да'
+                                objectStatusOnline = '🟢'
                             } else {
-                                objectStatusOnline = 'Нет'
+                                objectStatusOnline = '🔴'
                             }
 
                             // Переменная, в которую запишу заголовок ответа запроса на выполнение команды
@@ -296,7 +328,7 @@ export const ButtonGoAvaliable = () => {
                                         online: objectStatusOnline,
                                         command: 'Ошибка (Самокат в аренде)'
                                     }))
-                                    isEroorExists = isEroorExists + 1
+                                    setIsEroorExists(isEroorExists + 1)
                                 }
                                 else if (titleResponse == 'error_api_cant_change_from_reserved_to_broken') {
                                     console.log('  Ответ: Самокат забронирован')
@@ -305,7 +337,8 @@ export const ButtonGoAvaliable = () => {
                                         online: objectStatusOnline,
                                         command: 'Ошибка (Самокат забронирован)'
                                     }))
-                                    isEroorExists = isEroorExists + 1
+                                    setIsEroorExists(isEroorExists + 1)
+
                                 }
                                 else if (titleResponse == 'error_api_cant_change_from_park_to_broken') {
                                     console.log('  Ответ: Самокат в ожидании')
@@ -314,7 +347,8 @@ export const ButtonGoAvaliable = () => {
                                         online: objectStatusOnline,
                                         command: 'Ошибка (Самокат в ожидании)'
                                     }))
-                                    isEroorExists = isEroorExists + 1
+                                    setIsEroorExists(isEroorExists + 1)
+
 
                                 }
                                 // НИЖЕ ИФЫ ДЛЯ ПЕРЕВОДА В СВОБОДЕН
@@ -362,7 +396,8 @@ export const ButtonGoAvaliable = () => {
                                         online: objectStatusOnline,
                                         command: titleResponse
                                     }))
-                                    isEroorExists = isEroorExists + 1
+                                    setIsEroorExists(isEroorExists + 1)
+
                                 }
                             }
                             else if (statusResponseCommandRIC == 200) {
@@ -380,7 +415,7 @@ export const ButtonGoAvaliable = () => {
                                     online: objectStatusOnline,
                                     command: statusResponseCommandRIC + ' ' + titleResponse
                                 }))
-                                isEroorExists = isEroorExists + 1
+                                setIsEroorExists(isEroorExists + 1)
                             }
 
                             // Тут дальше я отправляю в гугл таблицу
@@ -420,9 +455,10 @@ export const ButtonGoAvaliable = () => {
                         console.log("НЕ НАЙДЕН: " + ALL_ADDED_OBJECTS_ARRAY[i].title)
                         dispatch(addNewResultCommandScooter({
                             title: ALL_ADDED_OBJECTS_ARRAY[i].title,
-                            online: "-",
-                            command: "САМОКАТ НЕ НАЙДЕН!!!"
+                            online: "🔴",
+                            command: "Такого самоката нет!"
                         }))
+                        setIsEroorExists(isEroorExists + 1)
                     }
 
                 }
@@ -482,75 +518,22 @@ export const ButtonGoAvaliable = () => {
                     .catch(error => console.log('error', error))
 
 
-                // КОПИЯ для ПОЛОМКИ
-                // if (GoCommand == 'GoBroken') {
-                //     console.log("ПЕРЕВОЖУ МЕТКИ НА СКЛАД")
-                //     rawLinkGoBroken = {
-                //         "item": labelStockRIC,
-                //         "link": IDsForLabels,
-                //         "unlink": []
-                //     }
-                //     await fetch("https://app.rightech.io/api/v1/links/labels/to/objects", {
-                //         method: "POST",
-                //         headers: {
-                //             "Authorization": API_RIC_KEY,
-                //             "Content-Type": "application/json"
-                //         },
-                //         body: JSON.stringify(rawLinkGoBroken),
-                //     })
-                //         .then(response => console.log("Метка склад (статус): " + response.status))
-                //         .catch(error => console.log('error', error))
+            }
+        }
+    }
 
-                //     rawUnlinkGoBroken = {
-                //         "item": labelCityRIC,
-                //         "link": [],
-                //         "unlink": IDsForLabels
-                //     }
-                //     await fetch("https://app.rightech.io/api/v1/links/labels/to/objects", {
-                //         method: "POST",
-                //         headers: {
-                //             "Authorization": API_RIC_KEY,
-                //             "Content-Type": "application/json"
-                //         },
-                //         body: JSON.stringify(rawUnlinkGoBroken),
-                //     })
-                //         .then(response => console.log("Метка город анлинк (статус): " + response.status))
-                //         .catch(error => console.log('error', error))
-                // }
-                // else if (GoCommand == 'GoAvailable') {
-                //     console.log("ПЕРЕВОЖУ МЕТКИ В ГОРОД")
-                //     rawLinkGoAvailable = {
-                //         "item": labelCityRIC,
-                //         "link": IDsForLabels,
-                //         "unlink": []
-                //     }
-                //     await fetch("https://app.rightech.io/api/v1/links/labels/to/objects", {
-                //         method: "POST",
-                //         headers: {
-                //             "Authorization": API_RIC_KEY,
-                //             "Content-Type": "application/json"
-                //         },
-                //         body: JSON.stringify(rawLinkGoAvailable),
-                //     })
-                //         .then(response => console.log("Метка город (статус): " + response.status))
-                //         .catch(error => console.log('error', error))
 
-                //     rawUnlinkGoAvailable = {
-                //         "item": labelStockRIC,
-                //         "link": [],
-                //         "unlink": IDsForLabels
-                //     }
-                //     await fetch("https://app.rightech.io/api/v1/links/labels/to/objects", {
-                //         method: "POST",
-                //         headers: {
-                //             "Authorization": API_RIC_KEY,
-                //             "Content-Type": "application/json"
-                //         },
-                //         body: JSON.stringify(rawUnlinkGoAvailable),
-                //     })
-                //         .then(response => console.log("Метка склад анлинк (статус): " + response.status))
-                //         .catch(error => console.log('error', error))
-                // }
+    useEffect(() => {
+
+        if (NUMBERS_LIST_RESULT_COMMANDS.length - 1 == ALL_ADDED_OBJECTS_ARRAY.length) {
+            const fetchData = async () => {
+                console.log("В юзэфекте1: ", NUMBERS_LIST_RESULT_COMMANDS.length);
+                console.log("В юзэфекте2: ", ALL_ADDED_OBJECTS_ARRAY.length);
+
+                console.log("В юзэфекте3: ", DATA_FIREBASE.API_RIC_KEY);
+                console.log("В юзэфекте4: ", DATA_FIREBASE.API_TELEGRAM_KEY);
+                console.log("В юзэфекте5: ", DATA_FIREBASE.TELEGRAM_KEY_CHAT_ID_MURMANSK);
+                console.log("В юзэфекте6: ", DATA_FIREBASE.TELEGRAM_KEY_CHAT_ID_ARCHANGELSK);
 
                 // = = = = = = = = = = = = = = = = = = = = = = = =
                 // Ниже отправим данные в Telegram
@@ -558,54 +541,35 @@ export const ButtonGoAvaliable = () => {
                 // Переменная для сообщения, которое отправлю в Telegram
                 let message
 
+                let test = NUMBERS_LIST_RESULT_COMMANDS.filter(num => num.title != 'Номер')
+
+                console.log(test);
+
+                let NUMBERS_LIST_FOT_PUSH_TELEGRAM = test.map(num => num.online + ' ' + num.title + ' - ' + num.command).join("\n")
+
                 // Если ошибок нет, то отправим без пинга, если есть то пингуем
                 if (isEroorExists != 0) {
-                    message = `*Выставил и перевел в свободен:*\n${NUMBERS_LIST_FOT_PUSH_TELEGRAM}\n@vasenkovivan`
+                    message = `*Выставил и перевел в свободен:*\n\n${NUMBERS_LIST_FOT_PUSH_TELEGRAM}\n\n🆘 @vasenkovivan`
                 }
                 else {
-                    message = `*Выставил и перевел в свободен:*\n${NUMBERS_LIST_FOT_PUSH_TELEGRAM}`
+                    message = `*Выставил и перевел в свободен:*\n\n${NUMBERS_LIST_FOT_PUSH_TELEGRAM}`
                 }
-
-                // КОПИЯ для ПОЛОМКИ
-                // if (isEroorExists != 0) {
-                //     if (GoCommand == 'GoBroken') {
-                //         message = `*Забрал и перевел в поломку:*\n${NUMBERS_LIST_FOT_PUSH_TELEGRAM}\n@vasenkovivan`
-                //     }
-                //     else if (GoCommand == 'GoAvailable') {
-                //         message = `*Выставил и перевел в свободен:*\n${NUMBERS_LIST_FOT_PUSH_TELEGRAM}\n@vasenkovivan`
-                //     }
-                //     else {
-                //         message = `*Заменил АКБ:*\n${NUMBERS_LIST_FOT_PUSH_TELEGRAM}\n@vasenkovivan`
-                //     }
-                // }
-                // else {
-                //     if (GoCommand == 'GoBroken') {
-                //         message = `*Забрал и перевел в поломку:*\n${NUMBERS_LIST_FOT_PUSH_TELEGRAM}`
-                //     }
-                //     else if (GoCommand == 'GoAvailable') {
-                //         message = `*Выставил и перевел в свободен:*\n${NUMBERS_LIST_FOT_PUSH_TELEGRAM}`
-                //     }
-                //     else {
-                //         message = `*Заменил АКБ:*\n${NUMBERS_LIST_FOT_PUSH_TELEGRAM}`
-                //     }
-                // }
 
                 console.log('\nСообщение в ТГ: \n' + message)
 
-                // Ключ API Telegram
-                let API_TELEGRAM_KEY = MAP_DATA_REQUEST_FIREBASE[1].title
 
                 // Chat ID Telegram
                 let TELEGRAM_KEY_CHAT_ID
                 if (uid == UID_LIST.UID_ARCHANGELSK) {
-                    TELEGRAM_KEY_CHAT_ID = MAP_DATA_REQUEST_FIREBASE[3].title
+                    TELEGRAM_KEY_CHAT_ID = DATA_FIREBASE.TELEGRAM_KEY_CHAT_ID_ARCHANGELSK
                 } else {
-                    TELEGRAM_KEY_CHAT_ID = MAP_DATA_REQUEST_FIREBASE[2].title
+                    TELEGRAM_KEY_CHAT_ID = DATA_FIREBASE.TELEGRAM_KEY_CHAT_ID_MURMANSK
                 }
 
                 // Асинхронная функция на axios для отправки POST запроса, для отправки сообщения в Телеграм
                 const REQUEST_TELEGRAM_MESSAGE_PUSH = await
-                    axios.post(`https://api.telegram.org/bot${API_TELEGRAM_KEY}/sendMessage`, {
+                    axios.post(`https://api.telegram.org/bot${DATA_FIREBASE.API_TELEGRAM_KEY}/sendMessage`, {
+                        // chat_id: "-586513671",
                         chat_id: TELEGRAM_KEY_CHAT_ID,
                         text: message,
                         parse_mode: 'Markdown',
@@ -627,28 +591,35 @@ export const ButtonGoAvaliable = () => {
                     }))
                 }
 
-                // Асинхронная функция на axios для отправки POST запроса, для отправки гео-позиции устройства в Телеграм
+                // Асинхронная функция на axios для отправки POST запроса, для отправки гео - позиции устройства в Телеграм
                 const REQUEST_TELEGRAM_LOCATION_PUSH = await
-                    axios.post(`https://api.telegram.org/bot${API_TELEGRAM_KEY}/sendLocation`, {
+                    axios.post(`https://api.telegram.org/bot${DATA_FIREBASE.API_TELEGRAM_KEY}/sendLocation`, {
+                        // chat_id: "-586513671",
                         chat_id: TELEGRAM_KEY_CHAT_ID,
-                        latitude: x,
-                        longitude: y,
+                        latitude: DATA_GEO_LOCATION.geo_x,
+                        longitude: DATA_GEO_LOCATION.geo_y,
                     })
                 console.log("Отправка гео в ТГ: " + REQUEST_TELEGRAM_LOCATION_PUSH.status)
 
                 // Убираем лоадинг-индикатор
-                setActivityIndicatorSwitch(activityIndicatorSwitch)
+                setActivityIndicatorSwitch(!activityIndicatorSwitch)
 
                 // Показываем тост успеха
                 showToastSuccess()
 
                 // Ждем 5 секунд и выключаем дизейбл кнопки
                 setTimeout(() => {
-                    setDisabledButtonSwitch(disabledButtonSwitch)
+                    setDisabledButtonSwitch(!disabledButtonSwitch)
                 }, 5000)
+
+                return;
             }
+
+            fetchData()
+                .catch(console.error);
         }
-    }
+
+    }, [NUMBERS_LIST_RESULT_COMMANDS], [ALL_ADDED_OBJECTS_ARRAY], DATA_FIREBASE, activityIndicatorSwitch, disabledButtonSwitch, DATA_GEO_LOCATION)
 
     return (
         <View>

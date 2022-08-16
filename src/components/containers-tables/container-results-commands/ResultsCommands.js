@@ -22,18 +22,9 @@ export const ResultsCommands = ({ resultsCommandsScooter, onRemove }) => {
             <Text style={styles.titleText} >{resultsCommandsScooter.online}</Text>
           </View>
           :
-          resultsCommandsScooter.online == 'Да' ?
-            <View style={styles.onlineGreen}>
-              <Text style={styles.onlineText}>{resultsCommandsScooter.online}</Text>
-            </View>
-            : resultsCommandsScooter.online == 'Нет' ?
-              <View style={styles.onlineRed}>
-                <Text style={styles.onlineText}>{resultsCommandsScooter.online}</Text>
-              </View>
-              :
-              <View style={styles.onlineBlue}>
-                <Text style={styles.onlineText}>{resultsCommandsScooter.online}</Text>
-              </View>
+          <View style={styles.onlineGreen}>
+            <Text style={styles.onlineText}>{resultsCommandsScooter.online}</Text>
+          </View>
         }
 
         {resultsCommandsScooter.command == 'Команда' ?
@@ -133,7 +124,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginBottom: 2,
     marginRight: 2,
-    backgroundColor: '#ACDF9A',
+    // backgroundColor: '#fff',
     alignItems: "center"
   },
   onlineRed: {
