@@ -538,7 +538,7 @@ const MainScreen = ({ navigation }, setValue) => {
                     await fetch("https://app.rightech.io/api/v1/links/labels/to/objects", {
                         method: "POST",
                         headers: {
-                            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2MmNlYjYzODU1ZWFhMTAwMTA0ZTFhZGQiLCJzdWIiOiI2MGMxY2FhOWFiZmM4NzAwMTBmM2IyYTUiLCJncnAiOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJvcmciOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJsaWMiOmZhbHNlLCJ1c2ciOiJhcGkiLCJmdWxsIjpmYWxzZSwicmlnaHRzIjoxLjUsImlhdCI6MTY1NzcxNDIzMiwiZXhwIjoxNjYwMjUxNjAwfQ.3xbtlgva90_2DMQi95dutbCYEy-BIzmlEWqRUi2lZ8M",
+                            "Authorization": API_RIC_KEY,
                             "Content-Type": "application/json"
                         },
                         body: JSON.stringify(rawLinkGoBroken),
@@ -554,7 +554,7 @@ const MainScreen = ({ navigation }, setValue) => {
                     await fetch("https://app.rightech.io/api/v1/links/labels/to/objects", {
                         method: "POST",
                         headers: {
-                            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2MmNlYjYzODU1ZWFhMTAwMTA0ZTFhZGQiLCJzdWIiOiI2MGMxY2FhOWFiZmM4NzAwMTBmM2IyYTUiLCJncnAiOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJvcmciOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJsaWMiOmZhbHNlLCJ1c2ciOiJhcGkiLCJmdWxsIjpmYWxzZSwicmlnaHRzIjoxLjUsImlhdCI6MTY1NzcxNDIzMiwiZXhwIjoxNjYwMjUxNjAwfQ.3xbtlgva90_2DMQi95dutbCYEy-BIzmlEWqRUi2lZ8M",
+                            "Authorization": API_RIC_KEY,
                             "Content-Type": "application/json"
                         },
                         body: JSON.stringify(rawUnlinkGoBroken),
@@ -572,7 +572,7 @@ const MainScreen = ({ navigation }, setValue) => {
                     await fetch("https://app.rightech.io/api/v1/links/labels/to/objects", {
                         method: "POST",
                         headers: {
-                            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2MmNlYjYzODU1ZWFhMTAwMTA0ZTFhZGQiLCJzdWIiOiI2MGMxY2FhOWFiZmM4NzAwMTBmM2IyYTUiLCJncnAiOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJvcmciOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJsaWMiOmZhbHNlLCJ1c2ciOiJhcGkiLCJmdWxsIjpmYWxzZSwicmlnaHRzIjoxLjUsImlhdCI6MTY1NzcxNDIzMiwiZXhwIjoxNjYwMjUxNjAwfQ.3xbtlgva90_2DMQi95dutbCYEy-BIzmlEWqRUi2lZ8M",
+                            "Authorization": API_RIC_KEY,
                             "Content-Type": "application/json"
                         },
                         body: JSON.stringify(rawLinkGoAvailable),
@@ -588,7 +588,7 @@ const MainScreen = ({ navigation }, setValue) => {
                     await fetch("https://app.rightech.io/api/v1/links/labels/to/objects", {
                         method: "POST",
                         headers: {
-                            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2MmNlYjYzODU1ZWFhMTAwMTA0ZTFhZGQiLCJzdWIiOiI2MGMxY2FhOWFiZmM4NzAwMTBmM2IyYTUiLCJncnAiOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJvcmciOiI2MGE3YzhjMTdlMGI2ODAwMTBhYmE4ZjAiLCJsaWMiOmZhbHNlLCJ1c2ciOiJhcGkiLCJmdWxsIjpmYWxzZSwicmlnaHRzIjoxLjUsImlhdCI6MTY1NzcxNDIzMiwiZXhwIjoxNjYwMjUxNjAwfQ.3xbtlgva90_2DMQi95dutbCYEy-BIzmlEWqRUi2lZ8M",
+                            "Authorization": API_RIC_KEY,
                             "Content-Type": "application/json"
                         },
                         body: JSON.stringify(rawUnlinkGoAvailable),
@@ -1740,9 +1740,9 @@ const MainScreen = ({ navigation }, setValue) => {
                         </View >
                         <View style={styles.bottomContainerTitle}>
                             {uid == UID_LIST.UID_MURMANSK ?
-                                <Text style={styles.bottomContainerText}>version 4.1.3 - Мурманск</Text> :
+                                <Text style={styles.bottomContainerText}>version 4.1.4 - Мурманск</Text> :
                                 uid == UID_LIST.UID_ARCHANGELSK ?
-                                    <Text style={styles.bottomContainerText}>version 4.1.3 - Архангельск</Text> :
+                                    <Text style={styles.bottomContainerText}>version 4.1.4 - Архангельск</Text> :
                                     <Text>ошибка</Text>
                             }
                         </View >
