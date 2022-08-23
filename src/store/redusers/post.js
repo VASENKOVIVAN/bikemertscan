@@ -11,9 +11,9 @@ import {
 
 const initialState = {
     allAddedObjectsArray: [
-        { 'id': '1', 'title': '510063' },
-        { 'id': '2', 'title': '515047' },
-        { 'id': '3', 'title': '510063' },
+        // { 'id': '1', 'title': '510063' },
+        // { 'id': '2', 'title': '515047' },
+        // { 'id': '3', 'title': '510063' },
         // { 'id': '4', 'title': '515047' },
         // { 'id': '5', 'title': '510063' },
         // { 'id': '6', 'title': '515047' },

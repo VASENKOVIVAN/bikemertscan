@@ -484,8 +484,8 @@ export const ButtonGoBroken = () => {
                 console.log("ПЕРЕВОЖУ МЕТКИ В ГОРОД")
 
                 // Строка, которую отправлю в запросе к RIC на смену меток в body 
-                let rawLinkGoAvailable = {
-                    "item": labelCityRIC,
+                let rawLinkGoBroken = {
+                    "item": labelStockRIC,
                     "link": IDsForLabels,
                     "unlink": []
                 }
@@ -497,14 +497,14 @@ export const ButtonGoBroken = () => {
                         "Authorization": API_RIC_KEY,
                         "Content-Type": "application/json"
                     },
-                    body: JSON.stringify(rawLinkGoAvailable),
+                    body: JSON.stringify(rawLinkGoBroken),
                 })
                     .then(response => console.log("Метка город (статус): " + response.status))
                     .catch(error => console.log('error', error))
 
                 // Строка, которую отправлю в запросе к RIC на смену меток в body 
-                let rawUnlinkGoAvailable = {
-                    "item": labelStockRIC,
+                let rawUnlinkGoBroken = {
+                    "item": labelCityRIC,
                     "link": [],
                     "unlink": IDsForLabels
                 }
@@ -516,7 +516,7 @@ export const ButtonGoBroken = () => {
                         "Authorization": API_RIC_KEY,
                         "Content-Type": "application/json"
                     },
-                    body: JSON.stringify(rawUnlinkGoAvailable),
+                    body: JSON.stringify(rawUnlinkGoBroken),
                 })
                     .then(response => console.log("Метка склад анлинк (статус): " + response.status))
                     .catch(error => console.log('error', error))
