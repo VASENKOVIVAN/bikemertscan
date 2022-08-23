@@ -14,12 +14,12 @@ export const VersionLine = () => {
         <View style={styles.bottomContainerTitle}>
             {uid == UID_LIST.UID_MURMANSK ?
                 <Text style={styles.bottomContainerText}>
-                    version 4.1.4 - Мурманск
+                    version 5.0.4 - Мурманск
                 </Text>
                 :
                 uid == UID_LIST.UID_ARCHANGELSK ?
                     <Text style={styles.bottomContainerText}>
-                        version 4.1.4 - Архангельск
+                        version 5.0.4 - Архангельск
                     </Text>
                     :
                     <Text>

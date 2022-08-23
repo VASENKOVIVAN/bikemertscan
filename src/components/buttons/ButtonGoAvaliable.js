@@ -10,6 +10,7 @@ import { UID_LIST } from '../../UIDS/UIDS'
 
 export const ButtonGoAvaliable = () => {
 
+    const [qwertyu, setQwertyu] = useState(false)
     // Данные аутентификация
     const auth = getAuth()
     const user = auth.currentUser
@@ -117,6 +118,8 @@ export const ButtonGoAvaliable = () => {
             // Устанавливем лоадинг-индикатор и дизейбл кнопки
             setActivityIndicatorSwitch(!activityIndicatorSwitch)
             setDisabledButtonSwitch(!disabledButtonSwitch)
+
+            setQwertyu(!qwertyu)
 
             // Получаем данные из FireBase
             const REQUEST_FIREBASE = await fetch(
@@ -446,6 +449,7 @@ export const ButtonGoAvaliable = () => {
                                 }
                             )
                             console.log("Гугл таблица: " + REQUEST_GOOGLE_SHEET.status)
+
                         }
 
                     }
@@ -462,6 +466,8 @@ export const ButtonGoAvaliable = () => {
                     }
 
                 }
+
+
 
                 // На данном этапе мы пробежали по всем объектам и перевели их в статус
 
@@ -520,20 +526,33 @@ export const ButtonGoAvaliable = () => {
 
             }
         }
+
+
+
+
     }
 
 
     useEffect(() => {
 
-        if (NUMBERS_LIST_RESULT_COMMANDS.length - 1 == ALL_ADDED_OBJECTS_ARRAY.length) {
-            const fetchData = async () => {
-                console.log("В юзэфекте1: ", NUMBERS_LIST_RESULT_COMMANDS.length);
-                console.log("В юзэфекте2: ", ALL_ADDED_OBJECTS_ARRAY.length);
+        console.log("я работаю");
+        console.log("qwertyu", qwertyu);
 
-                console.log("В юзэфекте3: ", DATA_FIREBASE.API_RIC_KEY);
-                console.log("В юзэфекте4: ", DATA_FIREBASE.API_TELEGRAM_KEY);
-                console.log("В юзэфекте5: ", DATA_FIREBASE.TELEGRAM_KEY_CHAT_ID_MURMANSK);
-                console.log("В юзэфекте6: ", DATA_FIREBASE.TELEGRAM_KEY_CHAT_ID_ARCHANGELSK);
+
+
+
+        if ((NUMBERS_LIST_RESULT_COMMANDS.length - 1 == ALL_ADDED_OBJECTS_ARRAY.length) && qwertyu) {
+
+            const fetchData = async () => {
+
+                console.log("я тоже работаю");
+                // console.log("В юзэфекте1: ", NUMBERS_LIST_RESULT_COMMANDS.length);
+                // console.log("В юзэфекте2: ", ALL_ADDED_OBJECTS_ARRAY.length);
+
+                // console.log("В юзэфекте3: ", DATA_FIREBASE.API_RIC_KEY);
+                // console.log("В юзэфекте4: ", DATA_FIREBASE.API_TELEGRAM_KEY);
+                // console.log("В юзэфекте5: ", DATA_FIREBASE.TELEGRAM_KEY_CHAT_ID_MURMANSK);
+                // console.log("В юзэфекте6: ", DATA_FIREBASE.TELEGRAM_KEY_CHAT_ID_ARCHANGELSK);
 
                 // = = = = = = = = = = = = = = = = = = = = = = = =
                 // Ниже отправим данные в Telegram
@@ -552,6 +571,7 @@ export const ButtonGoAvaliable = () => {
                     message = `*Выставил и перевел в свободен:*\n\n${NUMBERS_LIST_FOT_PUSH_TELEGRAM}\n\n🆘 @vasenkovivan`
                 }
                 else {
+                    0
                     message = `*Выставил и перевел в свободен:*\n\n${NUMBERS_LIST_FOT_PUSH_TELEGRAM}`
                 }
 
@@ -604,6 +624,9 @@ export const ButtonGoAvaliable = () => {
                 // Убираем лоадинг-индикатор
                 setActivityIndicatorSwitch(!activityIndicatorSwitch)
 
+                setQwertyu(!qwertyu)
+
+
                 // Показываем тост успеха
                 showToastSuccess()
 
@@ -619,7 +642,7 @@ export const ButtonGoAvaliable = () => {
                 .catch(console.error);
         }
 
-    }, [NUMBERS_LIST_RESULT_COMMANDS], [ALL_ADDED_OBJECTS_ARRAY], DATA_FIREBASE, activityIndicatorSwitch, disabledButtonSwitch, DATA_GEO_LOCATION)
+    }, [NUMBERS_LIST_RESULT_COMMANDS], [ALL_ADDED_OBJECTS_ARRAY], DATA_FIREBASE, activityIndicatorSwitch, disabledButtonSwitch, DATA_GEO_LOCATION, qwertyu)
 
     return (
         <View>

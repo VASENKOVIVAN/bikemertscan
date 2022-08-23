@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ToastAndroid, ActivityIndicator } from 'react-native'
 import { useSelector, useDispatch } from "react-redux"
 import axios from 'axios'
@@ -9,6 +9,8 @@ import { UID_LIST } from '../../UIDS/UIDS'
 
 
 export const ButtonGoBroken = () => {
+
+    const [qwertyu2, setQwertyu2] = useState(false)
 
     // Данные аутентификация
     const auth = getAuth()
@@ -24,10 +26,25 @@ export const ButtonGoBroken = () => {
     // Отключение кнопки
     const [disabledButtonSwitch, setDisabledButtonSwitch] = useState(false)
 
+    // = = = = 
+    const [isEroorExists, setIsEroorExists] = useState(0)
+
+    const [DATA_FIREBASE, setDATA_FIREBASE] = useState({
+        API_RIC_KEY: '',
+        API_TELEGRAM_KEY: '',
+        TELEGRAM_KEY_CHAT_ID_MURMANSK: '',
+        TELEGRAM_KEY_CHAT_ID_ARCHANGELSK: '',
+    });
+
+    const [DATA_GEO_LOCATION, setDATA_GEO_LOCATION] = useState({
+        geo_x: '',
+        geo_y: '',
+    });
+
     // Тост успеха
     const showToastSuccess = () => {
         ToastAndroid.showWithGravityAndOffset(
-            "Переведено в ПОЛОМКУ и\nОтправлено в Телеграм",
+            "Переведено в СВОБОДЕН и\nОтправлено в Телеграм",
             ToastAndroid.SHORT,
             ToastAndroid.BOTTOM,
             25,
@@ -60,13 +77,16 @@ export const ButtonGoBroken = () => {
     // Список номеров для отправки в ТГ
     let NUMBERS_LIST_FOT_PUSH_TELEGRAM = useSelector(state => state.post.allAddedObjectsArray).map(num => num.title + '').join(",\n")
 
+    // Список номеров для отправки в ТГ
+    let NUMBERS_LIST_RESULT_COMMANDS = useSelector(state => state.post.resultsCommandsScootersArray)
+
     // Алерт подтверждения команды
     const goBrokenAlert = () => {
         if (ALL_ADDED_OBJECTS_ARRAY.length == 0) {
             showToastErrorEmptyList()
         } else {
             Alert.alert(
-                "Перевести статус в свободен?",
+                "Перевести статус в поломку?",
                 "Вы уверены, что хотите\nперевести статус В ПОЛОМКУ\nна выбранных самокатах?",
                 [
                     {
@@ -86,10 +106,10 @@ export const ButtonGoBroken = () => {
     // Объявляем диспач (чтобы пушить объекты в стор)
     const dispatch = useDispatch()
 
-    // Главная команда перевода объектов в статус Свободен, пуша в гугл-таблицы и телеграм
+    // Главная команда перевода объектов в статус Поломка, пуша в гугл-таблицы и телеграм
     const goBroken = async () => {
 
-        console.log("\nКОМАНДА ПЕРЕВОД В СТАТУС ПОЛОМКА = = = = = = = = = =")
+        console.log("\nКОМАНДА ПЕРЕВОД В СТАТУС СВОБОДЕН = = = = = = = = = =")
 
         // Проверяем, что список объектов не пустой
         if (ALL_ADDED_OBJECTS_ARRAY.length == 0) {
@@ -99,6 +119,8 @@ export const ButtonGoBroken = () => {
             // Устанавливем лоадинг-индикатор и дизейбл кнопки
             setActivityIndicatorSwitch(!activityIndicatorSwitch)
             setDisabledButtonSwitch(!disabledButtonSwitch)
+
+            setQwertyu2(!qwertyu2)
 
             // Получаем данные из FireBase
             const REQUEST_FIREBASE = await fetch(
@@ -112,6 +134,13 @@ export const ButtonGoBroken = () => {
 
             // Получаем ключ от RIC из FireBase
             let API_RIC_KEY = MAP_DATA_REQUEST_FIREBASE[0].title
+
+            setDATA_FIREBASE({
+                API_RIC_KEY: API_RIC_KEY,
+                API_TELEGRAM_KEY: MAP_DATA_REQUEST_FIREBASE[1].title,
+                TELEGRAM_KEY_CHAT_ID_MURMANSK: MAP_DATA_REQUEST_FIREBASE[2].title,
+                TELEGRAM_KEY_CHAT_ID_ARCHANGELSK: MAP_DATA_REQUEST_FIREBASE[3].title,
+            });
 
             // Получаем список объектов от RIC
             const REQUEST_RIC_OBJECTS_LIST = await
@@ -135,6 +164,10 @@ export const ButtonGoBroken = () => {
                 const { coords } = await Location.getCurrentPositionAsync()
                 x = coords.latitude.toString()
                 y = coords.longitude.toString()
+                setDATA_GEO_LOCATION({
+                    geo_x: x,
+                    geo_y: y,
+                });
             } catch (error) {
                 Alert.alert('Вы не предоставили разрешение на использование гео-позиции (перейдите в настройки)')
             }
@@ -158,7 +191,7 @@ export const ButtonGoBroken = () => {
                 }))
 
                 // Переменная, которая будет считать количество ошибок (если ошибки есть добавим в сообщение в тг пинг Ивана)
-                let isEroorExists = 0
+                // let isEroorExists = 0
 
                 // Массив, в который записываю все id объектов, чтобы потом сменить метки склад/город
                 let IDsForLabels = []
@@ -187,12 +220,25 @@ export const ButtonGoBroken = () => {
                             // Добавляем в массив id объекта (массив для изменения метки склад/город)
                             IDsForLabels.push(`${DATA_RIC_OBJECTS_LIST[j]._id}`)
 
-                            // url api на смену статуса в Свободен (ДЛЯ КНОПКИ "В ПОЛОМКУ")
-                            let url_go_broken_command = `https://app.rightech.io/api/v1/objects/${DATA_RIC_OBJECTS_LIST[j]._id}/commands/change-status-broken?withChildGroups=true`
+                            // url api на смену статуса в Поломка
+                            let url_go_available_command = `https://app.rightech.io/api/v1/objects/${DATA_RIC_OBJECTS_LIST[j]._id}/commands/change-status-broken?withChildGroups=true`
+
+                            // url api на смену статуса в Поломка (ДЛЯ КНОПКИ "В ПОЛОМКУ")
+                            // let url_go_broken_command = `https://app.rightech.io/api/v1/objects/${DATA_RIC_OBJECTS_LIST[j]._id}/commands/change-status-broken?withChildGroups=true`
+
+                            // url api на открытие АКБ (ДЛЯ КНОПКИ "ОТКРЫТЬ АКБ")
+                            // let url_go_openbattery_command
+                            // if (uid == UID_LIST.UID_ARCHANGELSK) {
+                            //     url_go_openbattery_command = `https://app.rightech.io/api/v1/objects/${DATA_RIC_OBJECTS_LIST[j]._id}/commands/meulk_cmd?withChildGroups=true`
+                            //     console.log("Архангельск команда АКБ")
+                            // } else {
+                            //     url_go_openbattery_command = `https://app.rightech.io/api/v1/objects/${DATA_RIC_OBJECTS_LIST[j]._id}/commands/scsetmode-eco-wxs9m-7qnlg?withChildGroups=true`
+                            //     console.log("Мурманск команда АКБ")
+                            // }
 
                             // Отправляем команду самокату на изменение статуса
                             const REQUEST_RIC_OBJECT_COMMAND = await
-                                fetch(url_go_broken_command, {
+                                fetch(url_go_available_command, {
                                     method: "POST",
                                     headers: {
                                         "Authorization": API_RIC_KEY
@@ -213,9 +259,9 @@ export const ButtonGoBroken = () => {
 
                             // Записываю в переменную онлайн самокат или оффлайн
                             if (DATA_RIC_OBJECTS_LIST[j].state.online) {
-                                objectStatusOnline = 'Да'
+                                objectStatusOnline = '🟢'
                             } else {
-                                objectStatusOnline = 'Нет'
+                                objectStatusOnline = '🔴'
                             }
 
                             // Переменная, в которую запишу заголовок ответа запроса на выполнение команды
@@ -270,6 +316,7 @@ export const ButtonGoBroken = () => {
                             // В зависимости от статуса ответа (422, 200 или другой)
                             // Затем зависимости от ответа на команду и отправлю эти данные в таблицу результата
                             if (statusResponseCommandRIC == 422) {
+                                // НИЖЕ ИФЫ ДЛЯ ПЕРЕВОДА В ПОЛОМКУ
                                 if (titleResponse == 'error_api_already_broken') {
                                     console.log('  Ответ: Уже в поломке!')
                                     dispatch(addNewResultCommandScooter({
@@ -285,7 +332,7 @@ export const ButtonGoBroken = () => {
                                         online: objectStatusOnline,
                                         command: 'Ошибка (Самокат в аренде)'
                                     }))
-                                    isEroorExists = isEroorExists + 1
+                                    setIsEroorExists(isEroorExists + 1)
                                 }
                                 else if (titleResponse == 'error_api_cant_change_from_reserved_to_broken') {
                                     console.log('  Ответ: Самокат забронирован')
@@ -294,7 +341,8 @@ export const ButtonGoBroken = () => {
                                         online: objectStatusOnline,
                                         command: 'Ошибка (Самокат забронирован)'
                                     }))
-                                    isEroorExists = isEroorExists + 1
+                                    setIsEroorExists(isEroorExists + 1)
+
                                 }
                                 else if (titleResponse == 'error_api_cant_change_from_park_to_broken') {
                                     console.log('  Ответ: Самокат в ожидании')
@@ -303,8 +351,46 @@ export const ButtonGoBroken = () => {
                                         online: objectStatusOnline,
                                         command: 'Ошибка (Самокат в ожидании)'
                                     }))
-                                    isEroorExists = isEroorExists + 1
+                                    setIsEroorExists(isEroorExists + 1)
 
+
+                                }
+                                // НИЖЕ ИФЫ ДЛЯ ПЕРЕВОДА В СВОБОДЕН
+                                else if (titleResponse == 'error_api_already_available') {
+                                    console.log('  Ответ: Уже Уже в поломке!')
+                                    console.log(titleResponse)
+                                    dispatch(addNewResultCommandScooter({
+                                        title: numberQrScooter,
+                                        online: objectStatusOnline,
+                                        command: 'Уже в поломке'
+                                    }))
+                                }
+                                else if (titleResponse == 'error_api_cant_change_from_taken_to_available') {
+                                    console.log('  Ответ: Самокат в аренде')
+                                    console.log(titleResponse)
+                                    dispatch(addNewResultCommandScooter({
+                                        title: numberQrScooter,
+                                        online: objectStatusOnline,
+                                        command: 'Ошибка (Самокат в аренде)'
+                                    }))
+                                }
+                                else if (titleResponse == 'error_api_cant_change_from_reserved_to_available') {
+                                    console.log('  Ответ: Самокат забронирован')
+                                    console.log(titleResponse)
+                                    dispatch(addNewResultCommandScooter({
+                                        title: numberQrScooter,
+                                        online: objectStatusOnline,
+                                        command: 'Ошибка (Самокат забронирован)'
+                                    }))
+                                }
+                                else if (titleResponse == 'error_api_cant_change_from_park_to_available') {
+                                    console.log('  Ответ: Самокат в ожидании')
+                                    console.log(titleResponse)
+                                    dispatch(addNewResultCommandScooter({
+                                        title: numberQrScooter,
+                                        online: objectStatusOnline,
+                                        command: 'Ошибка (Самокат в ожидании)'
+                                    }))
                                 }
                                 // НЕИЗВЕСНАЯ ОШИБКА
                                 else {
@@ -314,7 +400,8 @@ export const ButtonGoBroken = () => {
                                         online: objectStatusOnline,
                                         command: titleResponse
                                     }))
-                                    isEroorExists = isEroorExists + 1
+                                    setIsEroorExists(isEroorExists + 1)
+
                                 }
                             }
                             else if (statusResponseCommandRIC == 200) {
@@ -332,7 +419,7 @@ export const ButtonGoBroken = () => {
                                     online: objectStatusOnline,
                                     command: statusResponseCommandRIC + ' ' + titleResponse
                                 }))
-                                isEroorExists = isEroorExists + 1
+                                setIsEroorExists(isEroorExists + 1)
                             }
 
                             // Тут дальше я отправляю в гугл таблицу
@@ -341,7 +428,19 @@ export const ButtonGoBroken = () => {
                             var dateAndTimeNow = new Date().toLocaleTimeString()
 
                             // Строка query-параметров для отправки в Google Sheet
-                            let queryParamsForGoogleSheet = `?p1=${ALL_ADDED_OBJECTS_ARRAY[i].title}&p2=${dateAndTimeNow}&p3=Забрал&p4=${x},${y}`
+                            let queryParamsForGoogleSheet = `?p1=${ALL_ADDED_OBJECTS_ARRAY[i].title}&p2=${dateAndTimeNow}&p3=Выставил&p4=${x},${y}`
+
+                            // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
+                            // ИЗМЕНИТЬ ДЛЯ ДРУГИХ КОМПОНЕНТОВ
+
+                            // Строка query-параметров для отправки в Google Sheet
+                            // let queryParamsForGoogleSheet = `?p1=${ALL_ADDED_OBJECTS_ARRAY[i].title}&p2=${dateAndTimeNow}&p3=Забрал&p4=${x},${y}`
+
+                            // Строка query-параметров для отправки в Google Sheet
+                            // let queryParamsForGoogleSheet = `?p1=${ALL_ADDED_OBJECTS_ARRAY[i].title}&p2=${dateAndTimeNow}&p3=Замена АКБ&p4=${x},${y}`
+
+                            // ИЗМЕНИТЬ ДЛЯ ДРУГИХ КОМПОНЕНТОВ
+                            // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
 
                             // Отправляю данные в гугл таблицу
                             const REQUEST_GOOGLE_SHEET = await fetch(
@@ -360,9 +459,10 @@ export const ButtonGoBroken = () => {
                         console.log("НЕ НАЙДЕН: " + ALL_ADDED_OBJECTS_ARRAY[i].title)
                         dispatch(addNewResultCommandScooter({
                             title: ALL_ADDED_OBJECTS_ARRAY[i].title,
-                            online: "-",
-                            command: "САМОКАТ НЕ НАЙДЕН!!!"
+                            online: "🔴",
+                            command: "Такого самоката нет!"
                         }))
+                        setIsEroorExists(isEroorExists + 1)
                     }
 
                 }
@@ -376,11 +476,16 @@ export const ButtonGoBroken = () => {
                 let labelCityRIC = '62e38291595fd50010ade2fb'
                 let labelStockRIC = '62e235a14630030010ec2131'
 
+                // var rawLinkGoBroken
+                // var rawUnlinkGoBroken
+                // var rawLinkGoAvailable
+                // var rawUnlinkGoAvailable
+
                 console.log("ПЕРЕВОЖУ МЕТКИ В ГОРОД")
 
                 // Строка, которую отправлю в запросе к RIC на смену меток в body 
-                let rawLinkGoBroken = {
-                    "item": labelStockRIC,
+                let rawLinkGoAvailable = {
+                    "item": labelCityRIC,
                     "link": IDsForLabels,
                     "unlink": []
                 }
@@ -392,14 +497,14 @@ export const ButtonGoBroken = () => {
                         "Authorization": API_RIC_KEY,
                         "Content-Type": "application/json"
                     },
-                    body: JSON.stringify(rawLinkGoBroken),
+                    body: JSON.stringify(rawLinkGoAvailable),
                 })
                     .then(response => console.log("Метка город (статус): " + response.status))
                     .catch(error => console.log('error', error))
 
                 // Строка, которую отправлю в запросе к RIC на смену меток в body 
-                let rawUnlinkGoBroken = {
-                    "item": labelCityRIC,
+                let rawUnlinkGoAvailable = {
+                    "item": labelStockRIC,
                     "link": [],
                     "unlink": IDsForLabels
                 }
@@ -411,10 +516,28 @@ export const ButtonGoBroken = () => {
                         "Authorization": API_RIC_KEY,
                         "Content-Type": "application/json"
                     },
-                    body: JSON.stringify(rawUnlinkGoBroken),
+                    body: JSON.stringify(rawUnlinkGoAvailable),
                 })
                     .then(response => console.log("Метка склад анлинк (статус): " + response.status))
                     .catch(error => console.log('error', error))
+
+
+            }
+        }
+    }
+
+
+    useEffect(() => {
+
+        if ((NUMBERS_LIST_RESULT_COMMANDS.length - 1 == ALL_ADDED_OBJECTS_ARRAY.length) && qwertyu2) {
+            const fetchData = async () => {
+                // console.log("В юзэфекте1: ", NUMBERS_LIST_RESULT_COMMANDS.length);
+                // console.log("В юзэфекте2: ", ALL_ADDED_OBJECTS_ARRAY.length);
+
+                // console.log("В юзэфекте3: ", DATA_FIREBASE.API_RIC_KEY);
+                // console.log("В юзэфекте4: ", DATA_FIREBASE.API_TELEGRAM_KEY);
+                // console.log("В юзэфекте5: ", DATA_FIREBASE.TELEGRAM_KEY_CHAT_ID_MURMANSK);
+                // console.log("В юзэфекте6: ", DATA_FIREBASE.TELEGRAM_KEY_CHAT_ID_ARCHANGELSK);
 
                 // = = = = = = = = = = = = = = = = = = = = = = = =
                 // Ниже отправим данные в Telegram
@@ -422,30 +545,35 @@ export const ButtonGoBroken = () => {
                 // Переменная для сообщения, которое отправлю в Telegram
                 let message
 
+                let test = NUMBERS_LIST_RESULT_COMMANDS.filter(num => num.title != 'Номер')
+
+                console.log(test);
+
+                let NUMBERS_LIST_FOT_PUSH_TELEGRAM = test.map(num => num.online + ' ' + num.title + ' - ' + num.command).join("\n")
+
                 // Если ошибок нет, то отправим без пинга, если есть то пингуем
                 if (isEroorExists != 0) {
-                    message = `*Забрал и перевел в поломку:*\n${NUMBERS_LIST_FOT_PUSH_TELEGRAM}\n@vasenkovivan`
+                    message = `*Забрал и перевел в поломку:*\n\n${NUMBERS_LIST_FOT_PUSH_TELEGRAM}\n\n🆘 @vasenkovivan`
                 }
                 else {
-                    message = `*Забрал и перевел в поломку:*\n${NUMBERS_LIST_FOT_PUSH_TELEGRAM}`
+                    message = `*Забрал и перевел в поломку:*\n\n${NUMBERS_LIST_FOT_PUSH_TELEGRAM}`
                 }
 
                 console.log('\nСообщение в ТГ: \n' + message)
 
-                // Ключ API Telegram
-                let API_TELEGRAM_KEY = MAP_DATA_REQUEST_FIREBASE[1].title
 
                 // Chat ID Telegram
                 let TELEGRAM_KEY_CHAT_ID
                 if (uid == UID_LIST.UID_ARCHANGELSK) {
-                    TELEGRAM_KEY_CHAT_ID = MAP_DATA_REQUEST_FIREBASE[3].title
+                    TELEGRAM_KEY_CHAT_ID = DATA_FIREBASE.TELEGRAM_KEY_CHAT_ID_ARCHANGELSK
                 } else {
-                    TELEGRAM_KEY_CHAT_ID = MAP_DATA_REQUEST_FIREBASE[2].title
+                    TELEGRAM_KEY_CHAT_ID = DATA_FIREBASE.TELEGRAM_KEY_CHAT_ID_MURMANSK
                 }
 
                 // Асинхронная функция на axios для отправки POST запроса, для отправки сообщения в Телеграм
                 const REQUEST_TELEGRAM_MESSAGE_PUSH = await
-                    axios.post(`https://api.telegram.org/bot${API_TELEGRAM_KEY}/sendMessage`, {
+                    axios.post(`https://api.telegram.org/bot${DATA_FIREBASE.API_TELEGRAM_KEY}/sendMessage`, {
+                        // chat_id: "-586513671",
                         chat_id: TELEGRAM_KEY_CHAT_ID,
                         text: message,
                         parse_mode: 'Markdown',
@@ -467,28 +595,37 @@ export const ButtonGoBroken = () => {
                     }))
                 }
 
-                // Асинхронная функция на axios для отправки POST запроса, для отправки гео-позиции устройства в Телеграм
+                // Асинхронная функция на axios для отправки POST запроса, для отправки гео - позиции устройства в Телеграм
                 const REQUEST_TELEGRAM_LOCATION_PUSH = await
-                    axios.post(`https://api.telegram.org/bot${API_TELEGRAM_KEY}/sendLocation`, {
+                    axios.post(`https://api.telegram.org/bot${DATA_FIREBASE.API_TELEGRAM_KEY}/sendLocation`, {
+                        // chat_id: "-586513671",
                         chat_id: TELEGRAM_KEY_CHAT_ID,
-                        latitude: x,
-                        longitude: y,
+                        latitude: DATA_GEO_LOCATION.geo_x,
+                        longitude: DATA_GEO_LOCATION.geo_y,
                     })
                 console.log("Отправка гео в ТГ: " + REQUEST_TELEGRAM_LOCATION_PUSH.status)
 
                 // Убираем лоадинг-индикатор
-                setActivityIndicatorSwitch(activityIndicatorSwitch)
+                setActivityIndicatorSwitch(!activityIndicatorSwitch)
+
+                setQwertyu2(!qwertyu2)
 
                 // Показываем тост успеха
                 showToastSuccess()
 
                 // Ждем 5 секунд и выключаем дизейбл кнопки
                 setTimeout(() => {
-                    setDisabledButtonSwitch(disabledButtonSwitch)
+                    setDisabledButtonSwitch(!disabledButtonSwitch)
                 }, 5000)
+
+                return;
             }
+
+            fetchData()
+                .catch(console.error);
         }
-    }
+
+    }, [NUMBERS_LIST_RESULT_COMMANDS], [ALL_ADDED_OBJECTS_ARRAY], DATA_FIREBASE, activityIndicatorSwitch, disabledButtonSwitch, DATA_GEO_LOCATION, qwertyu2)
 
     return (
         <View>
