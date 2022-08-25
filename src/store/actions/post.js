@@ -1,4 +1,4 @@
-import { ADD_NEW_RESULT_COMMAND_SCOOTER, ADD_POSTS, CHANGE_VALUE_INPUT_ADD_NUMBER_OPEN, DELETE_ALL_POSTS, DELETE_ALL_RESULT_COMMAND_SCOOTER, DELETE_ONE_POSTS, EDIT_POST, LOAD_POSTS } from "../types"
+import { ADD_NEW_RESULT_COMMAND_SCOOTER, ADD_POSTS, CHANGE_VALUE_INPUT_ADD_NUMBER_OPEN, CHANGE_VALUE_IS_ERROR_EXIST_REDUSER, CHANGE_VALUE_IS_ERROR_EXIST_REDUSER_ZERO, DELETE_ALL_POSTS, DELETE_ALL_RESULT_COMMAND_SCOOTER, DELETE_ONE_POSTS, EDIT_POST, LOAD_POSTS } from "../types"
 
 export const loadPosts = () => {
     return {
@@ -67,6 +67,22 @@ export const deleteAllResultCommandScooter = scooter => {
 export const changeValueInputAddNumberOpen = scooter => {
     return {
         type: CHANGE_VALUE_INPUT_ADD_NUMBER_OPEN,
+    }
+}
+
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+// ДЛЯ ПЕРЕМЕННОЙ ОШИБОК
+
+export const changeValueInputIsErrorExistReduser = valueErrorPlus => {
+    return {
+        type: CHANGE_VALUE_IS_ERROR_EXIST_REDUSER,
+        payload: valueErrorPlus
+    }
+}
+
+export const changeValueInputIsErrorExistReduserZero = valueErrorPlus => {
+    return {
+        type: CHANGE_VALUE_IS_ERROR_EXIST_REDUSER_ZERO,
     }
 }
 

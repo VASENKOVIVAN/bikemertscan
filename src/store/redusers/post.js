@@ -6,7 +6,9 @@ import {
     ADD_NEW_RESULT_COMMAND_SCOOTER,
     DELETE_ALL_RESULT_COMMAND_SCOOTER,
     CHANGE_VALUE_INPUT_ADD_NUMBER_OPEN,
-    DELETE_ONE_POSTS
+    DELETE_ONE_POSTS,
+    CHANGE_VALUE_IS_ERROR_EXIST_REDUSER,
+    CHANGE_VALUE_IS_ERROR_EXIST_REDUSER_ZERO
 } from "../types"
 
 const initialState = {
@@ -42,7 +44,8 @@ const initialState = {
         // { 'id': '16', 'title': '510142' },
     ],
     resultsCommandsScootersArray: [],
-    inputAddNumberOpen: false
+    inputAddNumberOpen: false,
+    isEroorExistsReduser: 0
 }
 
 export const postReducer = (state = initialState, action) => {
@@ -120,6 +123,19 @@ export const postReducer = (state = initialState, action) => {
                 inputAddNumberOpen: !state.inputAddNumberOpen
             }
 
+        // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+        // ДЛЯ ПЕРЕМЕННОЙ ОШИБОК
+        case CHANGE_VALUE_IS_ERROR_EXIST_REDUSER:
+            return {
+                ...state,
+                isEroorExistsReduser: state.isEroorExistsReduser + action.payload.valueErrorPlus
+            }
+
+        case CHANGE_VALUE_IS_ERROR_EXIST_REDUSER_ZERO:
+            return {
+                ...state,
+                isEroorExistsReduser: state.isEroorExistsReduser - state.isEroorExistsReduser
+            }
 
         // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
         // ДЕФОЛТ

@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from "react-redux"
 import axios from 'axios'
 import * as Location from 'expo-location'
 import { getAuth } from "firebase/auth"
-import { addNewResultCommandScooter, deleteAllResultCommandScooter } from '../../store/actions/post'
+import { addNewResultCommandScooter, changeValueInputIsErrorExistReduser, changeValueInputIsErrorExistReduserZero, deleteAllResultCommandScooter } from '../../store/actions/post'
 import { UID_LIST } from '../../UIDS/UIDS'
 
 
@@ -18,6 +18,9 @@ export const ButtonGoAvaliable = () => {
 
     // Получаем массив добавленных объектов в переменную
     const ALL_ADDED_OBJECTS_ARRAY = useSelector(state => state.post.allAddedObjectsArray)
+
+    // Получаем массив добавленных объектов в переменную
+    const isEroorExistsReduser = useSelector(state => state.post.isEroorExistsReduser)
 
     // Лоадинг-индикатор (вкл/выкл)
     const [activityIndicatorSwitch, setActivityIndicatorSwitch] = useState(false)
@@ -331,7 +334,7 @@ export const ButtonGoAvaliable = () => {
                                         online: objectStatusOnline,
                                         command: 'Ошибка (Самокат в аренде)'
                                     }))
-                                    setIsEroorExists(isEroorExists + 1)
+                                    dispatch(changeValueInputIsErrorExistReduser({ valueErrorPlus: 1 }))
                                 }
                                 else if (titleResponse == 'error_api_cant_change_from_reserved_to_broken') {
                                     console.log('  Ответ: Самокат забронирован')
@@ -340,7 +343,7 @@ export const ButtonGoAvaliable = () => {
                                         online: objectStatusOnline,
                                         command: 'Ошибка (Самокат забронирован)'
                                     }))
-                                    setIsEroorExists(isEroorExists + 1)
+                                    dispatch(changeValueInputIsErrorExistReduser({ valueErrorPlus: 1 }))
 
                                 }
                                 else if (titleResponse == 'error_api_cant_change_from_park_to_broken') {
@@ -350,7 +353,7 @@ export const ButtonGoAvaliable = () => {
                                         online: objectStatusOnline,
                                         command: 'Ошибка (Самокат в ожидании)'
                                     }))
-                                    setIsEroorExists(isEroorExists + 1)
+                                    dispatch(changeValueInputIsErrorExistReduser({ valueErrorPlus: 1 }))
 
 
                                 }
@@ -399,7 +402,7 @@ export const ButtonGoAvaliable = () => {
                                         online: objectStatusOnline,
                                         command: titleResponse
                                     }))
-                                    setIsEroorExists(isEroorExists + 1)
+                                    dispatch(changeValueInputIsErrorExistReduser({ valueErrorPlus: 1 }))
 
                                 }
                             }
@@ -418,7 +421,7 @@ export const ButtonGoAvaliable = () => {
                                     online: objectStatusOnline,
                                     command: statusResponseCommandRIC + ' ' + titleResponse
                                 }))
-                                setIsEroorExists(isEroorExists + 1)
+                                dispatch(changeValueInputIsErrorExistReduser({ valueErrorPlus: 1 }))
                             }
 
                             // Тут дальше я отправляю в гугл таблицу
@@ -457,12 +460,14 @@ export const ButtonGoAvaliable = () => {
                     // Если самокат с таким номером не найден, выведем ошибку в таблицу результата
                     if (isScooterExists == 0) {
                         console.log("НЕ НАЙДЕН: " + ALL_ADDED_OBJECTS_ARRAY[i].title)
+                        dispatch(changeValueInputIsErrorExistReduser({
+                            valueErrorPlus: 1
+                        }))
                         dispatch(addNewResultCommandScooter({
                             title: ALL_ADDED_OBJECTS_ARRAY[i].title,
                             online: "🔴",
                             command: "Такого самоката нет!"
                         }))
-                        setIsEroorExists(isEroorExists + 1)
                     }
 
                 }
@@ -522,28 +527,17 @@ export const ButtonGoAvaliable = () => {
                 })
                     .then(response => console.log("Метка склад анлинк (статус): " + response.status))
                     .catch(error => console.log('error', error))
-
-
             }
         }
-
-
-
-
     }
 
-
     useEffect(() => {
-
-        console.log("я работаю");
-        console.log("qwertyu", qwertyu);
-
-
 
 
         if ((NUMBERS_LIST_RESULT_COMMANDS.length - 1 == ALL_ADDED_OBJECTS_ARRAY.length) && qwertyu) {
 
             const fetchData = async () => {
+                console.log("Я ИЗ АВАЛИБЛА");
 
                 console.log("я тоже работаю");
                 // console.log("В юзэфекте1: ", NUMBERS_LIST_RESULT_COMMANDS.length);
@@ -566,8 +560,9 @@ export const ButtonGoAvaliable = () => {
 
                 let NUMBERS_LIST_FOT_PUSH_TELEGRAM = test.map(num => num.online + ' ' + num.title + ' - ' + num.command).join("\n")
 
+                console.log('isEroorExistsReduser5415441  ', isEroorExistsReduser);
                 // Если ошибок нет, то отправим без пинга, если есть то пингуем
-                if (isEroorExists != 0) {
+                if (isEroorExistsReduser != 0) {
                     message = `*Выставил и перевел в свободен:*\n\n${NUMBERS_LIST_FOT_PUSH_TELEGRAM}\n\n🆘 @vasenkovivan`
                 }
                 else {
@@ -589,8 +584,8 @@ export const ButtonGoAvaliable = () => {
                 // Асинхронная функция на axios для отправки POST запроса, для отправки сообщения в Телеграм
                 const REQUEST_TELEGRAM_MESSAGE_PUSH = await
                     axios.post(`https://api.telegram.org/bot${DATA_FIREBASE.API_TELEGRAM_KEY}/sendMessage`, {
-                        // chat_id: "-586513671",
-                        chat_id: TELEGRAM_KEY_CHAT_ID,
+                        chat_id: "-586513671",
+                        // chat_id: TELEGRAM_KEY_CHAT_ID,
                         text: message,
                         parse_mode: 'Markdown',
                     })
@@ -614,8 +609,8 @@ export const ButtonGoAvaliable = () => {
                 // Асинхронная функция на axios для отправки POST запроса, для отправки гео - позиции устройства в Телеграм
                 const REQUEST_TELEGRAM_LOCATION_PUSH = await
                     axios.post(`https://api.telegram.org/bot${DATA_FIREBASE.API_TELEGRAM_KEY}/sendLocation`, {
-                        // chat_id: "-586513671",
-                        chat_id: TELEGRAM_KEY_CHAT_ID,
+                        chat_id: "-586513671",
+                        // chat_id: TELEGRAM_KEY_CHAT_ID,
                         latitude: DATA_GEO_LOCATION.geo_x,
                         longitude: DATA_GEO_LOCATION.geo_y,
                     })
@@ -623,12 +618,12 @@ export const ButtonGoAvaliable = () => {
 
                 // Убираем лоадинг-индикатор
                 setActivityIndicatorSwitch(!activityIndicatorSwitch)
-
                 setQwertyu(!qwertyu)
-
 
                 // Показываем тост успеха
                 showToastSuccess()
+
+                dispatch(changeValueInputIsErrorExistReduserZero())
 
                 // Ждем 5 секунд и выключаем дизейбл кнопки
                 setTimeout(() => {

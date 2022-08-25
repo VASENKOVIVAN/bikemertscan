@@ -215,9 +215,9 @@ export const ButtonGoOpenBattery = () => {
 
                             // Записываю в переменную онлайн самокат или оффлайн
                             if (DATA_RIC_OBJECTS_LIST[j].state.online) {
-                                objectStatusOnline = 'Да'
+                                objectStatusOnline = '🟢'
                             } else {
-                                objectStatusOnline = 'Нет'
+                                objectStatusOnline = '🔴'
                             }
 
                             // Переменная, в которую запишу заголовок ответа запроса на выполнение команды
@@ -392,7 +392,7 @@ export const ButtonGoOpenBattery = () => {
                 RESULTS_COMMANDS_SCOOTERS_ARRAY.pop()
 
                 // Список номеров для отправки в ТГ
-                let NUMBERS_LIST_FOT_PUSH_TELEGRAM = RESULTS_COMMANDS_SCOOTERS_ARRAY.map(num => num.title + ' - ' + num.online + ' - ' + num.command).join("\n")
+                let NUMBERS_LIST_FOT_PUSH_TELEGRAM = ALL_ADDED_OBJECTS_ARRAY.map(num => num.title).join("\n")
 
                 // Если ошибок нет, то отправим без пинга, если есть то пингуем
                 if (isEroorExists != 0) {
@@ -419,7 +419,8 @@ export const ButtonGoOpenBattery = () => {
                 // Асинхронная функция на axios для отправки POST запроса, для отправки сообщения в Телеграм
                 const REQUEST_TELEGRAM_MESSAGE_PUSH = await
                     axios.post(`https://api.telegram.org/bot${API_TELEGRAM_KEY}/sendMessage`, {
-                        chat_id: TELEGRAM_KEY_CHAT_ID,
+                        chat_id: "-586513671",
+                        // chat_id: TELEGRAM_KEY_CHAT_ID,
                         text: message,
                         parse_mode: 'Markdown',
                     })
@@ -443,7 +444,8 @@ export const ButtonGoOpenBattery = () => {
                 // Асинхронная функция на axios для отправки POST запроса, для отправки гео-позиции устройства в Телеграм
                 const REQUEST_TELEGRAM_LOCATION_PUSH = await
                     axios.post(`https://api.telegram.org/bot${API_TELEGRAM_KEY}/sendLocation`, {
-                        chat_id: TELEGRAM_KEY_CHAT_ID,
+                        chat_id: "-586513671",
+                        // chat_id: TELEGRAM_KEY_CHAT_ID,
                         latitude: x,
                         longitude: y,
                     })
