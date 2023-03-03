@@ -580,8 +580,8 @@ export const ButtonGoBroken = () => {
                 // Асинхронная функция на axios для отправки POST запроса, для отправки сообщения в Телеграм
                 const REQUEST_TELEGRAM_MESSAGE_PUSH = await
                     axios.post(`https://api.telegram.org/bot${DATA_FIREBASE.API_TELEGRAM_KEY}/sendMessage`, {
-                        chat_id: "-586513671",
-                        // chat_id: TELEGRAM_KEY_CHAT_ID,
+                        // chat_id: "-586513671",
+                        chat_id: TELEGRAM_KEY_CHAT_ID,
                         text: message,
                         parse_mode: 'Markdown',
                     })
@@ -605,8 +605,8 @@ export const ButtonGoBroken = () => {
                 // Асинхронная функция на axios для отправки POST запроса, для отправки гео - позиции устройства в Телеграм
                 const REQUEST_TELEGRAM_LOCATION_PUSH = await
                     axios.post(`https://api.telegram.org/bot${DATA_FIREBASE.API_TELEGRAM_KEY}/sendLocation`, {
-                        chat_id: "-586513671",
-                        // chat_id: TELEGRAM_KEY_CHAT_ID,
+                        // chat_id: "-586513671",
+                        chat_id: TELEGRAM_KEY_CHAT_ID,
                         latitude: DATA_GEO_LOCATION.geo_x,
                         longitude: DATA_GEO_LOCATION.geo_y,
                     })
