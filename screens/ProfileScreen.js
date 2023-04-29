@@ -379,7 +379,7 @@ const ProfileScreen = ({ navigation, onSubmit }) => {
                 </TouchableOpacity>
                 <View style={styles.bottomVersionTextContainer} >
                     <Text style={styles.bottomVersionText}>
-                        version 5.0.6
+                        version 6.0.0
                     </Text>
                 </View>
 
