@@ -176,193 +176,194 @@ export const ButtonGoOpenBattery = () => {
 
                     // Массив, в котором мы пробегаем по объектам из RIC
                     for (let j = 0; j < DATA_RIC_OBJECTS_LIST.length; j++) {
+                        if (DATA_RIC_OBJECTS_LIST[j].model == '62c805a20df664001007de64' || DATA_RIC_OBJECTS_LIST[j].model == '60a7c8657e0b680010aba505') {
+                            // Ищем отсканированный объект в списке объектов RIC
+                            if (DATA_RIC_OBJECTS_LIST[j].config.data.qr == ALL_ADDED_OBJECTS_ARRAY[i].title) {
 
-                        // Ищем отсканированный объект в списке объектов RIC
-                        if (DATA_RIC_OBJECTS_LIST[j].config.data.qr == ALL_ADDED_OBJECTS_ARRAY[i].title) {
+                                isScooterExists = isScooterExists + 1
 
-                            isScooterExists = isScooterExists + 1
+                                // Номер QR-кода самоката
+                                let numberQrScooter = DATA_RIC_OBJECTS_LIST[j].config.data.qr
 
-                            // Номер QR-кода самоката
-                            let numberQrScooter = DATA_RIC_OBJECTS_LIST[j].config.data.qr
-
-                            console.log('Номер самоката:', numberQrScooter)
-                            // url api на открытие АКБ (ДЛЯ КНОПКИ "ОТКРЫТЬ АКБ")
-                            let url_go_openbattery_command
-                            if (numberQrScooter.substr(0, 2) == 29) {
-                                url_go_openbattery_command = `https://app.rightech.io/api/v1/objects/${DATA_RIC_OBJECTS_LIST[j]._id}/commands/meulk_cmd?withChildGroups=true`
-                                console.log("Архангельск команда АКБ")
-                            } else {
-                                url_go_openbattery_command = `https://app.rightech.io/api/v1/objects/${DATA_RIC_OBJECTS_LIST[j]._id}/commands/scsetmode-eco-wxs9m-7qnlg?withChildGroups=true`
-                                console.log("Мурманск команда АКБ")
-                            }
-
-                            // Отправляем команду самокату на изменение статуса
-                            const REQUEST_RIC_OBJECT_COMMAND = await
-                                fetch(url_go_openbattery_command, {
-                                    method: "POST",
-                                    headers: {
-                                        "Authorization": API_RIC_KEY
-                                    },
-                                })
-                            const DATA_REQUEST_RIC_OBJECT_COMMAND = await REQUEST_RIC_OBJECT_COMMAND.json()
-
-                            // Получаю статус ответа от RIC по выполнению команды
-                            let statusResponseCommandRIC = REQUEST_RIC_OBJECT_COMMAND.status
-                            console.log('СТАТУС: ' + statusResponseCommandRIC)
-
-                            // Переменная, в которую запишу онлайн самокат или оффлайн
-                            let objectStatusOnline = ''
-
-                            // Записываю в переменную онлайн самокат или оффлайн
-                            if (DATA_RIC_OBJECTS_LIST[j].state.online) {
-                                objectStatusOnline = '🟢'
-                            } else {
-                                objectStatusOnline = '🔴'
-                            }
-
-                            // Переменная, в которую запишу заголовок ответа запроса на выполнение команды
-                            let titleResponse
-
-                            // Проверю самокат OKAI или G30/PRO и в зависимости от того, какая модель самоката запишу заголовок ответа запроса на выполнение команды
-                            if (numberQrScooter.substr(0, 2) == 29) {
-                                console.log('OKAI')
-                                if (statusResponseCommandRIC == 400) {
-                                    titleResponse = DATA_REQUEST_RIC_OBJECT_COMMAND.codes[0]
+                                console.log('Номер самоката:', numberQrScooter)
+                                // url api на открытие АКБ (ДЛЯ КНОПКИ "ОТКРЫТЬ АКБ")
+                                let url_go_openbattery_command
+                                if (numberQrScooter.substr(0, 2) == 29) {
+                                    url_go_openbattery_command = `https://app.rightech.io/api/v1/objects/${DATA_RIC_OBJECTS_LIST[j]._id}/commands/meulk_cmd?withChildGroups=true`
+                                    console.log("Архангельск команда АКБ")
                                 } else {
-                                    titleResponse = "Какая то ошибка"
+                                    url_go_openbattery_command = `https://app.rightech.io/api/v1/objects/${DATA_RIC_OBJECTS_LIST[j]._id}/commands/scsetmode-eco-wxs9m-7qnlg?withChildGroups=true`
+                                    console.log("Мурманск команда АКБ")
                                 }
-                            } else {
-                                console.log('НЕ ОКАИ')
-                                if (statusResponseCommandRIC == 400 || statusResponseCommandRIC == 422) {
-                                    titleResponse = DATA_REQUEST_RIC_OBJECT_COMMAND.codes[0]
+
+                                // Отправляем команду самокату на изменение статуса
+                                const REQUEST_RIC_OBJECT_COMMAND = await
+                                    fetch(url_go_openbattery_command, {
+                                        method: "POST",
+                                        headers: {
+                                            "Authorization": API_RIC_KEY
+                                        },
+                                    })
+                                const DATA_REQUEST_RIC_OBJECT_COMMAND = await REQUEST_RIC_OBJECT_COMMAND.json()
+
+                                // Получаю статус ответа от RIC по выполнению команды
+                                let statusResponseCommandRIC = REQUEST_RIC_OBJECT_COMMAND.status
+                                console.log('СТАТУС: ' + statusResponseCommandRIC)
+
+                                // Переменная, в которую запишу онлайн самокат или оффлайн
+                                let objectStatusOnline = ''
+
+                                // Записываю в переменную онлайн самокат или оффлайн
+                                if (DATA_RIC_OBJECTS_LIST[j].state.online) {
+                                    objectStatusOnline = '🟢'
                                 } else {
-                                    titleResponse = "Какая то ошибка"
+                                    objectStatusOnline = '🔴'
                                 }
-                            }
 
-                            // Тут я выясняю, какой статус ответа на выполнение команды
-                            // В зависимости от статуса ответа (422, 200 или другой)
-                            // Затем зависимости от ответа на команду и отправлю эти данные в таблицу результата
-                            if (statusResponseCommandRIC == 422) {
-                                // НИЖЕ ИФЫ ДЛЯ ПЕРЕВОДА В ПОЛОМКУ
-                                if (titleResponse == 'error_api_already_broken') {
-                                    console.log('  Ответ: Уже в поломке!')
-                                    dispatch(addNewResultCommandScooter({
-                                        title: numberQrScooter,
-                                        online: objectStatusOnline,
-                                        command: 'Уже в поломке'
-                                    }))
-                                }
-                                else if (titleResponse == 'error_api_cant_change_from_taken_to_broken') {
-                                    console.log('  Ответ: Самокат в аренде')
-                                    dispatch(addNewResultCommandScooter({
-                                        title: numberQrScooter,
-                                        online: objectStatusOnline,
-                                        command: 'Ошибка (Самокат в аренде)'
-                                    }))
-                                    isEroorExists = isEroorExists + 1
-                                }
-                                else if (titleResponse == 'error_api_cant_change_from_reserved_to_broken') {
-                                    console.log('  Ответ: Самокат забронирован')
-                                    dispatch(addNewResultCommandScooter({
-                                        title: numberQrScooter,
-                                        online: objectStatusOnline,
-                                        command: 'Ошибка (Самокат забронирован)'
-                                    }))
-                                    isEroorExists = isEroorExists + 1
-                                }
-                                else if (titleResponse == 'error_api_cant_change_from_park_to_broken') {
-                                    console.log('  Ответ: Самокат в ожидании')
-                                    dispatch(addNewResultCommandScooter({
-                                        title: numberQrScooter,
-                                        online: objectStatusOnline,
-                                        command: 'Ошибка (Самокат в ожидании)'
-                                    }))
-                                    isEroorExists = isEroorExists + 1
+                                // Переменная, в которую запишу заголовок ответа запроса на выполнение команды
+                                let titleResponse
 
+                                // Проверю самокат OKAI или G30/PRO и в зависимости от того, какая модель самоката запишу заголовок ответа запроса на выполнение команды
+                                if (numberQrScooter.substr(0, 2) == 29) {
+                                    console.log('OKAI')
+                                    if (statusResponseCommandRIC == 400) {
+                                        titleResponse = DATA_REQUEST_RIC_OBJECT_COMMAND.codes[0]
+                                    } else {
+                                        titleResponse = "Какая то ошибка"
+                                    }
+                                } else {
+                                    console.log('НЕ ОКАИ')
+                                    if (statusResponseCommandRIC == 400 || statusResponseCommandRIC == 422) {
+                                        titleResponse = DATA_REQUEST_RIC_OBJECT_COMMAND.codes[0]
+                                    } else {
+                                        titleResponse = "Какая то ошибка"
+                                    }
                                 }
-                                // НИЖЕ ИФЫ ДЛЯ ПЕРЕВОДА В СВОБОДЕН
-                                else if (titleResponse == 'error_api_already_available') {
-                                    console.log('  Ответ: Уже свободен!')
-                                    console.log(titleResponse)
+
+                                // Тут я выясняю, какой статус ответа на выполнение команды
+                                // В зависимости от статуса ответа (422, 200 или другой)
+                                // Затем зависимости от ответа на команду и отправлю эти данные в таблицу результата
+                                if (statusResponseCommandRIC == 422) {
+                                    // НИЖЕ ИФЫ ДЛЯ ПЕРЕВОДА В ПОЛОМКУ
+                                    if (titleResponse == 'error_api_already_broken') {
+                                        console.log('  Ответ: Уже в поломке!')
+                                        dispatch(addNewResultCommandScooter({
+                                            title: numberQrScooter,
+                                            online: objectStatusOnline,
+                                            command: 'Уже в поломке'
+                                        }))
+                                    }
+                                    else if (titleResponse == 'error_api_cant_change_from_taken_to_broken') {
+                                        console.log('  Ответ: Самокат в аренде')
+                                        dispatch(addNewResultCommandScooter({
+                                            title: numberQrScooter,
+                                            online: objectStatusOnline,
+                                            command: 'Ошибка (Самокат в аренде)'
+                                        }))
+                                        isEroorExists = isEroorExists + 1
+                                    }
+                                    else if (titleResponse == 'error_api_cant_change_from_reserved_to_broken') {
+                                        console.log('  Ответ: Самокат забронирован')
+                                        dispatch(addNewResultCommandScooter({
+                                            title: numberQrScooter,
+                                            online: objectStatusOnline,
+                                            command: 'Ошибка (Самокат забронирован)'
+                                        }))
+                                        isEroorExists = isEroorExists + 1
+                                    }
+                                    else if (titleResponse == 'error_api_cant_change_from_park_to_broken') {
+                                        console.log('  Ответ: Самокат в ожидании')
+                                        dispatch(addNewResultCommandScooter({
+                                            title: numberQrScooter,
+                                            online: objectStatusOnline,
+                                            command: 'Ошибка (Самокат в ожидании)'
+                                        }))
+                                        isEroorExists = isEroorExists + 1
+
+                                    }
+                                    // НИЖЕ ИФЫ ДЛЯ ПЕРЕВОДА В СВОБОДЕН
+                                    else if (titleResponse == 'error_api_already_available') {
+                                        console.log('  Ответ: Уже свободен!')
+                                        console.log(titleResponse)
+                                        dispatch(addNewResultCommandScooter({
+                                            title: numberQrScooter,
+                                            online: objectStatusOnline,
+                                            command: 'Уже свободен'
+                                        }))
+                                    }
+                                    else if (titleResponse == 'error_api_cant_change_from_taken_to_available') {
+                                        console.log('  Ответ: Самокат в аренде')
+                                        console.log(titleResponse)
+                                        dispatch(addNewResultCommandScooter({
+                                            title: numberQrScooter,
+                                            online: objectStatusOnline,
+                                            command: 'Ошибка (Самокат в аренде)'
+                                        }))
+                                    }
+                                    else if (titleResponse == 'error_api_cant_change_from_reserved_to_available') {
+                                        console.log('  Ответ: Самокат забронирован')
+                                        console.log(titleResponse)
+                                        dispatch(addNewResultCommandScooter({
+                                            title: numberQrScooter,
+                                            online: objectStatusOnline,
+                                            command: 'Ошибка (Самокат забронирован)'
+                                        }))
+                                    }
+                                    else if (titleResponse == 'error_api_cant_change_from_park_to_available') {
+                                        console.log('  Ответ: Самокат в ожидании')
+                                        console.log(titleResponse)
+                                        dispatch(addNewResultCommandScooter({
+                                            title: numberQrScooter,
+                                            online: objectStatusOnline,
+                                            command: 'Ошибка (Самокат в ожидании)'
+                                        }))
+                                    }
+                                    // НЕИЗВЕСНАЯ ОШИБКА
+                                    else {
+                                        console.log('  Ответ: НЕИЗВЕСНАЯ ОШИБКА!')
+                                        dispatch(addNewResultCommandScooter({
+                                            title: numberQrScooter,
+                                            online: objectStatusOnline,
+                                            command: titleResponse
+                                        }))
+                                        isEroorExists = isEroorExists + 1
+                                    }
+                                }
+                                else if (statusResponseCommandRIC == 200) {
+                                    console.log('  Ответ: Статус переведен!')
                                     dispatch(addNewResultCommandScooter({
                                         title: numberQrScooter,
                                         online: objectStatusOnline,
-                                        command: 'Уже свободен'
+                                        command: 'Успешно'
                                     }))
                                 }
-                                else if (titleResponse == 'error_api_cant_change_from_taken_to_available') {
-                                    console.log('  Ответ: Самокат в аренде')
-                                    console.log(titleResponse)
-                                    dispatch(addNewResultCommandScooter({
-                                        title: numberQrScooter,
-                                        online: objectStatusOnline,
-                                        command: 'Ошибка (Самокат в аренде)'
-                                    }))
-                                }
-                                else if (titleResponse == 'error_api_cant_change_from_reserved_to_available') {
-                                    console.log('  Ответ: Самокат забронирован')
-                                    console.log(titleResponse)
-                                    dispatch(addNewResultCommandScooter({
-                                        title: numberQrScooter,
-                                        online: objectStatusOnline,
-                                        command: 'Ошибка (Самокат забронирован)'
-                                    }))
-                                }
-                                else if (titleResponse == 'error_api_cant_change_from_park_to_available') {
-                                    console.log('  Ответ: Самокат в ожидании')
-                                    console.log(titleResponse)
-                                    dispatch(addNewResultCommandScooter({
-                                        title: numberQrScooter,
-                                        online: objectStatusOnline,
-                                        command: 'Ошибка (Самокат в ожидании)'
-                                    }))
-                                }
-                                // НЕИЗВЕСНАЯ ОШИБКА
                                 else {
-                                    console.log('  Ответ: НЕИЗВЕСНАЯ ОШИБКА!')
+                                    console.log('  Ошибка!\nСтатус ответа: ', statusResponseCommandRIC)
                                     dispatch(addNewResultCommandScooter({
                                         title: numberQrScooter,
                                         online: objectStatusOnline,
-                                        command: titleResponse
+                                        command: statusResponseCommandRIC + ' ' + titleResponse
                                     }))
                                     isEroorExists = isEroorExists + 1
                                 }
+
+                                // Тут дальше я отправляю в гугл таблицу
+
+                                // Переменная для вычисления даты и времени для отправки в Google Sheet
+                                var dateAndTimeNow = new Date().toLocaleTimeString()
+
+                                // Строка query-параметров для отправки в Google Sheet
+                                let queryParamsForGoogleSheet = `?p1=${ALL_ADDED_OBJECTS_ARRAY[i].title}&p2=${dateAndTimeNow}&p3=Замена АКБ&p4=${x},${y}`
+
+                                // Отправляю данные в гугл таблицу
+                                const REQUEST_GOOGLE_SHEET = await fetch(
+                                    `https://script.google.com/macros/s/AKfycbzpfVBOETyWNDXES7goQIq3KQ8c3OQupri_y2581JnPblpAgL6TB6r7K7MebVlieai3/exec${queryParamsForGoogleSheet}`,
+                                    {
+                                        method: 'GET',
+                                    }
+                                )
+                                console.log("Гугл таблица: " + REQUEST_GOOGLE_SHEET.status)
                             }
-                            else if (statusResponseCommandRIC == 200) {
-                                console.log('  Ответ: Статус переведен!')
-                                dispatch(addNewResultCommandScooter({
-                                    title: numberQrScooter,
-                                    online: objectStatusOnline,
-                                    command: 'Успешно'
-                                }))
-                            }
-                            else {
-                                console.log('  Ошибка!\nСтатус ответа: ', statusResponseCommandRIC)
-                                dispatch(addNewResultCommandScooter({
-                                    title: numberQrScooter,
-                                    online: objectStatusOnline,
-                                    command: statusResponseCommandRIC + ' ' + titleResponse
-                                }))
-                                isEroorExists = isEroorExists + 1
-                            }
-
-                            // Тут дальше я отправляю в гугл таблицу
-
-                            // Переменная для вычисления даты и времени для отправки в Google Sheet
-                            var dateAndTimeNow = new Date().toLocaleTimeString()
-
-                            // Строка query-параметров для отправки в Google Sheet
-                            let queryParamsForGoogleSheet = `?p1=${ALL_ADDED_OBJECTS_ARRAY[i].title}&p2=${dateAndTimeNow}&p3=Замена АКБ&p4=${x},${y}`
-
-                            // Отправляю данные в гугл таблицу
-                            const REQUEST_GOOGLE_SHEET = await fetch(
-                                `https://script.google.com/macros/s/AKfycbzpfVBOETyWNDXES7goQIq3KQ8c3OQupri_y2581JnPblpAgL6TB6r7K7MebVlieai3/exec${queryParamsForGoogleSheet}`,
-                                {
-                                    method: 'GET',
-                                }
-                            )
-                            console.log("Гугл таблица: " + REQUEST_GOOGLE_SHEET.status)
                         }
 
                     }

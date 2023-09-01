@@ -155,14 +155,15 @@ export const TitleLine = () => {
       </View>
 
       <View style={styles.containerButtons}>
-        <TouchableOpacity
+        {/* Кнопка для отчета по поломке самокатов */}
+        {/* <TouchableOpacity
           style={styles.buttons}
           onPress={InputAddNumberOpenRemont}
         >
           <View style={styles.containerCounterAndButtonsButtonRemont}>
             <FontAwesome name="wrench" size={18} color="white" />
           </View>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <TouchableOpacity style={styles.buttons} onPress={InputAddNumberOpen}>
           <View style={styles.containerCounterAndButtonsButtonAdd}>
